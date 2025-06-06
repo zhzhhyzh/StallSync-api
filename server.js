@@ -16,7 +16,9 @@ const prgencde = require('./routes/prgencde');
 const prgentyp = require('./routes/prgentyp');
 const pstblmas = require("./routes/pstblmas");
 const pssyspar = require('./routes/pssyspar');
-
+const prfuncde = require('./routes/prfuncde');
+const psrolpar = require('./routes/psrolpar');
+const prfunacs = require('./routes/prfunacs');
 
 // MISC Routes
 const document = require('./routes/document');
@@ -51,6 +53,8 @@ app.use('/api/prgencde', prgencde);
 app.use('/api/prgentyp', prgentyp);
 app.use('/api/pstblmas', pstblmas);
 app.use('/api/pssyspar', pssyspar);
+app.use('/api/prfuncde', prfuncde);
+app.use('/api/prfunacs', prfunacs);
 
 // MISC Routes
 app.use('/api/document', document);
