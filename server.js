@@ -23,6 +23,7 @@ const prfunacs = require('./routes/prfunacs');
 // MISC Routes
 const document = require('./routes/document');
 const mntlog = require('./routes/mntlog');
+const prpwdpol = require('./routes/prpwdpol');
 
 const app = express();
 app.use(cors({
@@ -55,6 +56,8 @@ app.use('/api/pstblmas', pstblmas);
 app.use('/api/pssyspar', pssyspar);
 app.use('/api/prfuncde', prfuncde);
 app.use('/api/prfunacs', prfunacs);
+app.use('/api/psrolpar', psrolpar);
+app.use('/api/prpwdpol', prpwdpol);
 
 // MISC Routes
 app.use('/api/document', document);
