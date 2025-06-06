@@ -9,7 +9,6 @@ module.exports = function prUpdateProfileValidation(data, action) {
   data.psusreml = !isEmpty(data.psusreml) ? data.psusreml : '';
   data.psusrphn = !isEmpty(data.psusrphn) ? data.psusrphn : '';
   data.psusrsts = !isEmpty(data.psusrsts) ? data.psusrsts : '';
-  // data.psredind = !isEmpty(data.psredind) ? data.psredind : '';
 
   if (Validator.isEmpty(data.psusrnam)) {
     errors.psusrnam = "FIELDISREQUIRED";
@@ -34,10 +33,6 @@ module.exports = function prUpdateProfileValidation(data, action) {
   } else {
     if (data.psusrsts.length > 1) errors.psusrsts = 'INVALIDVALUELENGTH&1';
   }
-
-  // if (Validator.isEmpty(data.psredind)) {
-  //   errors.psredind = "FIELDISREQUIRED";
-  // }
 
   return {
     errors,

@@ -16,6 +16,9 @@ const path = require("path");
 const mntlogpf = db.mntlogpf;
 const prgentyp = db.prgentyp;
 const prgencde = db.prgencde;
+const pssyspar = db.pssyspar;
+
+const rc = require("./redis");
 
 const generalConfig = require("../constant/generalConfig.js");
 const sequelize = require("sequelize");
@@ -212,6 +215,78 @@ async function formatDateTime(value, type, dateformat) {
   });
 }
 
+async function getSysPar() {
+  return new Promise(async (resolve, reject) => {
+    let syspar = await pssyspar.findOne({ raw: true });
+    if (!syspar) return resolve(false);
+    else return resolve(syspar);
+  });
+}
+
+async function redisGet(key) {
+  return new Promise(async (resolve, reject) => {
+    if (rc.connected) {
+      await rc.get(key, (err, val) => {
+        if (err) return reject(err);
+        if (val == null) return resolve("");
+        try {
+          resolve(JSON.parse(val));
+        } catch (err) {
+          resolve(val);
+        }
+      });
+    } else return resolve("");
+  });
+}
+
+async function redisSet(key, value) {
+  return new Promise(async (resolve, reject) => {
+    if (rc.connected) {
+      await rc.set(key, value);
+      return resolve("");
+    } else return resolve("");
+  });
+}
+
+async function retrieveGenCodes(req, gentype, direction) {
+  return new Promise((resolve, reject) => {
+    prgentyp
+      .findOne({
+        where: { prgtycde: gentype },
+        raw: true,
+        attributes: ["id"],
+      })
+      .then(async (typ) => {
+        if (typ) {
+          let option = {
+            where: {
+              prgtycde: gentype,
+            },
+            raw: true,
+            attributes: ["prgecode", "prgedesc", "prgeldes"],
+          };
+          if (!_.isEmpty(direction)) option.order = [["prgedesc", direction]];
+
+          await prgencde.findAll(option).then((cde) => {
+            if (cde) {
+              for (var i = 0; i < cde.length; i++) {
+                let obj = cde[i];
+                if (
+                  req.headers &&
+                  req.headers["locale"] &&
+                  req.headers["locale"].toLowerCase() == "zh"
+                )
+                  obj.prgedesc = obj.prgeldes;
+                else obj.prgedesc = obj.prgedesc;
+              }
+              resolve(cde);
+            } else resolve("");
+          });
+        } else resolve("");
+      });
+  });
+}
+
 
 module.exports = {
     logging,
@@ -219,4 +294,8 @@ module.exports = {
     writeMntLog,
     formatDate,
     formatDateTime,
+    getSysPar,
+    redisGet,
+    redisSet,
+    retrieveGenCodes
 }

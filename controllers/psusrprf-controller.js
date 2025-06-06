@@ -445,7 +445,7 @@ exports.list = async (req, res) => {
         limit: parseInt(limit),
         offset: from,
         where: option,
-        raw: true, attributes: [['psusrunm', 'id'], 'psusrunm', 'psusrnam', 'psusreml', 'psusrsts', 'psusrtyp', 'psusrphn', 'psusrals', 'psusrrol']
+        raw: true, attributes: [['psusrunm', 'id'], 'psusrunm', 'psusrnam', 'psusreml', 'psusrsts', 'psusrtyp', 'psusrphn', 'psusrrol']
     });
 
     let newRows = [];
@@ -479,7 +479,7 @@ exports.detail = (req, res) => {
     psusrprf.findOne({
         where: {
             psusrunm: usrnm
-        }, raw: true, attributes: [['id', 'psusrunm'], 'psusrunm', 'psusrnam', 'psusreml', 'psusrsts', 'psusrtyp', 'psusrphn', 'psusrals', 'psusrrol', 'psredind']
+        }, raw: true, attributes: [['id', 'psusrunm'], 'psusrunm', 'psusrnam', 'psusreml', 'psusrsts', 'psusrtyp', 'psusrphn', 'psusrrol']
     }).then(async usrunme => {
         if (usrunme) {
             if (!_.isEmpty(usrunme.psusrtyp)) {
@@ -532,7 +532,6 @@ exports.update = async (req, res) => {
             psusrsts: obj.psusrsts,
             psusrtyp: obj.psusrtyp,
             psusrrol: obj.psusrrol,
-            psredind: obj.psredind,
         }
 
         await psusrprf.update(new_psusrprf,
@@ -541,36 +540,7 @@ exports.update = async (req, res) => {
                     id: user.id
                 }
             }).then(async update => {
-                // await psmbrcon.findOne({
-                //     where: {
-                //         psdrawid: req.body.id
-                //     }, raw: true
-                // }).then(async mbrcon => {
-                //     if (mbrcon) {
-                //         await psmbrcon.update({
-                //             psmcntpn: obj.psusrnam,
-                //             psmphone: obj.psusrphn,
-                //             psmemail: obj.psusreml,
-                //             psusrsts: obj.psusrsts,
-                //             mntuser: req.user.psusrunm
-                //         }, {
-                //             where: {
-                //                 id: mbrcon.id
-                //             }
-                //         }).then(async () => {
-                //             common.writeMntLog('psmbrcon', mbrcon, await psmbrcon.findByPk(mbrcon.id, { raw: true }), mbrcon.psmberid, 'C', req.user.psusrunm);
-                //             common.writeMntLog('psusrprf', update, await psusrprf.findOne({ where: { psusrunm: user.psusrunm }, raw: true }), user.psusrunm, 'C', user.psusrunm);
-                //             return returnSuccessMessage(req, 200, "USERUPDATED", res);
-                //         })
-                //     }
-                //     else {
-                //         common.writeMntLog('psusrprf', update, await psusrprf.findOne({ where: { psusrunm: user.psusrunm }, raw: true }), user.psusrunm, 'C', user.psusrunm);
-                //         return returnSuccessMessage(req, 200, "USERUPDATED", res);
-                //     }
-                // }).catch(err => {
-                //     console.log(err);
-                //     return returnError(req, 500, "UNEXPECTEDERROR", res);
-                // });
+            
                 common.writeMntLog('psusrprf', update, await psusrprf.findOne({ where: { psusrunm: user.psusrunm }, raw: true }), user.psusrunm, 'C', user.psusrunm);
                 return returnSuccessMessage(req, 200, "USERUPDATED", res);
             }).catch(err => {
@@ -596,7 +566,7 @@ exports.delete = async (req, res) => {
             psusrunm: id,
         }, raw: true
     }).then(user => {
-        if (user.psusrtyp != ' ADM')
+        if (user.psusrtyp != 'ADM')
             return returnError(req, 500, "USERACCOUNTCANTDELETE", res);
         if (user) {
             psusrprf.destroy({
@@ -747,3 +717,53 @@ exports.home = async (req, res) => {
     return returnSuccess(200, data, res);
 }
 
+async function validatePassword(password) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let syspar = await common.getSysPar();
+            // let syspar = null;
+            if (syspar && syspar.prpwdpol == 'Y') {
+                let pwdpols = await prpwdpol.findOne({
+                    where: {
+                        id: 1
+                    }, raw: true
+                });
+
+                errors = [];
+                if (pwdpols) {
+                    pwdpols.prpwdlen > 0 ?
+                        password.length > parseInt(pwdpols.prpwdlen) ?
+                            '' : errors.push(pwdpols.prlenmsg.replace('&prpwdlen', pwdpols.prpwdlen.toString())) : '';
+
+                    pwdpols.prpwdupc ?
+                        /[A-Z]/g.test(password) ?
+                            '' : errors.push(pwdpols.prupcmsg) : '';
+
+                    pwdpols.prpwdlwc ?
+                        /[a-z]/g.test(password) ?
+                            '' : errors.push(pwdpols.prlwcmsg) : '';
+
+                    let regex = '';
+                    pwdpols.prpwdspc ?
+                        pwdpols.prspcchr.length > 0 ?
+                            regex = new RegExp(pwdpols.prspcchr.toString(), 'g') : '' : '';
+
+                    pwdpols.prpwdspc ?
+                        pwdpols.prspcchr.length > 0 ?
+                            regex.test(password) ? '' : errors.push(pwdpols.prspcmsg) : '' : '';
+
+                    pwdpols.prpwdnum ?
+                        /\d/g.test(password) ?
+                            '' : errors.push(pwdpols.prnummsg) : '';
+
+                    if (errors.length < 1) return resolve({ error: errors, flag: true });
+                    else return resolve({ error: errors, flag: false });
+                } else return resolve({ error: errors, flag: true });
+
+            } else return resolve({ error: [], flag: true });
+        } catch (err) {
+            console.log(err);
+            return reject(err);
+        }
+    });
+}
