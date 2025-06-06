@@ -12,6 +12,9 @@ const common = require("./common/common");
 // ------------  ROUTE DEFINE ----------------- //
 // Main Routes
 const psusrprf = require("./routes/psusrprf");
+const prgencde = require('./routes/prgencde');
+const prgentyp = require('./routes/prgentyp');
+
 // MISC Routes
 const document = require('./routes/document');
 const mntlog = require('./routes/mntlog');
@@ -41,6 +44,12 @@ require('./config/passport')(passport);
 // Use Routes
 // Main Routes 
 app.use('/api/psusrprf', psusrprf);
+app.use('/api/prgencde', prgencde);
+app.use('/api/prgentyp', prgentyp);
+
+// MISC Routes
+app.use('/api/document', document);
+app.use('/api/mntlog', mntlog);
 
 //When there is no API found
 app.use(async function (req, res, next) {

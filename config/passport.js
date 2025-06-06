@@ -46,7 +46,7 @@ module.exports = passport => {
             }
 
           }
-          // console.log("USER", user)
+          console.log("USER", user)
 
           return done(null, user);
         } else return done(null, false);
