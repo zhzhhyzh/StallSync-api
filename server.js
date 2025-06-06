@@ -14,6 +14,8 @@ const common = require("./common/common");
 const psusrprf = require("./routes/psusrprf");
 const prgencde = require('./routes/prgencde');
 const prgentyp = require('./routes/prgentyp');
+const pstblmas = require("./routes/pstblmas");
+
 
 // MISC Routes
 const document = require('./routes/document');
@@ -46,6 +48,7 @@ require('./config/passport')(passport);
 app.use('/api/psusrprf', psusrprf);
 app.use('/api/prgencde', prgencde);
 app.use('/api/prgentyp', prgentyp);
+app.use('/api/pstblmas', pstblmas);
 
 // MISC Routes
 app.use('/api/document', document);

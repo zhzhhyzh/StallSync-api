@@ -168,9 +168,55 @@ async function writeMntLog(
   }
 }
 
+async function formatDate(value, separator) {
+  return new Promise((resolve, reject) => {
+    try {
+      let date = new Date(value);
+      if (date && !isNaN(date.getTime()))
+        return resolve(
+          _.padStart(
+            _.padStart(date.getDate(), 2, "0") +
+            separator +
+            _.padStart(date.getMonth() + 1, 2, "0") +
+            separator +
+            date.getFullYear(),
+            2,
+            "0"
+          )
+        );
+      else return resolve("");
+    } catch (err) {
+      return resolve(value);
+    }
+  });
+}
+
+async function formatDateTime(value, type, dateformat) {
+  return new Promise((resolve, reject) => {
+    try {
+      let date = new Date(value);
+      if (date && !isNaN(date.getTime())) {
+        let format = "DD-MM-YYYY ";
+        if (type == "12") format += "hh";
+        else format += "HH";
+        format += ":mm:ss A";
+
+        if (dateformat && dateformat !== "") {
+          format = dateformat;
+        }
+        return resolve(moment(value).format(format));
+      } else return resolve("");
+    } catch (err) {
+      return resolve(value);
+    }
+  });
+}
+
 
 module.exports = {
     logging,
     retrieveSpecificGenCodes,
-    writeMntLog
+    writeMntLog,
+    formatDate,
+    formatDateTime,
 }
