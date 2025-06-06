@@ -1,68 +1,29 @@
-const express = require("express");
-const { syncDatabase } = require("./models");
-const cors = require('cors');
-const fs = require("fs");
-const path = require("path");
-const morgan = require("morgan");
+const express = require('express');
+const bodyParser = require('body-parser');
 const passport = require('passport');
 const rateLimit = require("express-rate-limit");
-const bcrypt = require('bcrypt')
+const cors = require('cors');
+const morgan = require("morgan");
+const fs = require("fs");
+const path = require("path");
+const moment = require("moment");
+const common = require("./common/common");
+
+// ------------  ROUTE DEFINE ----------------- //
+// Main Routes
+const psusrprf = require("./routes/psusrprf");
+// MISC Routes
+const document = require('./routes/document');
+const mntlog = require('./routes/mntlog');
+
 const app = express();
-app.use(express.json());
-
-const users = []
-//Define Routes
-app.get('/users', (req, res) => {
-    res.json(users)
-})
-
-app.post('/users', async (req, res) => {
-    try {
-        const salt = await bcrypt.genSalt(10); //Higher salt number higher security, salt over 20 may get days to generate
-        const hashedPassword = await bcrypt.hash(req.body.password, salt)
-        const new_user = { name: req.body.name, password: hashedPassword }
-        users.push(new_user)
-        res.status(201).send("Success")
-    } catch (err) {
-        console.log(err)
-        res.status(500).send("Unexpected Error")
-    }
-
-
-})
-
-app.post('/users/login', async (req, res) => {
-    const user = users.find(user => user.name = req.body.name)
-    if (user == null) {
-        return res.status(400).send("Can't find the user")
-    }
-    try {
-        if (
-           await bcrypt.compare(req.body.password, user.password)
-        ) {
-            res.send("Login Successfully")
-        } else {
-            res.send("Wrong Password")
-        }
-    } catch (err) {
-        console.log(err)
-        res.status(500).send("Unexpected Error")
-    }
-})
-//Main Routes
-
-//Misc routes
-
-//Misc middleware
-
-//Middleware CORS
-const allowedURL = process.env.CORS_URL.split(',');
 app.use(cors({
     credentials: true,
-    exposedHeaders: ['Content-Disposition'],
-    origin: allowedURL
+    origin: ['http://localhost:3001', 'http://localhost:3000']
 }));
-app.disable('etag');
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Logging
 var accessLogStream = fs.createWriteStream(path.join(__dirname, '/logs/access.log'), { flags: 'a' })
@@ -71,41 +32,38 @@ morgan.token('date', function () {
 });
 
 app.use(morgan('[:date] :method :url :status :res[content-length] - :response-time ms', { stream: accessLogStream }));
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 
 // ------------- Passport Middleware -------------- //
-// app.use(passport.initialize());
+app.use(passport.initialize());
 
 // ---------- Passport Configuration --------------//
-// require('./config/passport')(passport);
+require('./config/passport')(passport);
 // Use Routes
-// Main Routes  
+// Main Routes 
+app.use('/api/psusrprf', psusrprf);
 
-//MISC Routes
-
+//When there is no API found
 app.use(async function (req, res, next) {
     res.status(404).send("APINOTFOUND");
 })
 
-app.use((err, req, res, next) => {
-    console.error('Express Error:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
-});
-
+//Logging for 500
 process.on('uncaughtException', async error => {
     common.logging("ERROR", "[" + moment().format("DD-MM-YYYY, h:mm:ss a") + "]" + error ? error.original ? JSON.stringify(error.original) : JSON.stringify(error) : "" + "\n");
     console.log(error);
+    process.exit(1)
 })
 
+//Logging for 400
 process.on('unhandledRejection', async error => {
     common.logging("ERROR", "[" + moment().format("DD-MM-YYYY, h:mm:ss a") + "]" + error ? error.original ? JSON.stringify(error.original) : JSON.stringify(error) : "" + "\n");
     console.log(error);
+    process.exit(1)
 })
 
-
-
-// Sync database on startup
-syncDatabase();
+app.disable('etag');
+const db = require("./models");
+db.sequelize.sync();
 
 // SECURITY //
 const limiter = rateLimit({
@@ -115,11 +73,10 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
-//CRON Define
+// -- Cron Definition -- //
+// Socket
+const port = process.env.PORT || 8080;
 
-//CRON Backup job app.use()
+console.log('===Server Start===')
+app.listen(port, () => console.log(`Server running on Port ${port}`));
 
-app.listen(3000, () => {
-    console.log("=================================== Server started ===================================");
-    console.log(new Date() + "Server running on port 3000");
-});
