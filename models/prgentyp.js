@@ -23,11 +23,11 @@ module.exports = (sequelize, Sequelize) => {
     },
     prgtyman: {
       type: Sequelize.STRING(1)
-      // Mandatory
+      // Mandatory (GTMAND: M-Mandatory, O-Optional)
     },
     prgtycat: {
       type: Sequelize.STRING(1)
-      // Category
+      // Category (GTCAT: B - Business, T - Technical)
     },
     crtuser: {
       type: Sequelize.STRING(255)

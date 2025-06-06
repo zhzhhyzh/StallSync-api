@@ -72,7 +72,7 @@ process.on('unhandledRejection', async error => {
 
 app.disable('etag');
 const db = require("./models");
-db.sequelize.sync();
+
 
 // SECURITY //
 const limiter = rateLimit({
@@ -84,8 +84,16 @@ app.use(limiter);
 
 // -- Cron Definition -- //
 // Socket
-const port = process.env.PORT || 8080;
+async function startServer() {
+  try {
+    await db.sequelize.authenticate();
+    await db.sequelize.sync();
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => console.log(`Server running on Port ${port}`));
+  } catch (err) {
+    console.error('DB connection failed. Retrying in 5s...', err.message);
+    setTimeout(startServer, 5000); // retry after 5 seconds
+  }
+}
 
-console.log('===Server Start===')
-app.listen(port, () => console.log(`Server running on Port ${port}`));
-
+startServer();

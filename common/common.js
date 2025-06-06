@@ -13,6 +13,10 @@ const { degrees, PDFDocument, rgb, StandardFonts } = require("pdf-lib");
 const fsP = require("fs/promises");
 const path = require("path");
 
+const mntlogpf = db.mntlogpf;
+const prgentyp = db.prgentyp;
+const prgencde = db.prgencde;
+
 const generalConfig = require("../constant/generalConfig.js");
 const sequelize = require("sequelize");
 
@@ -71,8 +75,7 @@ async function logging(type, message) {
 
 async function retrieveSpecificGenCodes(req, gentype, gencode) {
   return new Promise((resolve, reject) => {
-    prgentyp
-      .findOne({
+    prgentyp.findOne({
         where: { prgtycde: gentype },
         raw: true,
         attributes: ["id"],
@@ -113,37 +116,18 @@ async function writeMntLog(
   mntKey,
   action,
   user,
-  subCategory,
-  recordKey
+  subCategory
 ) {
   try {
     if (action == "C") {
-      Object.keys(oldData).forEach((key) => {
-        if (key !== "updatedAt") {
-          if (JSON.stringify(oldData[key]) != JSON.stringify(newData[key])) {
-            let newMntLog = {
-              prmntfile: file,
-              prmntkey: mntKey,
-              prfieldnme: key,
-              prfldolddta: oldData[key] ? "" + oldData[key] : "",
-              prfldnewdta: newData[key] ? "" + newData[key] : "",
-              praction: action,
-              prmntusr: user,
-            };
-
-            mntlogpf.create(newMntLog);
-          }
-        }
-      });
-    } else if (action == "CS") {
       Object.keys(oldData).forEach((key) => {
         if (JSON.stringify(oldData[key]) != JSON.stringify(newData[key])) {
           let newMntLog = {
             prmntfile: file,
             prmntkey: mntKey,
             prfieldnme: key,
-            prfldolddta: oldData[key] ? "" + oldData[key] : "",
-            prfldnewdta: newData[key] ? "" + newData[key] : "",
+            prfldolddta: oldData[key] || oldData[key] === 0 ? "" + oldData[key] : "",
+            prfldnewdta: newData[key] || newData[key] === 0 ? "" + newData[key] : "",
             praction: action,
             prmntusr: user,
           };
@@ -155,10 +139,8 @@ async function writeMntLog(
       let newMntLog = {
         prmntfile: file,
         prmntkey: mntKey,
-        // prfieldnme: "-",
-        // prfldnewdta: subCategory + " - " + newData,
-        prfieldnme: subCategory,
-        prfldnewdta: newData,
+        prfieldnme: "-",
+        prfldnewdta: subCategory + " - " + newData,
         praction: action.substring(0, 1),
         prmntusr: user,
       };
@@ -167,8 +149,8 @@ async function writeMntLog(
       let newMntLog = {
         prmntfile: file,
         prmntkey: mntKey,
-        prfieldnme: action == "D" ? recordKey : "-",
-        prfldnewdta: action == "A" ? recordKey : "-",
+        prfieldnme: "-",
+        prfldnewdta: "-",
         praction: action,
         prmntusr: user,
       };
@@ -185,6 +167,7 @@ async function writeMntLog(
     console.log("subCategory: ", subCategory);
   }
 }
+
 
 module.exports = {
     logging,
