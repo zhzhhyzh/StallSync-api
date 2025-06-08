@@ -17,6 +17,7 @@ const mntlogpf = db.mntlogpf;
 const prgentyp = db.prgentyp;
 const prgencde = db.prgencde;
 const pssyspar = db.pssyspar;
+const syrnsqpf = db.syrnsqpf;
 
 const rc = require("./redis");
 
@@ -287,6 +288,39 @@ async function retrieveGenCodes(req, gentype, direction) {
   });
 }
 
+async function getNextRunning(type) {
+  return new Promise((resolve, reject) => {
+    syrnsqpf
+      .findOne({
+        where: {
+          type: type,
+        },
+        raw: true,
+      })
+      .then(async (rnsq) => {
+        if (rnsq) {
+          let runsq = parseInt(rnsq.current) + 1;
+          await syrnsqpf.update(
+            {
+              current: runsq,
+            },
+            {
+              where: {
+                id: rnsq.id,
+              },
+            }
+          );
+          return resolve(runsq);
+        } else {
+          await syrnsqpf.create({
+            type: type,
+            current: 1,
+          });
+          return resolve(1);
+        }
+      });
+  });
+}
 
 module.exports = {
     logging,
@@ -297,5 +331,6 @@ module.exports = {
     getSysPar,
     redisGet,
     redisSet,
-    retrieveGenCodes
+    retrieveGenCodes,
+    getNextRunning
 }

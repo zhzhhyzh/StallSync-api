@@ -70,6 +70,7 @@ const PREVIOUSREQUESTPENDING = "Fail to Request Remove Data, Previously Submitte
 const REFERRALNOTFOUND = "Referral Not Found";
 const ROOMUNAVAILABLE = "Sorry room not available"
 const INVALIDREFUND = "Invalid Refund Request"
+const RECORDOUTOFSYNC = "Record is out of sync";
 const TABLEUNAVAILABLE = "Sorry table not available"
 
 module.exports = {
@@ -146,4 +147,5 @@ module.exports = {
     ROOMUNAVAILABLE: ROOMUNAVAILABLE,
     INVALIDREFUND: INVALIDREFUND,
     TABLEUNAVAILABLE: TABLEUNAVAILABLE
+    , RECORDOUTOFSYNC: RECORDOUTOFSYNC,
 }
