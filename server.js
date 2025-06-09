@@ -20,6 +20,7 @@ const prfuncde = require('./routes/prfuncde');
 const psrolpar = require('./routes/psrolpar');
 const prfunacs = require('./routes/prfunacs');
 const psstfpar = require('./routes/psstfpar');
+const psmrcpar = require('./routes/psmrcpar');
 
 // MISC Routes
 const document = require('./routes/document');
@@ -28,8 +29,8 @@ const prpwdpol = require('./routes/prpwdpol');
 
 const app = express();
 app.use(cors({
-    credentials: true,
-    origin: ['http://localhost:3001', 'http://localhost:3000']
+  credentials: true,
+  origin: ['http://localhost:3001', 'http://localhost:3000']
 }));
 
 app.use(bodyParser.json());
@@ -38,7 +39,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Logging
 var accessLogStream = fs.createWriteStream(path.join(__dirname, '/logs/access.log'), { flags: 'a' })
 morgan.token('date', function () {
-    return moment().format("DD-MM-YYYY, h:mm:ss a");
+  return moment().format("DD-MM-YYYY, h:mm:ss a");
 });
 
 app.use(morgan('[:date] :method :url :status :res[content-length] - :response-time ms', { stream: accessLogStream }));
@@ -60,6 +61,7 @@ app.use('/api/prfunacs', prfunacs);
 app.use('/api/psrolpar', psrolpar);
 app.use('/api/prpwdpol', prpwdpol);
 app.use('/api/psstfpar', psstfpar);
+app.use('/api/psmrcpar', psmrcpar);
 
 // MISC Routes
 app.use('/api/document', document);
@@ -67,21 +69,21 @@ app.use('/api/mntlog', mntlog);
 
 //When there is no API found
 app.use(async function (req, res, next) {
-    res.status(404).send("APINOTFOUND");
+  res.status(404).send("APINOTFOUND");
 })
 
 //Logging for 500
 process.on('uncaughtException', async error => {
-    common.logging("ERROR", "[" + moment().format("DD-MM-YYYY, h:mm:ss a") + "]" + error ? error.original ? JSON.stringify(error.original) : JSON.stringify(error) : "" + "\n");
-    console.log(error);
-    process.exit(1)
+  common.logging("ERROR", "[" + moment().format("DD-MM-YYYY, h:mm:ss a") + "]" + error ? error.original ? JSON.stringify(error.original) : JSON.stringify(error) : "" + "\n");
+  console.log(error);
+  process.exit(1)
 })
 
 //Logging for 400
 process.on('unhandledRejection', async error => {
-    common.logging("ERROR", "[" + moment().format("DD-MM-YYYY, h:mm:ss a") + "]" + error ? error.original ? JSON.stringify(error.original) : JSON.stringify(error) : "" + "\n");
-    console.log(error);
-    process.exit(1)
+  common.logging("ERROR", "[" + moment().format("DD-MM-YYYY, h:mm:ss a") + "]" + error ? error.original ? JSON.stringify(error.original) : JSON.stringify(error) : "" + "\n");
+  console.log(error);
+  process.exit(1)
 })
 
 app.disable('etag');
@@ -90,8 +92,8 @@ const db = require("./models");
 
 // SECURITY //
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
 });
 
 app.use(limiter);
