@@ -2,7 +2,7 @@ const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const db = require("../models");
 const psusrprf = db.psusrprf;
-const mcmchpic = db.mcmchpic;
+const psmrcpar = db.psmrcpar;
 const psmbrprf = db.psmbrprf;
 const opts = {};
 
@@ -37,12 +37,12 @@ module.exports = passport => {
               user.psmbruid = ''
             }
           } else if (user.psusrtyp == "MCH") {
-            let merchant = await mcmchpic.findOne({ where: { psconunm: user.psusrunm }, raw: true, attributes: ['psmchuid'] })
+            let merchant = await psmrcpar.findOne({ where: { psmrcown: user.psusrunm }, raw: true, attributes: ['psmrcuid'] })
 
             if (merchant) {
-              user.psusrmid = merchant.psmchuid
+              user.psmrcuid = merchant.psmrcuid
             } else {
-              user.psusrmid = ''
+              user.psmrcuid = ''
             }
 
           }

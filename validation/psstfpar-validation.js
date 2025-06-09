@@ -1,7 +1,7 @@
 const Validator = require("validator");
 const isEmpty = require("./is-empty");
 
-module.exports = function validatePstrcparInput(data, type) {
+module.exports = function validatePsstfparInput(data, type) {
   let errors = {};
   // data.psstfuid = !isEmpty(data.psstfuid) ? data.psstfuid : "";
   data.psstfnme = !isEmpty(data.psstfnme) ? data.psstfnme : "";

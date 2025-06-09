@@ -550,10 +550,10 @@ exports.download = async (req, res) => {
         if (file) {
             let DIR = await get_document_path(file.psdoctyp);
 
-            // if (file.psdoctyp == "1") DIR = constant.documentTempPath;
-            // else if (file.psdoctyp == "2") DIR = constant.storeFrontImagePath;
-            // else if (file.psdoctyp == "3") DIR = constant.storeProfilePictureImagePath;
-            // else if (file.psdoctyp == "4") DIR = constant.ssmImagePath;
+            if (file.psdoctyp == "1") DIR = constant.documentTempPath;
+            else if (file.psdoctyp == "2") DIR = constant.staffImagePath;
+            else if (file.psdoctyp == "3") DIR = constant.merchantImagePath;
+            else if (file.psdoctyp == "4") DIR = constant.ssmImagePath;
             // else if (file.psdoctyp == "5") DIR = constant.csvPath;
 
             if (!fs.existsSync(DIR + filename)) return returnError(req, 500, "DOCUMENTNOTFOUND", res);

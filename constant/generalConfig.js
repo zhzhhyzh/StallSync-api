@@ -1,7 +1,7 @@
 const documentTempPath = "./documents/document_temp/";
-// const voucherImagePath = "./documents/voucher_image/";
-// const cardLayoutPath = "./documents/card_layout/";
-// const catalogueItemPath = "./documents/catalogue_item/";
+const staffImagePath = "./documents/staff_image/";
+const merchantImagePath = "./documents/merchant_image/";
+const ssmImagePath = "./documents/ssm_image/";
 // const tierPrivilegeIconPath = "./documents/tier_privilege_icon/";
 // const reportPath = "./documents/reports/";
 // const backupPath = "./backups/";
@@ -11,6 +11,9 @@ const documentTempPath = "./documents/document_temp/";
 
 module.exports = {
     documentTempPath: documentTempPath,
+    staffImagePath: staffImagePath,
+    merchantImagePath: merchantImagePath,
+    ssmImagePath: ssmImagePath
     // cardLayoutPath: cardLayoutPath,
     // reportPath: reportPath,
     // backupPath: backupPath,

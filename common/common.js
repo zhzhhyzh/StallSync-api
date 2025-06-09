@@ -18,6 +18,7 @@ const prgentyp = db.prgentyp;
 const prgencde = db.prgencde;
 const pssyspar = db.pssyspar;
 const syrnsqpf = db.syrnsqpf;
+const psdocmas = db.psdocmas;
 
 const rc = require("./redis");
 
@@ -322,6 +323,70 @@ async function getNextRunning(type) {
   });
 }
 
+async function formatDecimal(value) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      value = value.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      return resolve(value);
+    } catch (err) {
+      return reject(err);
+    }
+  });
+}
+
+async function writeImage(from, to, filename /*, org_filename*/, user, type, trans) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Get File Object
+      let docmas = await psdocmas.findOne({
+        where: {
+          psdocfnm: filename
+        }, raw: true, transaction: trans
+      });
+      if (!docmas) return reject("DOCUMENTNOTFOUND");
+
+      // Find File
+      let exists = fs.existsSync(from + "/" + filename);
+      if (exists) {
+        // Move File
+        // await file_common.uploadS3Object(docmasm, to);
+        fs.renameSync(from + "/" + filename, to + "/" + filename);
+
+
+        // error, "then" is undefined
+        // .then(
+        // async () => {
+        // Write Data
+        await psdocmas
+          .update(
+            {
+              // psdocfnm: filename,
+              // psdoconm: org_filename,
+              psdoctyp: type,
+              crtuser: user,
+              mntuser: user,
+            },
+            { where: { psdocfnm: filename }, transaction: trans }
+          )
+          .then(() => {
+            return resolve(true);
+          })
+          .catch((err) => {
+            console.log("Error Writing Image", err);
+            return reject(err);
+          });
+        // }
+        // );
+      } else return reject("FILENOTFOUND");
+    } catch (err) {
+      console.log("Error Writing Image", err);
+      return reject(err);
+    }
+  });
+}
 module.exports = {
     logging,
     retrieveSpecificGenCodes,
@@ -332,5 +397,7 @@ module.exports = {
     redisGet,
     redisSet,
     retrieveGenCodes,
-    getNextRunning
+    getNextRunning,
+    formatDecimal,
+    writeImage,
 }

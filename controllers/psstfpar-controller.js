@@ -1,6 +1,8 @@
 // Import
 const db = require("../models");
 const _ = require("lodash");
+const fs = require("fs");
+
 
 // Table File
 const psstfpar = db.psstfpar;
@@ -19,6 +21,8 @@ const connection = require("../common/db");
 // Input Validation
 const validatePsstfparInput = require("../validation/psstfpar-validation");
 const { raw } = require("express");
+const genConfig = require("../constant/generalConfig");
+
 
 exports.list = async (req, res) => {
   let limit = 10;
@@ -243,7 +247,11 @@ exports.create = async (req, res) => {
   // let reference = initial;
   // reference += _.padStart(code, 6, '0');
 
-
+  // Image Validation
+  if (!_.isEmpty(req.body.psstfprp)) {
+    let img_exist = fs.existsSync(genConfig.documentTempPath + req.body.psstfprp);
+    if (!img_exist) return returnError(req, 400, { psstfprp: "INVALIDDATAVALUE" }, res);
+  }
   //Check Username
   let flag = await psusrprf.findOne({
     where: {
@@ -396,7 +404,7 @@ exports.create = async (req, res) => {
               psstfprp: req.body.psstfprp,
               psstfnat: req.body.psstfnat ? req.body.psstfnat : "MY",
               psstfsdt: new Date(),
-              pssftjdt: req.body.pssftjdt ? req.body.psstfjdt : new Date(),
+              psstfjdt: req.body.psstfjdt ? req.body.psstfjdt : new Date(),
               psstfsts: req.body.psstfsts ? req.body.psstfsts : "Y",
               psstfad1: req.body.psstfad1,
               psstfad2: req.body.psstfad2,
@@ -422,6 +430,24 @@ exports.create = async (req, res) => {
             })
             .then(async (data) => {
               let created = data.get({ plain: true });
+
+              if (!_.isEmpty(req.body.psstfprp)) {
+                await common
+                  .writeImage(
+                    genConfig.documentTempPath,
+                    genConfig.staffImagePath,
+                    created.psstfprp,
+                    // uuidv4(),
+                    req.user.psusrunm,
+                    2
+                  )
+                  .catch(async (err) => {
+                    console.log(err);
+                    await t.rollback();
+                    return returnError(req, 500, "UNEXPECTEDERROR", res);
+                  });
+
+              }
               t.commit();
               common.writeMntLog(
                 "psstfpar",
@@ -450,7 +476,7 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
   const id = req.body.id ? req.body.id : "";
   if (id == "") return returnError(req, 500, "RECORDIDISREQUIRED", res);
-
+  let imageChangeFlag = false;
   //Validation
   const { errors, isValid } = validatePsstfparInput(req.body, "C");
   if (!isValid) return returnError(req, 400, errors, res);
@@ -484,7 +510,11 @@ exports.update = async (req, res) => {
     })
     .then(async (data) => {
       if (data) {
-
+        if (!_.isEmpty(req.body.psstfprp) && req.body.psstfprp != data.psstfprp) {
+          let img_exist = fs.existsSync(genConfig.documentTempPath + req.body.psstfprp);
+          if (!img_exist) return returnError(req, 400, { psstfprp: "INVALIDDATAVALUE" }, res);
+          imageChangeFlag = !imageChangeFlag;
+        }
 
         let ddlErrors = {};
         let err_ind = false;
@@ -563,6 +593,7 @@ exports.update = async (req, res) => {
 
 
         if (isNaN(new Date(req.body.updatedAt)) || (new Date(data.updatedAt).getTime() !== new Date(req.body.updatedAt).getTime())) return returnError(req, 500, "RECORDOUTOFSYNC", res)
+        const t = await connection.sequelize.transaction();
 
 
         psstfpar
@@ -577,7 +608,7 @@ exports.update = async (req, res) => {
               psstfprp: req.body.psstfprp,
               psstfnat: req.body.psstfnat,
               // psstfsdt: new Date(),
-              pssftjdt: req.body.pssftjdt,
+              psstfjdt: req.body.psstfjdt,
               psstfsts: req.body.psstfsts,
               psstfad1: req.body.psstfad1,
               psstfad2: req.body.psstfad2,
@@ -607,6 +638,27 @@ exports.update = async (req, res) => {
             }
           )
           .then(async () => {
+            if (imageChangeFlag) {
+              if (fs.existsSync(genConfig.staffImagePath + data.psstfprp)) {
+                fs.unlinkSync(genConfig.staffImagePath + data.psstfprp);
+              }
+
+              await common
+                .writeImage(
+                  genConfig.documentTempPath,
+                  genConfig.staffImagePath,
+                  req.body.psstfprp,
+                  // uuidv4(),
+                  req.user.psusrunm,
+                  2
+                )
+                .catch(async (err) => {
+                  console.log(err);
+                  await t.rollback();
+                  return returnError(req, 500, "UNEXPECTEDERROR", res);
+                });
+            }
+            t.commit();
             common.writeMntLog(
               "psstfpar",
               data,
@@ -616,11 +668,15 @@ exports.update = async (req, res) => {
               req.user.psusrunm
             );
             return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
+          }).catch(async (err) => {
+            console.log("This is the unexpected error when updating", err);
+            await t.rollback();
+            return returnError(req, 500, "UNEXPECTEDERROR", res);
           });
       } else return returnError(req, 500, "NORECORDFOUND", res);
     })
-    .catch((err) => {
-      console.log("This is the unx error", err)
+    .catch(async (err) => {
+      console.log("This is the unexpected error before update perform", err);
       return returnError(req, 500, "UNEXPECTEDERROR", res);
     });
 };
@@ -628,6 +684,8 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   const id = req.body.id ? req.body.id : "";
   if (id == "") return returnError(req, 500, "RECORDIDISREQUIRED", res);
+  let imamgeExist = false;
+  const t = await connection.sequelize.transaction();
 
   await psstfpar
     .findOne({
@@ -637,12 +695,28 @@ exports.delete = async (req, res) => {
       raw: true
     })
     .then((trnscd) => {
+      if (trnscd.psstfprp) {
+        imamgeExist = !imamgeExist;
+      }
       if (trnscd) {
         psstfpar
           .destroy({
-            where: { psstfuid:id },
+            where: { psstfuid: id },
           })
-          .then(() => {
+          .then(async () => {
+            if (imamgeExist) {
+              try {
+                // Remove Image
+                if (fs.existsSync(genConfig.staffImagePath + trnscd.psstfprp)) {
+                  fs.unlinkSync(genConfig.staffImagePath + trnscd.psstfprp);
+                }
+              } catch (err) {
+                console.log("Remove Image Error :", err);
+                await t.rollback();
+                return returnError(req, 500, "UNEXPECTEDERROR", res);
+              }
+            }
+            t.commit();
             common.writeMntLog(
               "psstfpar",
               null,
@@ -663,6 +737,7 @@ exports.delete = async (req, res) => {
     })
     .catch((err) => {
       console.log(err);
+      t.rollback();
       return returnError(req, 500, "UNEXPECTEDERROR", res);
     });
 };
