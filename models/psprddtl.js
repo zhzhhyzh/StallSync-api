@@ -1,4 +1,4 @@
-// Role Parameter
+// Product Detail
 
 module.exports = (sequelize, Sequelize) => {
   const psprddtl = sequelize.define("psprddtl", {
@@ -29,11 +29,7 @@ module.exports = (sequelize, Sequelize) => {
     }
   }, {
     freezeTableName: true,
-    uniqueKeys: {
-      unique_key: {
-        fields: ['psprduid', 'psprdapn']
-      }
-    },
+
     indexes: [
       {
         unique: true,

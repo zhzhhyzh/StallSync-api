@@ -1,3 +1,5 @@
+//Product Parameter
+
 module.exports = (sequelize, Sequelize) => {
   const psprdpar = sequelize.define("psprdpar", {
     psprduid: {

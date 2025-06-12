@@ -1,4 +1,4 @@
-// Merchant Catalogue
+// Merchant Parameter
 
 module.exports = (sequelize, Sequelize) => {
   const psmrcpar = sequelize.define("psmrcpar", {

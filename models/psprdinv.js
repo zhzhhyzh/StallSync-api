@@ -1,3 +1,5 @@
+//Product Inventory
+
 module.exports = (sequelize, Sequelize) => {
   const psprdinv = sequelize.define("psprdinv", {
     psprduid: {
@@ -18,7 +20,7 @@ module.exports = (sequelize, Sequelize) => {
     psinvsdt: {
       type: Sequelize.DATE,
       allowNull: false,
-      defaultValue: Sequelize.NOW,
+      defaultValue: new Date(),
       comment: "Stock Date"
     },
     crtuser: {

@@ -1,4 +1,4 @@
-// Merchant Catalogue
+// Merchant Label
 
 module.exports = (sequelize, Sequelize) => {
   const psmrclbl = sequelize.define("psmrclbl", {
