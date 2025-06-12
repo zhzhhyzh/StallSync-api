@@ -21,6 +21,7 @@ const psrolpar = require('./routes/psrolpar');
 const prfunacs = require('./routes/prfunacs');
 const psstfpar = require('./routes/psstfpar');
 const psmrcpar = require('./routes/psmrcpar');
+const psprdpar = require('./routes/psprdpar');
 
 // MISC Routes
 const document = require('./routes/document');
@@ -62,6 +63,7 @@ app.use('/api/psrolpar', psrolpar);
 app.use('/api/prpwdpol', prpwdpol);
 app.use('/api/psstfpar', psstfpar);
 app.use('/api/psmrcpar', psmrcpar);
+app.use('/api/psprdpar', psprdpar);
 
 // MISC Routes
 app.use('/api/document', document);

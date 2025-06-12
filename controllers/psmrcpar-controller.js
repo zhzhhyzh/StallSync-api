@@ -23,7 +23,6 @@ const genConfig = require("../constant/generalConfig");
 
 // Input Validation
 const validatePsmrcparInput = require("../validation/psmrcpar-validation");
-const validatepsmrclblInput = require("../validation/psmrclbl-validation");
 const { raw } = require("express");
 const { where } = require("sequelize");
 
@@ -127,18 +126,24 @@ exports.findOne = async (req, res) => {
       attributes: ['psmrcuid', 'psmrctyp']
     });
 
-    for (let i = 0; i < merchantTypes.length; i++) {
-      if (!_.isEmpty(merchantTypes[i].psmrctyp)) {
-        const description = await common.retrieveSpecificGenCodes(
-          req,
-          "MRCTYP",
-          merchantTypes[i].psmrctyp
-        );
-        merchantTypes[i].psmrctypdsc = description?.prgedesc || "";
+    const psmrclblArray = [];
+    const psmrclbldscArray = [];
+
+    for (const item of merchantTypes) {
+      const type = item.psmrctyp;
+      psmrclblArray.push(type);
+
+      if (!_.isEmpty(type)) {
+        const description = await common.retrieveSpecificGenCodes(req, "MRCTYP", type);
+        psmrclbldscArray.push(description?.prgedesc || "");
+      } else {
+        psmrclbldscArray.push("");
       }
     }
 
-    obj.merchantType = merchantTypes;
+    obj.psmrclbl = psmrclblArray;
+    obj.psmrclbldsc = psmrclbldscArray;
+
 
     if (!_.isEmpty(obj.psmrcbnk)) {
       const description = await common.retrieveSpecificGenCodes(req, "BANK", obj.psmrcbnk);
