@@ -387,6 +387,303 @@ async function writeImage(from, to, filename /*, org_filename*/, user, type, tra
     }
   });
 }
+
+async function getAPI(url, body, header, caller, callerType, no_log) {
+  return new Promise(async (resolve, reject) => {
+    // Write Outgoing Log
+    let ref = "";
+    logging("ROUTING", "Request [" + new Date().toLocaleString() + "] GET :" + url);
+    if (!no_log) {
+      ref = await writeLog(
+        "hostname",
+        url,
+        caller,
+        callerType,
+        "C",
+        body, header
+      ).catch(async (err) => {
+        //Write Log Error
+        logging("ERR", err);
+        return false;
+      });
+    }
+
+    // Trigger Post Request
+    await axios
+      .get(url, {
+        headers: header,
+        params: body,
+      })
+      .then(async (response) => {
+        response = response.data;
+        // Write Response Log
+        if (ref && !no_log)
+          await updateLog(
+            response.Status,
+            ref,
+            response.Result
+              ? JSON.stringify(response.Result)
+              : response.data
+                ? JSON.stringify(response.data)
+                : JSON.stringify(response),
+            response.Errors && response.Errors.length > 0 ? "APIERROR" : "",
+            response.Errors ? response.Errors : "",
+            "C"
+          );
+        logging("ROUTING", "Response [" + new Date().toLocaleString() + "] GET :" + url);
+        return resolve(response);
+      })
+      .catch((err) => {
+        return reject(err);
+      });
+  });
+}
+
+async function postAPI(url, body, header, caller, callerType, method) {
+  return new Promise(async (resolve, reject) => {
+    let api_mode = "POST";
+    if (method && method == 'U') api_mode = 'PUT';
+    else if (method && method == 'D') api_mode = 'DELETE';
+    else if (method && method == 'A') api_mode = 'PATCH';
+
+    // Write Outgoing Log
+    let ref = await writeLog(
+      "hostname",
+      url,
+      caller,
+      callerType,
+      "C",
+      body, header, api_mode
+    ).catch(async (err) => {
+      //Write Log Error
+      logging("ERR", err);
+      return false;
+    });
+    if (method && method != "") {
+      if (method == "U") {
+        logging("ROUTING", "Request [" + new Date().toLocaleString() + "] Put :" + url);
+        // Put Request
+        await axios
+          .put(url, body, {
+            headers: header
+              ? header
+              : {
+                "Content-Type": "application/json",
+                instanceId: instanceId,
+                instanceKey: instanceKey,
+              },
+          })
+          .then(async (response) => {
+            let status = response.Status ? response.Status : response.status ? response.status : "";
+            response = response.data;
+            // Write Response Log
+            if (ref)
+              await writeResponseLog(ref, url, response.Result
+                ? JSON.stringify(response.Result)
+                : response.data
+                  ? JSON.stringify(response.data)
+                  : "",
+                status,
+                response.Errors && response.Errors.length > 0 ? "APIERROR" : "",
+                response.Errors ? response.Errors : "",
+                "C", caller, callerType, header, "PUT"
+              );
+            logging("ROUTING", "Response [" + new Date().toLocaleString() + "] Put :" + url);
+            return resolve(response);
+          })
+          .catch(async (err) => {
+            if (ref)
+              await writeResponseLog(ref, url, response.Result
+                ? JSON.stringify(response.Result)
+                : response.data
+                  ? JSON.stringify(response.data)
+                  : "",
+                response.Status,
+                response.Errors && response.Errors.length > 0 ? "APIERROR" : "",
+                response.Errors ? response.Errors : "",
+                "C", caller, callerType, header, "PUT"
+              );
+            logging("ROUTING", "Error [" + new Date().toLocaleString() + "] Put :" + url);
+            return reject(err);
+          });
+      } else if (method == "A") {
+        logging("ROUTING", "Request [" + new Date().toLocaleString() + "] Patch :" + url);
+        // Patch Request
+        await axios
+          .patch(url, body, {
+            headers: header
+              ? header
+              : {
+                "Content-Type": "application/json",
+                instanceId: instanceId,
+                instanceKey: instanceKey,
+              },
+          })
+          .then(async (response) => {
+            let status = response.Status ? response.Status : response.status ? response.status : "";
+
+            response = response.data;
+            // Write Response Log
+            if (ref)
+              await writeResponseLog(ref, url, response.Result
+                ? JSON.stringify(response.Result)
+                : response.data
+                  ? JSON.stringify(response.data)
+                  : "",
+                status,
+                response.Errors && response.Errors.length > 0 ? "APIERROR" : "",
+                response.Errors ? response.Errors : "",
+                "C", caller, callerType, header, "PATCH"
+              );
+            logging("ROUTING", "Response [" + new Date().toLocaleString() + "] Patch :" + url);
+            return resolve(response);
+          })
+          .catch(async (err) => {
+            if (ref)
+              await updateLog(
+                err.response.Status,
+                ref,
+                err.response.Result
+                  ? JSON.stringify(err.response.Result)
+                  : err.response.data
+                    ? JSON.stringify(err.response.data)
+                    : "",
+                err.response.Errors && err.response.Errors.length > 0
+                  ? "APIERROR"
+                  : "",
+                err.response.Errors ? err.response.Errors : "",
+                "C"
+              );
+            logging("ROUTING", "Error [" + new Date().toLocaleString() + "] Patch :" + url);
+            return reject(err);
+          });
+      } else if (method == "D") {
+        logging("ROUTING", "Request [" + new Date().toLocaleString() + "] Delete :" + url);
+        // Delete Request
+        await axios
+          .delete(url, {
+            headers: header
+              ? header
+              : {
+                "Content-Type": "application/json",
+                instanceId: instanceId,
+                instanceKey: instanceKey,
+              },
+          })
+          .then(async (response) => {
+            let status = response.Status ? response.Status : response.status ? response.status : "";
+
+            response = response.data;
+            // Write Response Log
+            if (ref)
+              await writeResponseLog(ref, url, response.Result
+                ? JSON.stringify(response.Result)
+                : response.data
+                  ? JSON.stringify(response.data)
+                  : "",
+                status,
+                response.Errors && response.Errors.length > 0 ? "APIERROR" : "",
+                response.Errors ? response.Errors : "",
+                "C", caller, callerType, header, "DELETE"
+              );
+
+            logging("ROUTING", "Response [" + new Date().toLocaleString() + "] Delete :" + url);
+            return resolve(true);
+          })
+          .catch(async (err) => {
+            logging("ROUTING", "Error [" + new Date().toLocaleString() + "] Delete :" + url);
+            return reject(err);
+          });
+      } else return reject("INVALIDMETHOD");
+    } else {
+      logging("ROUTING", "Request [" + new Date().toLocaleString() + "] Post :" + url);
+      // Trigger Post Request
+      await axios
+        .post(url, body, {
+          headers: header
+            ? header
+            : {
+              "Content-Type": "application/json",
+              instanceId: instanceId,
+              instanceKey: instanceKey,
+            },
+        })
+        .then(async (response) => {
+          let status = response.Status ? response.Status : response.status ? response.status : "";
+
+          response = response.data;
+          // Write Response Log
+          if (ref)
+            await writeResponseLog(ref, url, response.Result
+              ? JSON.stringify(response.Result)
+              : response.data
+                ? JSON.stringify(response.data)
+                : "",
+              status,
+              response.Errors && response.Errors.length > 0 ? "APIERROR" : "",
+              response.Errors ? response.Errors : "",
+              "C", caller, callerType, header, "POST"
+            );
+
+          logging("ROUTING", "Response [" + new Date().toLocaleString() + "] Post :" + url);
+          return resolve(response);
+        })
+        .catch(async (err) => {
+          if (ref)
+            await updateLog(
+              err.response.Status ? err.response.Status : "500",
+              ref,
+              err.response.Result
+                ? JSON.stringify(err.response.Result)
+                : err.response.data
+                  ? JSON.stringify(err.response.data)
+                  : "",
+              err.response.Errors && err.response.Errors.length > 0
+                ? "APIERROR"
+                : "",
+              err.response.Errors ? err.response.Errors : "",
+              "C"
+            );
+          logging("ROUTING", "Error [" + new Date().toLocaleString() + "] POST :" + url);
+          return reject(err);
+        });
+    }
+  });
+}
+
+async function writeLog(hostname, url, caller, party, type, body, header, mode) {
+  return new Promise(async (resolve, reject) => {
+    let ref = uuidv4();
+    try {
+      routelog
+        .create({
+          logrefnm: ref,
+          // logapidm: hostname,
+          logapinm: url,
+          logerrcd: "",
+          logerrds: "",
+          logheadr: JSON.stringify(header),
+          logincom: type == "T" ? JSON.stringify(body) : "",
+          logoutgg: type == "T" ? "" : JSON.stringify(body),
+          logcallr: caller && !_.isEmpty(caller) ? caller : "",
+          logparty: party,
+          logctype: type,
+          logamode: mode ? mode : "GET",
+          logatype: "OUTGOING"
+        })
+        .then(() => {
+          return resolve(ref);
+        })
+        .catch(async (err) => {
+          console.log("Write Log Error", err);
+          logging("ERR", err);
+          return reject(err);
+        });
+    } catch (err) {
+      return reject(err);
+    }
+  });
+}
 module.exports = {
     logging,
     retrieveSpecificGenCodes,
@@ -400,4 +697,7 @@ module.exports = {
     getNextRunning,
     formatDecimal,
     writeImage,
+    getAPI,
+    postAPI,
+    writeLog,
 }
