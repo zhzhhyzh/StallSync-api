@@ -176,7 +176,11 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING(255),
       allowNull: true,
       comment: 'Create User'
-    }
+    },
+    mntuser: {
+        type: Sequelize.STRING(255)
+        // Maintenance User
+      }
   }, {
     freezeTableName: true,
     tableName: 'psstfpar',

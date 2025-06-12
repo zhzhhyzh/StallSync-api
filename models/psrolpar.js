@@ -34,7 +34,7 @@ module.exports = (sequelize, Sequelize) => {
         // Creation User
       },
       mntuser: {
-        type: Sequelize.STRING(25)
+        type: Sequelize.STRING(255)
         // Maintenance User
       }
     }, { freezeTableName: true },
