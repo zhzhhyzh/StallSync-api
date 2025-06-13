@@ -14,7 +14,8 @@ module.exports = (sequelize, Sequelize) => {
             // Name
         },
         psusreml: {
-            type: Sequelize.STRING(100)
+            type: Sequelize.STRING(100),
+            allowNull: false
             // Email Address
         },
         psusrpwd: {
@@ -24,7 +25,7 @@ module.exports = (sequelize, Sequelize) => {
         },
         psusrsts: {
             type: Sequelize.STRING(1),
-            defaultvalue: true
+            defaultvalue: 'A'
             // Account Status - General Code (USRSTS, A - Active, L - Locked , C - Closed, E-Expired)
         },
         psusrtyp: {
@@ -33,8 +34,14 @@ module.exports = (sequelize, Sequelize) => {
             // User Type - General Code (USRTYP, ADM - Admin, MBR - Member, MCH - Merchant)
         },
         psusrphn: {
-            type: Sequelize.STRING(20)
+            type: Sequelize.STRING(20),
+            allowNull: false
             // HP Number
+        },
+        psusrpre: {
+            type: Sequelize.STRING(10),
+            allowNull: false
+            // HP Prefix (HPPRE)
         },
         psstsdt8: {
             type: Sequelize.DATE
@@ -50,20 +57,20 @@ module.exports = (sequelize, Sequelize) => {
             defaultValue: true
             // Change Password Flag
         },
-        
+
         psfstlgn: {
             type: Sequelize.BOOLEAN,
             defaultValue: true
             // First Login Flag
         },
-   
+
         psusrrol: {
             type: Sequelize.STRING(3),
             defaultValue: "MBR"
             //User Role - General Code(USRROLE)
             //ADM - Admin, BO - Back Office, MBR - Member
         },
-        
+
         psmsgurd: {
             type: Sequelize.STRING(1),
             defaultValue: "N"

@@ -12,7 +12,7 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false
       // Name
     },
-    psmbrphp: {
+    psmbrpre: {
       type: Sequelize.STRING(5),
       allowNull: false
       // Phone Number Prefix. E.g. +60 (PHNPRE)

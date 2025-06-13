@@ -25,6 +25,7 @@ module.exports = passport => {
             pschgpwd: result.pschgpwd,
             psusrsts: result.psusrsts,
             psusrphn: result.psusrphn,
+            psusrpre: result.psusrpre,
             psusrrol: result.psusrrol
           }
 
@@ -33,8 +34,10 @@ module.exports = passport => {
 
             if (mbr) {
               user.psmbruid = mbr.psmbruid
+              user.psmbrpts = mbr.psmbrpts
             } else {
               user.psmbruid = ''
+              user.psmbrpts = ''
             }
           } else if (user.psusrtyp == "MCH") {
             let merchant = await psmrcpar.findOne({ where: { psmrcown: user.psusrunm }, raw: true, attributes: ['psmrcuid'] })
@@ -46,7 +49,7 @@ module.exports = passport => {
             }
 
           }
-         
+
           return done(null, user);
         } else return done(null, false);
       }).catch(err => console.log(err));

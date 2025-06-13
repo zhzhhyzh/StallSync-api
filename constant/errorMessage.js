@@ -54,18 +54,20 @@ const ACTIONFREQEXCEEDTODAY = "Maximum Number of Attmpts to Request OTP have bee
 const ACTIONFREQEXCEED = "Minimum Interval Period between Each OTP Request is not met, Please Try Again Later";
 const INVALIDUSERNAMEEXIST = "Invalid Username, Username in use";
 const INSUFFICIENTPOINTBAL = "Insufficient Point Balance to Claim the Deal";
+const CANNOTUSEPOINT = "Unable to use point";
+const NOTAMEMBER = "Not a member";
 const DATERANGEISREQUIRED = "Date Range is Required";
 const INVALIDMONTH = "Invalid Month";
 const INVALIDYEAR = "Invalid Year";
 const INVALIDORDERSTATUS = "Invalid Order Status to Perform The Action";
 const MEMBERNOTFOUND = "Member Not Found";
 const INVALIDMEMBERSTATUS = "Invalid Member Status to Perform The Action";
-const INVALIDVOUCHER = "Invalid Voucher";
-const VOUCHERPREVCLAIMED = "Voucher can't be repeatedly claim";
+const INVALIDVOUCHER = "Invalid Reward";
+const VOUCHERPREVCLAIMED = "Reward can't be repeatedly claim";
 const INCORRECTUSERPASS = "Invalid Username or Password";
-const CONDITIONNOTMET = "Unable to Redeem Voucher, Condition not met";
-const INVALIDVOUCHERSTATUS = "Invalid Voucher Status to Perform the Action";
-const VOUCHERLIMITREACHED = "Voucher Claim Limit Hit, Please Try Again Later";
+const CONDITIONNOTMET = "Unable to Redeem Reward, Condition not met";
+const INVALIDVOUCHERSTATUS = "Invalid Reward Status to Perform the Action";
+const VOUCHERLIMITREACHED = "Reward Claim Limit Hit, Please Try Again Later";
 const PREVIOUSREQUESTPENDING = "Fail to Request Remove Data, Previously Submitted Request is Pending";
 const REFERRALNOTFOUND = "Referral Not Found";
 const ROOMUNAVAILABLE = "Sorry room not available"
@@ -148,4 +150,6 @@ module.exports = {
     INVALIDREFUND: INVALIDREFUND,
     TABLEUNAVAILABLE: TABLEUNAVAILABLE
     , RECORDOUTOFSYNC: RECORDOUTOFSYNC,
+    CANNOTUSEPOINT: CANNOTUSEPOINT,
+    NOTAMEMBER: NOTAMEMBER
 }
