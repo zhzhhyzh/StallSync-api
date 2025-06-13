@@ -130,7 +130,7 @@ module.exports = (sequelize, Sequelize) => {
   }, {
     freezeTableName: true,
     tableName: 'psprdpar',
-    timestamps: false
+    timestamps: true
   });
 
   return psprdpar;

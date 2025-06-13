@@ -7,7 +7,7 @@ const { v4: uuidv4 } = require("uuid");
 const psordpar = db.psordpar;
 const psrwdpar = db.psrwdpar;
 const psmbrprf = db.psmbrprf;
-const psorddtl = db.psorddtl;
+const psorditm = db.psorditm;
 const psmbrcrt = db.psmbrcrt;
 // Common Function
 const Op = db.Sequelize.Op;
@@ -187,13 +187,13 @@ exports.findOne = async (req, res) => {
     .findOne({ where: { psorduid: id }, raw: true })
     .then(async (obj) => {
       if (obj) {
-        const { count, rows } = await psorddtl.findAndCountAll({
+        const { count, rows } = await psorditm.findAndCountAll({
           where: {
             psorduid: id
           }
         });
 
-        obj.psorddtl = rows;
+        obj.psorditm = rows;
         if (!_.isEmpty(obj.psordpre)) {
           let description = await common.retrieveSpecificGenCodes(
             req,
@@ -467,7 +467,7 @@ exports.create = async (req, res) => {
             let created = data.get({ plain: true });
             for (let i = 0; i < count; i++) {
 
-              await psorddtl.create({
+              await psorditm.create({
                 psorduid: ref,
                 psprduid: orderItem[i].psprduid,
                 psitmcno: orderItem[i].psitmcno,

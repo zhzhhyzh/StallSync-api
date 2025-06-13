@@ -5,14 +5,12 @@ module.exports = (sequelize, Sequelize) => {
     psorduid: {
       type: Sequelize.STRING(25),
       allowNull: false,
-
       // Order Id
     },
     psprduid: {
       type: Sequelize.STRING(25),
       allowNull: false,
-
-      // Order Id
+      // Product Id
     },
     psitmqty: {
       type: Sequelize.INTEGER,
@@ -36,14 +34,14 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       // Unit Price
     },
-
-    crtuser: {
-      type: Sequelize.STRING(25)
-      // Creation User
-    },
-    mntuser: {
-      type: Sequelize.STRING(255)
-      // Maintenance User
+    psitmsbt: {
+      type: Sequelize.DECIMAL(15, 2),
+      allowNull: false,
+      // Subtotal
+    }, psitmcno: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      // Increment Number
     }
   }, { freezeTableName: true },
     {
@@ -51,7 +49,7 @@ module.exports = (sequelize, Sequelize) => {
       indexes: [
         {
           unique: true,
-          fields: ['psorduid', 'psprduid']
+          fields: ['psorduid', 'psprduid', 'psitmcno']
         }
       ]
     });

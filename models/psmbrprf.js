@@ -8,24 +8,9 @@ module.exports = (sequelize, Sequelize) => {
       // Member ID
     },
     psmbrnam: {
-      type: Sequelize.STRING(50),
+      type: Sequelize.STRING(255),
       allowNull: false
       // Name
-    },
-    psmbrpre: {
-      type: Sequelize.STRING(5),
-      allowNull: false
-      // Phone Number Prefix. E.g. +60 (PHNPRE)
-    },
-    psmbrphn: {
-      type: Sequelize.STRING(30),
-      allowNull: false
-      // Phone Number (RAW)
-    },
-    psmbrpnm: {
-      type: Sequelize.STRING(20),
-      allowNull: false
-      // Phone Number (Number Part)
     },
     psmbreml: {
       type: Sequelize.STRING(255),
@@ -33,14 +18,9 @@ module.exports = (sequelize, Sequelize) => {
       // Email Address
     },
     psmbrdob: {
-      type: Sequelize.STRING(15),
+      type: Sequelize.DATE,
       allowNull: false,
       // Date of Birth
-    },
-    psmbrtyp: {
-      type: Sequelize.STRING(10),
-      allowNull: false,
-      // Member Type
     },
     psmbrpts: {
       type: Sequelize.DECIMAL(15, 2),
@@ -52,21 +32,41 @@ module.exports = (sequelize, Sequelize) => {
       defaultValue: 0
       // Member Accumulated Spending
     },
-    psmbrsts: {
-      type: Sequelize.STRING(1),
-      defaultValue: "A"
-      // Account Status - General Code (USRSTS: A - Active, L - Locked , C - Closed, E - Expired)
-    },
-
-    psmbrprl: {
+    psmbrtyp: {
       type: Sequelize.STRING(10),
-      defaultValue: "ZH"
-      // Member Preferred Language
+      allowNull: false,
+      // Member Type
+    },
+    psmbrexp: {
+      type: Sequelize.DATE,
+      allowNull: false,
+      // Expired Date
+    },
+    psmbrjdt: {
+      type: Sequelize.DATE,
+      allowNull: false,
+      defaultValue: new Date(),
+      // join Date
     },
     psmbrcar: {
       type: Sequelize.STRING(50),
-      allowNull:false,
+      allowNull: false,
       //Member Cart no
+    },
+    psusrnme: {
+      type: Sequelize.STRING(255),
+      allowNull: false,
+      //Username
+    },
+    psmbrpre: {
+      type: Sequelize.STRING(10),
+      allowNull: false
+      // Phone Number Prefix
+    },
+    psmbrphn: {
+      type: Sequelize.STRING(25),
+      allowNull: false
+      // Phone Number 
     },
     crtuser: {
       type: Sequelize.STRING(255)

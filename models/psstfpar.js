@@ -178,13 +178,13 @@ module.exports = (sequelize, Sequelize) => {
       comment: 'Create User'
     },
     mntuser: {
-        type: Sequelize.STRING(255)
-        // Maintenance User
-      }
+      type: Sequelize.STRING(255)
+      // Maintenance User
+    }
   }, {
     freezeTableName: true,
     tableName: 'psstfpar',
-    timestamps: false
+    timestamps: true
   });
 
   return psstfpar;
