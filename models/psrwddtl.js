@@ -1,0 +1,28 @@
+// Order Item
+
+module.exports = (sequelize, Sequelize) => {
+  const psorditm = sequelize.define("psorditm", {
+    psorduid: {
+      type: Sequelize.STRING(25),
+      allowNull: false,
+      // Order Id
+    },
+    psmrcuid: {
+      type: Sequelize.STRING(25),
+      allowNull: false,
+      // Merchant Id
+    },
+
+  }, { freezeTableName: true },
+    {
+
+      indexes: [
+        {
+          unique: true,
+          fields: ['psorduid', 'psmrcuid']
+        }
+      ]
+    });
+
+  return psorditm;
+};

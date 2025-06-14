@@ -48,16 +48,18 @@ module.exports = function validatePsprddtlInput(data, type) {
 
 
 
-    if (!Validator.isEmpty("" + data.psprdpri) && isNaN(parseInt(data.psprdpri))) {
-        errors.psprdpri = "INVALIDDATAVALUE";
+    if (!Validator.isEmpty("" + data.psprdpri)) {
+        const value = parseFloat(data.psprdpri);
 
-    } else if (data.psprdpri > 999999999) {
-        errors.psprdpri = "INVALIDVALUELENGTH&999999999";
+        if (isNaN(value)) {
+            errors.psprdpri = "INVALIDDATAVALUE";
+        } else if (value > 999999999.99) {
+            errors.psprdpri = "INVALIDVALUELENGTH&999999999.99";
+        } else if (value < 0) {
+            errors.psprdpri = "INVALIDVALUELENGTHMIN&0";
+        }
+    }
 
-    }
-    else if (data.psprdpri < 0) {
-        errors.psprdpri = "INVALIDVALUELENGTHMIN&0"
-    }
 
 
 

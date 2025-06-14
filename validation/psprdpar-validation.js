@@ -138,31 +138,32 @@ module.exports = function validatePsprdparInput(data, type) {
         errors.psprdstk = "INVALIDVALUELENGTHMIN&0"
     }
 
-    if (!Validator.isEmpty("" + data.psprdpri) && isNaN(parseInt(data.psprdpri))) {
-        errors.psprdpri = "INVALIDDATAVALUE";
+    if (!Validator.isEmpty("" + data.psprdpri)) {
+        const value = parseFloat(data.psprdpri);
 
-    } else if (data.psprdpri > 999999999) {
-        errors.psprdpri = "INVALIDVALUELENGTH&999999999";
-
-    }
-    else if (data.psprdpri < 0) {
-        errors.psprdpri = "INVALIDVALUELENGTHMIN&0"
-    }
-
-
-     if (!Validator.isEmpty("" + data.psprddva) && isNaN(parseInt(data.psprddva))) {
-        errors.psprddva = "INVALIDDATAVALUE";
-
-    } else if (data.psprddva > 999999999) {
-        errors.psprddva = "INVALIDVALUELENGTH&999999999";
-
-    }
-    else if (data.psprddva < 0) {
-        errors.psprddva = "INVALIDVALUELENGTHMIN&0"
+        if (isNaN(value)) {
+            errors.psprdpri = "INVALIDDATAVALUE";
+        } else if (value > 999999999.99) {
+            errors.psprdpri = "INVALIDVALUELENGTH&999999999.99";
+        } else if (value < 0) {
+            errors.psprdpri = "INVALIDVALUELENGTHMIN&0";
+        }
     }
 
 
-  
+     if (!Validator.isEmpty("" + data.psprddva)) {
+           const value = parseFloat(data.psprddva);
+   
+           if (isNaN(value)) {
+               errors.psprddva = "INVALIDDATAVALUE";
+           } else if (value > 999999999.99) {
+               errors.psprddva = "INVALIDVALUELENGTH&999999999.99";
+           } else if (value < 0) {
+               errors.psprddva = "INVALIDVALUELENGTHMIN&0";
+           }
+       }
+
+
 
 
     // if (!Validator.isEmpty("" + data.psprdrtg) && isNaN(parseInt(data.psprdrtg))) {
