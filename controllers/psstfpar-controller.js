@@ -20,7 +20,6 @@ const connection = require("../common/db");
 
 // Input Validation
 const validatePsstfparInput = require("../validation/psstfpar-validation");
-const { raw } = require("express");
 const genConfig = require("../constant/generalConfig");
 
 

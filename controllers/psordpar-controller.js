@@ -16,10 +16,10 @@ const returnSuccess = require("../common/success");
 const returnSuccessMessage = require("../common/successMessage");
 const common = require("../common/common");
 const general = require("../common/general");
+const connection = require("../common/db");
 
 // Input Validation
 const validatePsordparInput = require("../validation/psordpar-validation");
-const { where } = require("sequelize");
 
 exports.list = async (req, res) => {
 

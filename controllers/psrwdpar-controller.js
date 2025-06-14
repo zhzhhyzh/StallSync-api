@@ -4,6 +4,7 @@ const _ = require("lodash");
 
 // Table File
 const psrwdpar = db.psrwdpar;
+const psrwddtl = db.psrwddtl;
 
 // Common Function
 const Op = db.Sequelize.Op;
@@ -160,7 +161,7 @@ exports.findOne = async (req, res) => {
             psrwduid: obj.psrwduid
           }, raw: true, attributes: ['psrwduid', 'psmrcuid']
         });
-        let existing = count == 0 ? [] : rows.map(exist => exist.psmrctyp);
+        let existing = count == 0 ? [] : rows.map(exist => exist.psmrcuid);
         obj.psrwddtl = existing;
         if (!_.isEmpty(obj.psrwdtyp)) {
           let description = await common.retrieveSpecificGenCodes(
@@ -298,8 +299,26 @@ exports.create = async (req, res) => {
             err_ind = true;
           }
         }
+        const rewardDetail = req.body.psrwddtl;
+
+        for (let i = 0; i < rewardDetail.length; i++) {
+          if (rewardDetail[i].length > 25) {
+            return returnError(req, 400, { rewardDetail: "INVALIDVALUELENGTH&25" }, res)
+          }
+          let check = await psmrcpar.findOne({
+            where: {
+              psmrcuid: rewardDetail[i]
+            }, raw: true, attributes: ["psmrcuid", "psmrcnme"]
+          });
+          if (!check && _.isEmpty(check.psmrcnme)) {
+            return returnError(req, 400, { rewardDetail: "INVALIDDATAVALUE" }, res)
+
+          }
+        }
 
         if (err_ind) return returnError(req, 400, ddlErrors, res);
+
+
         else {
 
           const fromDate = new Date(req.body.psrwdfdt);
@@ -312,6 +331,7 @@ exports.create = async (req, res) => {
           if (fromDate <= today && today <= toDate) {
             status = "A"; // Active
           }
+          const t = await connection.sequelize.transaction();
 
           psrwdpar
             .create({
@@ -336,6 +356,12 @@ exports.create = async (req, res) => {
             })
             .then(async (data) => {
               let created = data.get({ plain: true });
+              for (let i = 0; i < rewardDetail.length; i++) {
+                await psrwddtl.create({
+                  psrwduid: req.body.psrwduid,
+                  psmrcuid: rewardDetail[i]
+                })
+              }
               common.writeMntLog(
                 "psrwdpar",
                 null,
@@ -344,10 +370,25 @@ exports.create = async (req, res) => {
                 "A",
                 req.user.psusrunm,
                 "", created.psrwduid);
+
+              for (let i = 0; i < rewardDetail.length; i++) {
+                common.writeMntLog(
+                  "psrwdpar",
+                  null,
+                  null,
+                  created.psrwduid + "-" + rewardDetail[i],
+                  "A",
+                  req.user.psusrunm,
+                  "", created.psrwduid + "-" + rewardDetail[i]);
+
+              }
+              await t.commit();
               return returnSuccessMessage(req, 200, "RECORDCREATED", res);
+
             })
-            .catch((err) => {
+            .catch(async (err) => {
               console.log(err);
+              await t.rollback();
               return returnError(req, 500, "UNEXPECTEDERROR", res);
             });
         }
@@ -436,7 +477,43 @@ exports.update = async (req, res) => {
           }
         }
 
+
+
         if (err_ind) return returnError(req, 400, ddlErrors, res);
+        const t = await connection.sequelize.transaction();
+
+        const rewardDetail = req.body.psrwddtl;
+        for (let i = 0; i < rewardDetail.length; i++) {
+          if (rewardDetail[i].length > 25) {
+            return returnError(req, 400, { rewardDetail: "INVALIDVALUELENGTH&25" }, res)
+          }
+          let check = await psmrcpar.findOne({
+            where: {
+              psmrcuid: rewardDetail[i]
+            }, raw: true, attributes: ["psmrcuid", "psmrcnme"]
+          })
+          if (!check && _.isEmpty(check.psmrcnme)) {
+            return returnError(req, 400, { rewardDetail: "INVALIDDATAVALUE" }, res)
+
+          }
+        }
+        const existingTypes = await psrwddtl.findAll({
+          where: { psrwduid: req.body.psrwduid },
+          attributes: ["psmrcuid"],
+          raw: true
+        });
+
+        // Convert to arrays for easier comparison
+        const existing = existingTypes.map(exist => exist.psmrcuid);
+
+        //Types to create
+        const toCreate = rewardDetail.filter(t => !existing.includes(t));
+
+        //Types to delete
+        const toDelete = existing.filter(t => !rewardDetail.includes(t));
+
+
+
         const fromDate = new Date(req.body.psrwdfdt);
         const toDate = new Date(req.body.psrwdtdt);
         const today = new Date();
@@ -475,6 +552,35 @@ exports.update = async (req, res) => {
             }
           )
           .then(async () => {
+            for (let i = 0; i < toCreate.length; i++) {
+              psrwddtl
+                .create({
+                  psrwduid: id,
+                  psmrcuid: toCreate[i],
+
+                }).catch(async (err) => {
+                  await t.rollback();
+                  console.log("Error when creating Reward Detail: ", err);
+                  return returnError(req, 500, "UNEXPECTEDERROR", res);
+                });
+            }
+            for (let i = 0; i < toDelete.length; i++) {
+              psrwddtl
+                .destroy({
+                  where: {
+                    psrwduid: id,
+                    psmrcuid: toDelete[i],
+                  }
+                }).catch(async (err) => {
+                  await t.rollback();
+                  console.log("Error when deleting Reward Detail: ", err);
+                  return returnError(req, 500, "UNEXPECTEDERROR", res);
+                });
+            }
+
+
+            await t.commit();
+
             common.writeMntLog(
               "psrwdpar",
               data,
@@ -483,11 +589,39 @@ exports.update = async (req, res) => {
               "C",
               req.user.psusrunm
             );
+            for (let i = 0; i < toCreate.length; i++) {
+              common.writeMntLog(
+                "psrwddtl",
+                null,
+                null,
+                created.psrwduid + "-" + toCreate[i],
+                "A",
+                req.user.psusrunm,
+                "", created.psrwduid + "-" + toCreate[i]);
+            }
+            for (let i = 0; i < toDelete.length; i++) {
+              common.writeMntLog(
+                "psrwddtl",
+                null,
+                null,
+                created.psrwduid + "-" + toDelete[i],
+                "D",
+                req.user.psusrunm,
+                "",
+                created.psrwduid + "-" + toDelete[i],
+
+              );
+            }
             return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
+          }).catch(async (err) => {
+            console.log(err);
+            await t.rollback();
+            return returnError(req, 500, "UNEXPECTEDERROR", res);
           });
       } else return returnError(req, 500, "NORECORDFOUND", res);
     })
     .catch((err) => {
+      console.log(err);
       return returnError(req, 500, "UNEXPECTEDERROR", res);
     });
 };
@@ -495,6 +629,7 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   const id = req.body.id ? req.body.id : "";
   if (id == "") return returnError(req, 500, "RECORDIDISREQUIRED", res);
+  const t = await connection.sequelize.transaction();
 
   await psrwdpar
     .findOne({
@@ -509,21 +644,53 @@ exports.delete = async (req, res) => {
           .destroy({
             where: { id: trnscd.id },
           })
-          .then(() => {
-            common.writeMntLog(
-              "psrwdpar",
-              null,
-              null,
-              trnscd.psrwduid,
-              "D",
-              req.user.psusrunm,
-              "",
-              trnscd.psrwduid
-            );
-            return returnSuccessMessage(req, 200, "RECORDDELETED", res);
+          .then(async () => {
+            await psrwddtl.findAll({
+              where: {
+                psrwduid: id
+              }, raw: true, attributes: ["psmrctyp"]
+            }).then(async (merchantTypes) => {
+              const existing = merchantTypes.map(exist => exist.psmrctyp);
+              await psrwddtl.destroy({
+                where: {
+                  psrwduid: id
+                }
+              });
+
+              common.writeMntLog(
+                "psrwdpar",
+                null,
+                null,
+                trnscd.psrwduid,
+                "D",
+                req.user.psusrunm,
+                "",
+                trnscd.psrwduid
+              );
+              for (let i = 0; i < existing.length; i++) {
+                common.writeMntLog(
+                  "psrwddtl",
+                  null,
+                  null,
+                  created.psrwduid + "-" + existing[i],
+                  "D",
+                  req.user.psusrunm,
+                  "",
+                  created.psrwduid + "-" + existing[i],
+
+                );
+              }
+              return returnSuccessMessage(req, 200, "RECORDDELETED", res);
+            })
+              .catch(async (err) => {
+                console.log(err);
+                await t.rollback();
+                return returnError(req, 500, "UNEXPECTEDERROR", res);
+              });
           })
-          .catch((err) => {
+          .catch(async (err) => {
             console.log(err);
+            await t.rollback();
             return returnError(req, 500, "UNEXPECTEDERROR", res);
           });
       } else return returnError(req, 500, "NORECORDFOUND", res);
