@@ -19,7 +19,7 @@ const general = require("../common/general");
 const connection = require("../common/db");
 
 // Input Validation
-const validatePsordparInput = require("../validation/psordpar-validation");
+const validatePsordparInput = require("../validation/psordpar-validation.js");
 
 exports.list = async (req, res) => {
 
