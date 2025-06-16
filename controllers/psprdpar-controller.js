@@ -458,7 +458,8 @@ exports.create = async (req, res) => {
                     created.psprdimg,
                     // uuidv4(),
                     req.user.psusrnme,
-                    5
+                    5,
+                    t
                   )
                   .catch(async (err) => {
                     console.log(err);
@@ -738,7 +739,8 @@ exports.update = async (req, res) => {
                   req.body.psprdimg,
                   // uuidv4(),
                   req.user.psusrnme,
-                  5
+                  5,
+                  t
                 )
                 .catch(async (err) => {
                   console.log(err);
@@ -823,7 +825,7 @@ exports.delete = async (req, res) => {
 
 
               try {
-               
+
                 if (fs.existsSync(genConfig.productImagePath + item.psprdimg)) {
                   fs.unlinkSync(genConfig.productImagePath + item.psprdimg);
                 }

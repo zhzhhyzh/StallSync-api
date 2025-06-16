@@ -296,7 +296,8 @@ exports.create = async (req, res) => {
                   created.psmrcssc,
                   // uuidv4(),
                   req.user.psusrunm,
-                  4
+                  4,
+                  t
                 )
                 .catch(async (err) => {
                   console.log(err);
@@ -312,7 +313,8 @@ exports.create = async (req, res) => {
                     created.psmrcsfi,
                     // uuidv4(),
                     req.user.psusrunm,
-                    3
+                    3,
+                    t
                   )
                   .catch(async (err) => {
                     console.log(err);
@@ -329,7 +331,8 @@ exports.create = async (req, res) => {
                     created.psmrcppi,
                     // uuidv4(),
                     req.user.psusrunm,
-                    3
+                    3,
+                    t
                   )
                   .catch(async (err) => {
                     console.log(err);
@@ -556,7 +559,8 @@ exports.update = async (req, res) => {
                   req.body.psmrcssc,
                   // uuidv4(),
                   req.user.psusrunm,
-                  4
+                  4,
+                  t
                 )
                 .catch(async (err) => {
                   console.log(err);
@@ -576,7 +580,8 @@ exports.update = async (req, res) => {
                   req.body.psmrcsfi,
                   // uuidv4(),
                   req.user.psusrunm,
-                  3
+                  3,
+                  t
                 )
                 .catch(async (err) => {
                   console.log(err);
@@ -596,7 +601,8 @@ exports.update = async (req, res) => {
                   req.body.psmrcppi,
                   // uuidv4(),
                   req.user.psusrunm,
-                  3
+                  3,
+                  t
                 )
                 .catch(async (err) => {
                   console.log(err);

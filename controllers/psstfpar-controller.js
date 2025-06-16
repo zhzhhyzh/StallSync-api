@@ -438,7 +438,8 @@ exports.create = async (req, res) => {
                     created.psstfprp,
                     // uuidv4(),
                     req.user.psusrunm,
-                    2
+                    2,
+                    t
                   )
                   .catch(async (err) => {
                     console.log(err);
@@ -649,7 +650,8 @@ exports.update = async (req, res) => {
                   req.body.psstfprp,
                   // uuidv4(),
                   req.user.psusrunm,
-                  2
+                  2,
+                  t
                 )
                 .catch(async (err) => {
                   console.log(err);
