@@ -15,7 +15,6 @@ const psusrprf = require("./routes/psusrprf");
 const prgencde = require('./routes/prgencde');
 const prgentyp = require('./routes/prgentyp');
 const pstblmas = require("./routes/pstblmas");
-const pssyspar = require('./routes/pssyspar');
 const prfuncde = require('./routes/prfuncde');
 const psrolpar = require('./routes/psrolpar');
 const prfunacs = require('./routes/prfunacs');
@@ -33,6 +32,7 @@ const document = require('./routes/document');
 const mntlog = require('./routes/mntlog');
 const prpwdpol = require('./routes/prpwdpol');
 const version = require('./routes/version');
+const pssyspar = require('./routes/pssyspar');
 
 
 const app = express();
@@ -63,7 +63,6 @@ app.use('/api/psusrprf', psusrprf);
 app.use('/api/prgencde', prgencde);
 app.use('/api/prgentyp', prgentyp);
 app.use('/api/pstblmas', pstblmas);
-app.use('/api/pssyspar', pssyspar);
 app.use('/api/prfuncde', prfuncde);
 app.use('/api/prfunacs', prfunacs);
 app.use('/api/psrolpar', psrolpar);
@@ -81,6 +80,9 @@ app.use('/api/dashboard', dashboard);
 // MISC Routes
 app.use('/api/document', document);
 app.use('/api/mntlog', mntlog);
+app.use('/api/prpwdpol', prpwdpol);
+app.use('/api/version', version);
+app.use('/api/pssyspar', pssyspar);
 
 //When there is no API found
 app.use(async function (req, res, next) {
