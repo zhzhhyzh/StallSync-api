@@ -555,7 +555,7 @@ exports.download = async (req, res) => {
             else if (file.psdoctyp == "3") DIR = constant.merchantImagePath;
             else if (file.psdoctyp == "4") DIR = constant.ssmImagePath;
             else if (file.psdoctyp == "5") DIR = constant.productImagePath;
-            // else if (file.psdoctyp == "5") DIR = constant.csvPath;
+            else if (file.psdoctyp == "6") DIR = constant.announcementImg;
 
             if (!fs.existsSync(DIR + filename)) return returnError(req, 500, "DOCUMENTNOTFOUND", res);
             else {
