@@ -21,7 +21,7 @@ const genConfig = require("../constant/generalConfig");
 
 
 // Input Validation
-const validatePsprdInput = require("../validation/psprdinv-validation");
+const validatePsprdinvInput = require("../validation/psprdinv-validation.js");
 
 exports.list = async (req, res) => {
   if (!req.query.prodId) return returnError(req, 500, { prodId: "RECORDIDISREQUIRED" }, res);
@@ -187,7 +187,7 @@ exports.findOne = async (req, res) => {
 
 exports.create = async (req, res) => {
   //Validation
-  const { errors, isValid } = validatePsprdInput(req.body, "A");
+  const { errors, isValid } = validatePsprdinvInput(req.body, "A");
   if (!isValid) return returnError(req, 400, errors, res);
 
   // Duplicate Check

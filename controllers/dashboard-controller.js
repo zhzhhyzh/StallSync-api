@@ -18,7 +18,6 @@ const returnError = require("../common/error");
 const returnSuccess = require("../common/success");
 const returnSuccessMessage = require("../common/successMessage");
 const db_query = require("../common/db").sequelize;
-const memberCommon = require("../common/member_common");
 exports.main = async (req, res) => {
     try {
         const [
