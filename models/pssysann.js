@@ -54,7 +54,7 @@ module.exports = (sequelize, Sequelize) => {
             indexes: [
                 {
                     unique: true,
-                    fields: ['psanncde']
+                    fields: ['psannuid']
                 }
             ]
         });

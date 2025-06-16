@@ -44,7 +44,7 @@ exports.list = async (req, res) => {
     offset: from,
     where: option,
     raw: true,
-    attributes: [['psanncde', 'id'], 'psannuid', 'psannttl', 'psannmsg', 'psanntyp', 'psannsts', 'psanndat', 'psannimg'],
+    attributes: [['psannuid', 'id'], 'psannuid', 'psannttl', 'psannmsg', 'psanntyp', 'psannsts', 'psanndat', 'psannimg'],
     order: [["id", "asc"]],
   });
 
@@ -79,7 +79,7 @@ exports.list = async (req, res) => {
 exports.findOne = async (req, res) => {
   const id = req.query.id ? req.query.id : '';
   if (id == '') return returnError(req, 500, "RECORDIDISREQUIRED", res);
-  pssysann.findOne({ where: { psanncde: id }, raw: true }).then(async anncde => {
+  pssysann.findOne({ where: { psannuid: id }, raw: true }).then(async anncde => {
     if (anncde) {
       if (!_.isEmpty(anncde.psanntyp)) {
         let description = await common.retrieveSpecificGenCodes(req, 'ANNTYP', anncde.psanntyp);
@@ -126,14 +126,14 @@ exports.create = async (req, res) => {
   // Duplicate Check
   pssysann.findOne({
     where: {
-      psanncde: reference
+      psannuid: reference
     }, raw: true
   }).then(async anncde => {
     if (anncde) return returnError(req, 400, { id: "RECORDEXISTS" }, res);
     else {
       const t = await connection.sequelize.transaction();
       pssysann.create({
-        psanncde: reference,
+        psannuid: reference,
         psannttl: req.body.psannttl,
         psannmsg: req.body.psannmsg,
         psanntyp: req.body.psanntyp,
@@ -166,7 +166,7 @@ exports.create = async (req, res) => {
           return returnError(req, 500, "UNEXPECTEDERROR", res);
         } else {
           await t.commit();
-          common.writeMntLog('pssysann', null, null, created.psanncde, 'A', req.user.psusrunm);
+          common.writeMntLog('pssysann', null, null, created.psannuid, 'A', req.user.psusrunm);
           return returnSuccessMessage(req, 200, "RECORDCREATED", res);
         }
       }).catch(async (err) => {
@@ -182,7 +182,7 @@ exports.create = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const id = req.body.psanncde ? req.body.psanncde : '';
+  const id = req.body.psannuid ? req.body.psannuid : '';
   if (id == '')
     return returnError(req, 500, "RECORDIDISREQUIRED", res);
 
@@ -198,7 +198,7 @@ exports.update = async (req, res) => {
 
   await pssysann.findOne({
     where: {
-      psanncde: id
+      psannuid: id
     }, raw: true, attributes: {
       exclude: ['createdAt', 'updatedAt', 'crtuser', 'mntuser']
     }
@@ -270,7 +270,7 @@ exports.update = async (req, res) => {
           return returnError(req, 500, "UNEXPECTEDERROR", res);
         } else {
           await t.commit();
-          common.writeMntLog('pssysann', data, await pssysann.findByPk(data.id, { raw: true }), data.psanncde, 'C', req.user.psusrunm);
+          common.writeMntLog('pssysann', data, await pssysann.findByPk(data.id, { raw: true }), data.psannuid, 'C', req.user.psusrunm);
           return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
         }
       }).catch(async (err) => {
@@ -293,7 +293,7 @@ exports.delete = async (req, res) => {
 
   await pssysann.findOne({
     where: {
-      psanncde: id
+      psannuid: id
     }, raw: true
   }).then(async anncde => {
     if (anncde) {
@@ -322,7 +322,7 @@ exports.delete = async (req, res) => {
           return returnError(req, 500, "UNEXPECTEDERROR", res);
         } else {
           await t.commit();
-          common.writeMntLog('pssysann', null, null, anncde.psanncde, 'D', req.user.psusrunm);
+          common.writeMntLog('pssysann', null, null, anncde.psannuid, 'D', req.user.psusrunm);
           return returnSuccessMessage(req, 200, "RECORDDELETED", res);
         }
       }).catch(err => {

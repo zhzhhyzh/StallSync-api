@@ -36,7 +36,7 @@ exports.main = async (req, res) => {
         let page = parseInt(req.query.page || 0);
         let offset = page * limit;
 
-        let option = buildOption(req);
+        let option = await buildOption(req);
 
         const { count, rows } = await pssysann.findAndCountAll({
             limit,
@@ -75,38 +75,59 @@ exports.main = async (req, res) => {
 
 //Announcement Build
 const buildOption = async (req) => {
-    let option = {};
+//   const userAnnouncements = await psanndtl.findAll({
+//     where: { psusrnme: req.user.psusrnme },
+//     attributes: ['psannuid'],
+//     raw: true
+//   });
 
-    // 1. Find user-specific announcements
-    const userAnnouncements = await psanndtl.findAll({
-        where: { psusrnme: req.user.psusrnme },
-        attributes: ['psannuid'],
-        raw: true
-    });
+//   const userAnnIds = userAnnouncements.map(a => a.psannuid);
 
-    const userAnnIds = userAnnouncements.map(a => a.psannuid);
+  const systemAnnouncements = await pssysann.findAll({
+    // where: { psannast: 'Y' },
+    attributes: ['psannuid'],
+    raw: true
+  });
 
-    // 2. Find system-wide announcements (psannast = 'Y')
-    const systemAnnouncements = await pssysann.findAll({
-        where: { psannast: 'Y' },
-        attributes: ['psannuid'],
-        raw: true
-    });
+  const systemAnnIds = systemAnnouncements.map(a => a.psannuid);
 
-    const systemAnnIds = systemAnnouncements.map(a => a.psannuid);
+  // Merge and deduplicate
+  const allAnnIds = Array.from(new Set([ ...systemAnnIds]));
 
-    // 3. Combine and deduplicate announcement IDs
-    const allAnnIds = Array.from(new Set([...userAnnIds, ...systemAnnIds]));
+  // Check if empty
+  if (allAnnIds.length === 0) {
+    return { psannuid: { [Op.eq]: null } }; // Will return no rows
+  }
 
-    // 4. Return filter option
-    option.where = {
-        psannuid: {
-            [Op.in]: allAnnIds
-        }
-    };
-
-    return option;
+  return { psannuid: { [Op.in]: allAnnIds } };
 };
+
+const enrichAnnouncements = async (rows, req) => {
+  return Promise.all(
+    rows.map(async (obj) => {
+      if (obj.psanntyp) {
+        const description = await common.retrieveSpecificGenCodes(
+          req,
+          "ANNTYP",
+          obj.psanntyp
+        );
+        obj.psanntypdsc = description.prgedesc || "";
+      }
+      if (obj.psannsts) {
+        const description = await common.retrieveSpecificGenCodes(
+          req,
+          "YESORNO",
+          obj.psannsts
+        );
+        obj.psannstsdsc = description.prgedesc || "";
+      }
+      
+      obj.psanndat = await common.formatDateTime(obj.psanndat, "24");
+      return obj;
+    })
+  );
+};
+
 
 // Get Number Board
 const getNumberBoard = async (req) => {
