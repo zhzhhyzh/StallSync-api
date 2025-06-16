@@ -25,11 +25,15 @@ const psprdpar = require('./routes/psprdpar');
 const psprdinv = require('./routes/psprdinv');
 const psordpar = require('./routes/psordpar');
 const psrwdpar = require('./routes/psrwdpar');
+const pssysann = require('./routes/pssysann');
+const dashboard = require("./routes/dashboard");
 
 // MISC Routes
 const document = require('./routes/document');
 const mntlog = require('./routes/mntlog');
 const prpwdpol = require('./routes/prpwdpol');
+const version = require('./routes/version');
+
 
 const app = express();
 app.use(cors({
@@ -70,6 +74,9 @@ app.use('/api/psprdpar', psprdpar);
 app.use('/api/psprdinv', psprdinv);
 app.use('/api/psordpar', psordpar);
 app.use('/api/psrwdpar', psrwdpar);
+app.use('/api/pssysann', pssysann);
+app.use('/api/version', version);
+app.use('/api/dashboard', dashboard);
 
 // MISC Routes
 app.use('/api/document', document);
