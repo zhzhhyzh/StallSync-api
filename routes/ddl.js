@@ -6,7 +6,8 @@ const db = require("../models");
 // Models
 const psrolpar = db.psrolpar;
 const psusrprf = db.psusrprf;
-
+const psmbrprf = db.psmbrprf;
+const psstfpar = db.psstfpar;
 
 
 const Op = db.Sequelize.Op;
@@ -54,20 +55,76 @@ router.get("/psrolpar", authenticateRoute, async (req, res) => {
 // @route   POST api/ddl/merchantUser
 // @desc    Courier
 // @access  Private
-router.get("/merchantUser", authenticateRoute, async (req, res) => {
 
-    psusrprf.findAll({
-        where: {
-            psusrtyp: "MCH"
-        }, raw: true, attributes: ["psusrunm", "psusrnam"]
-    }).then(mbr => {
-        if (mbr) return returnSuccess(200, { data: mbr }, res);
-        else return returnSuccess(200, { data: [] }, res);
-    }).catch(err => {
-        console.log(err);
-        return returnError(req, 400, "UNEXPECTEDERROR", res);
+router.get("/merchantUser", authenticateRoute, async (req, res) => {
+  const psmrcuid = req.query.psmrcuid;
+  if (!psmrcuid) return returnError(req, 400, "REQUIREDVALUE", res);
+
+  try {
+    // 1. Find all usernames in psstfpar for the given merchant
+    const assignedStaff = await psstfpar.findAll({
+      where: { psmrcuid },
+      attributes: ['psusrunm'],
+      raw: true
     });
 
+    const assignedUsernames = assignedStaff.map(u => u.psusrunm);
+
+    // 2. Find all users of type MCH that are NOT in the assignedUsernames
+    const availableUsers = await psusrprf.findAll({
+      where: {
+        psusrtyp: "MCH",
+        psusrunm: {
+          [Op.notIn]: assignedUsernames.length > 0 ? assignedUsernames : ['']
+        }
+      },
+      attributes: ["psusrunm", "psusrnam"],
+      raw: true
+    });
+
+    return returnSuccess(200, { data: availableUsers }, res);
+  } catch (err) {
+    console.error(err);
+    return returnError(req, 400, "UNEXPECTEDERROR", res);
+  }
+});
+
+
+// @route   POST api/ddl/availableUser
+// @desc    Courier
+// @access  Private
+router.get("/availableUser", authenticateRoute, async (req, res) => {
+    try {
+        const usedInStaff = await psstfpar.findAll({
+            raw: true,
+            attributes: ["psusrunm"]
+        });
+
+        const usedInMember = await psmbrprf.findAll({
+            raw: true,
+            attributes: ["psusrnme"]
+        });
+
+        const usedUsernames = [
+            ...usedInStaff.map(user => user.psusrunm),
+            ...usedInMember.map(user => user.psusrnme)
+        ];
+
+        const availableUsers = await psusrprf.findAll({
+            where: {
+                psusrunm: {
+                    [Op.notIn]: usedUsernames
+                }
+            },
+            raw: true,
+            attributes: ["psusrunm", "psusrnam"]
+        });
+
+        return returnSuccess(200, { data: availableUsers }, res);
+    } catch (err) {
+        console.error(err);
+        return returnError(req, 400, "UNEXPECTEDERROR", res);
+    }
 });
 
 module.exports = router;
