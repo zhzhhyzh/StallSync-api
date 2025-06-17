@@ -37,7 +37,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     psmrcown: {
       type: Sequelize.STRING(25),
-      allowNull: false,
+      // allowNull: false,
       comment: "Merchant Owner"
     },
     psmrcssm: {
@@ -65,7 +65,7 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       comment: "Merchant Bank Account"
     },
-    psmbrbnm: {
+    psmrcbnm: {
       type: Sequelize.STRING(255),
       allowNull: false,
       comment: "Merchant Bank Name"

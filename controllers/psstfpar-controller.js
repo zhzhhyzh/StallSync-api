@@ -113,17 +113,7 @@ exports.list = async (req, res) => {
           ? description.prgedesc
           : "";
     }
-    if (!_.isEmpty(obj.psstfsam)) {
-      let description = await common.retrieveSpecificGenCodes(
-        req,
-        "YESORNO",
-        obj.psstfsam
-      );
-      obj.psstfsamdsc =
-        description.prgedesc && !_.isEmpty(description.prgedesc)
-          ? description.prgedesc
-          : "";
-    }
+   
     newRows.push(obj);
   }
 

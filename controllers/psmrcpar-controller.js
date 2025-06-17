@@ -8,6 +8,7 @@ const fs = require("fs");
 const psmrcpar = db.psmrcpar;
 const psmrclbl = db.psmrclbl;
 const psusrprf = db.psusrprf;
+const prgencde = db.prgencde;
 
 // Common Function
 const Op = db.Sequelize.Op;
@@ -65,9 +66,9 @@ exports.list = async (req, res) => {
       ["psmrcuid", "id"],
       "psmrcuid",
       "psmrcnme",
+      "psmrcdsc",
       "psmrcjdt",
       "psmrcown",
-      "psmrcdsc",
       "psmrcsts",
       "psmrcrtg"
     ],
@@ -91,9 +92,26 @@ exports.list = async (req, res) => {
           : "";
     }
 
-    if (!_.isEmpty(obj.psmrcrtg)) {
-      obj.psmrcrtg = common.formatDecimal(obj.psmrcrtg);
-    }
+    // if (!_.isEmpty(obj.psmrcrtg)) {
+    obj.psmrcrtg = await common.formatDecimal(obj.psmrcrtg);
+    // } else{
+    //   obj.psmrcrtg = 0
+    // }
+
+    // if (!_.isEmpty(obj.psmrcjdt)) {
+    obj.psmrcjdt = await common.formatDate(obj.psmrcjdt, '/');
+    // }
+
+
+    // if (!_.isEmpty(obj.psmrcown)) {
+    let result = await psusrprf.findOne({
+      where: { psusrunm: obj.psmrcown },
+      raw: true,
+      attributes: ["psusrnam"]
+    });
+    obj.psmrcowndsc = result?.psusrnam ?? "-";
+
+    // }
 
     newRows.push(obj);
   }
@@ -127,22 +145,35 @@ exports.findOne = async (req, res) => {
     });
 
     const psmrclblArray = [];
-    const psmrclbldscArray = [];
 
     for (const item of merchantTypes) {
       const type = item.psmrctyp;
-      psmrclblArray.push(type);
 
       if (!_.isEmpty(type)) {
         const description = await common.retrieveSpecificGenCodes(req, "MRCTYP", type);
-        psmrclbldscArray.push(description?.prgedesc || "");
-      } else {
-        psmrclbldscArray.push("");
+        psmrclblArray.push({
+          key: type,
+          label: description?.prgedesc || ""
+        });
       }
     }
-
     obj.psmrclbl = psmrclblArray;
-    obj.psmrclbldsc = psmrclbldscArray;
+
+
+
+    let avl_mrclbl = [];
+    const excludedKeys = psmrclblArray.map(item => item.key);
+
+    avl_mrclbl = await prgencde.findAll({
+      where: {
+        prgtycde: "MRCTYP",
+        prgecode: {
+          [Op.notIn]: excludedKeys
+        }
+      },
+      raw: true,
+      attributes: [['prgecode', 'key'], ['prgedesc', 'label']]
+    });
 
 
     if (!_.isEmpty(obj.psmrcbnk)) {
@@ -154,7 +185,7 @@ exports.findOne = async (req, res) => {
       const description = await common.retrieveSpecificGenCodes(req, "YESORNO", obj.psmrcsts);
       obj.psmrcstsdsc = description?.prgedesc || "";
     }
-
+    obj.psavllbl = avl_mrclbl
     return returnSuccess(200, obj, res);
   } catch (err) {
     console.error(err);
@@ -183,17 +214,19 @@ exports.create = async (req, res) => {
   }
 
 
-  //Check Username
-  let flag = await psusrprf.findOne({
-    where: {
-      psusrunm: req.body.psmrcown
-    }, raw: true, attributes: ['psusrunm', 'psusrnam']
-  });
+  if (!_.isEmpty(req.body.psmrcown)) {
+    //Check Username
+    let flag = await psusrprf.findOne({
+      where: {
+        psusrunm: req.body.psmrcown
+      }, raw: true, attributes: ['psusrunm', 'psusrnam']
+    });
 
-  if (!flag) {
-    return returnError(req, 400, { psusrunm: "NORECORDFOUND" }, res)
+    if (!flag) {
+      return returnError(req, 400, { psusrunm: "NORECORDFOUND" }, res)
+    }
+
   }
-
 
   // Duplicate Check
   psmrcpar
@@ -205,7 +238,7 @@ exports.create = async (req, res) => {
     })
     .then(async (trnscd) => {
       if (trnscd)
-        return returnError(req, 400, { psmrcpar: "RECORDEXISTS" }, res);
+        return returnError(req, 400, { psmrcuid: "RECORDEXISTS" }, res);
       else {
         let ddlErrors = {};
         let err_ind = false;
@@ -258,7 +291,7 @@ exports.create = async (req, res) => {
               psmrcuid: req.body.psmrcuid,
               psmrcdsc: req.body.psmrcdsc,
               psmrclds: req.body.psmrclds,
-              psstfsdt: new Date(),
+              psmrcsdt: new Date(),
               psmrcjdt: req.body.psmrcjdt ? req.body.psmrcjdt : new Date(),
               psmrcown: req.body.psmrcown,
               psmrcssm: req.body.psmrcssm,
@@ -274,20 +307,17 @@ exports.create = async (req, res) => {
               // psmrctyp: req.body.psmrctyp,
               crtuser: req.user.psusrunm,
               mntuser: req.user.psusrunm,
-            })
+            }, { transaction: t })
             .then(async (data) => {
               let created = data.get({ plain: true });
               for (let i = 0; i < psmrclblT.length; i++) {
-                psmrclbl
+                await psmrclbl
                   .create({
                     psmrcuid: req.body.psmrcuid,
                     psmrctyp: psmrclblT[i],
 
-                  }).catch(async (err) => {
-                    await t.rollback();
-                    console.log("Error when creating Merchant Label: ", err);
-                    return returnError(req, 500, "UNEXPECTEDERROR", res);
-                  });
+                  })
+
               }
               await common
                 .writeImage(
@@ -297,13 +327,13 @@ exports.create = async (req, res) => {
                   // uuidv4(),
                   req.user.psusrunm,
                   4,
-                  t
+
                 )
-                .catch(async (err) => {
-                  console.log(err);
-                  await t.rollback();
-                  return returnError(req, 500, "UNEXPECTEDERROR", res);
-                });
+              // .catch(async (err) => {
+              //   console.log(err);
+              //   await t.rollback();
+              //   return returnError(req, 500, "UNEXPECTEDERROR", res);
+              // });
 
               if (storeFront) {
                 await common
@@ -314,13 +344,13 @@ exports.create = async (req, res) => {
                     // uuidv4(),
                     req.user.psusrunm,
                     3,
-                    t
+
                   )
-                  .catch(async (err) => {
-                    console.log(err);
-                    await t.rollback();
-                    return returnError(req, 500, "UNEXPECTEDERROR", res);
-                  });
+                // .catch(async (err) => {
+                //   console.log(err);
+                //   await t.rollback();
+                //   return returnError(req, 500, "UNEXPECTEDERROR", res);
+                // });
 
               }
               if (profilePic) {
@@ -332,16 +362,17 @@ exports.create = async (req, res) => {
                     // uuidv4(),
                     req.user.psusrunm,
                     3,
-                    t
+
                   )
-                  .catch(async (err) => {
-                    console.log(err);
-                    await t.rollback();
-                    return returnError(req, 500, "UNEXPECTEDERROR", res);
-                  });
+                // .catch(async (err) => {
+                //   console.log(err);
+                //   await t.rollback();
+                //   return returnError(req, 500, "UNEXPECTEDERROR", res);
+                // });
 
               }
               t.commit();
+
               common.writeMntLog(
                 "psmrcpar",
                 null,
@@ -496,7 +527,7 @@ exports.update = async (req, res) => {
               // psmrcuid: req.body.psmrcuid,
               psmrcdsc: req.body.psmrcdsc,
               psmrclds: req.body.psmrclds,
-              psstfsdt: new Date(),
+              psmrcsdt: new Date(),
               psmrcjdt: req.body.psmrcjdt,
               psmrcown: req.body.psmrcown,
               psmrcssm: req.body.psmrcssm,
@@ -688,14 +719,14 @@ exports.delete = async (req, res) => {
 
               try {
                 // Remove Image
-                if (fs.existsSync(genConfig.ssmImagePath + item.psmrcssc)) {
-                  fs.unlinkSync(genConfig.ssmImagePath + item.psmrcssc);
+                if (fs.existsSync(genConfig.ssmImagePath + trnscd.psmrcssc)) {
+                  fs.unlinkSync(genConfig.ssmImagePath + trnscd.psmrcssc);
                 }
-                if (fs.existsSync(genConfig.merchantImagePath + item.psmrcsfi)) {
-                  fs.unlinkSync(genConfig.merchantImagePath + item.psmrcsfi);
+                if (fs.existsSync(genConfig.merchantImagePath + trnscd.psmrcsfi)) {
+                  fs.unlinkSync(genConfig.merchantImagePath + trnscd.psmrcsfi);
                 }
-                if (fs.existsSync(genConfig.merchantImagePath + item.psmrcppi)) {
-                  fs.unlinkSync(genConfig.merchantImagePath + item.psmrcppi);
+                if (fs.existsSync(genConfig.merchantImagePath + trnscd.psmrcppi)) {
+                  fs.unlinkSync(genConfig.merchantImagePath + trnscd.psmrcppi);
                 }
               } catch (err) {
                 console.log("Remove Image Error :", err);
@@ -718,11 +749,11 @@ exports.delete = async (req, res) => {
                   "psmrclbl",
                   null,
                   null,
-                  created.psmrcuid + "-" + existing[i],
+                  trnscd.psmrcuid + "-" + existing[i],
                   "D",
                   req.user.psusrunm,
                   "",
-                  created.psmrcuid + "-" + existing[i],
+                  trnscd.psmrcuid + "-" + existing[i],
 
                 );
               }

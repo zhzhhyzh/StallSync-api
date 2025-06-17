@@ -32,8 +32,8 @@ const prResetPassValidation = require('../validation/prrstpwd-validation');
 const validateLoginInput = require('../validation/user-login');
 
 //Any Login
-exports.login = async (req,res) =>{
-  const { errors, isValid } = validateLoginInput(req.body);
+exports.login = async (req, res) => {
+    const { errors, isValid } = validateLoginInput(req.body);
     if (!isValid) {
         return returnError(req, 400, errors, res);
     }
@@ -255,7 +255,7 @@ exports.reset = async (req, res) => {
     const rawPassword = crypto.randomBytes(4).toString('hex');
     const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
-   
+
 
     // Update the user's password and set the change password flag
     const update = await psusrprf.update({
@@ -372,6 +372,10 @@ exports.create = async (req, res) => {
     let description = await common.retrieveSpecificGenCodes(req, 'USRROLE', req.body.psusrrol);
     if (!description || _.isEmpty(description.prgedesc)) return returnError(req, 400, { psusrrol: 'INVALIDDATAVALUE' }, res);
 
+    // Validate Code
+    let description2 = await common.retrieveSpecificGenCodes(req, 'HPPRE', req.body.psusrpre);
+    if (!description2 || _.isEmpty(description2.prgedesc)) return returnError(req, 400, { psusrpre: 'INVALIDDATAVALUE' }, res);
+
     // Check Duplicate
     let user = await psusrprf.findOne({
         where: {
@@ -384,8 +388,9 @@ exports.create = async (req, res) => {
         psusrunm: req.body.psusrunm,
         psusrnam: req.body.psusrnam,
         psusreml: req.body.psusreml,
+        psusrpre: req.body.psusrpre,
         psusrsts: 'A',
-        psusrtyp: 'ADM',
+        psusrtyp: req.body.psusrtyp,
         psusrrol: req.body.psusrrol,
         psstsdt8: new Date(),
         psusrphn: req.body.psusrphn
@@ -540,7 +545,7 @@ exports.update = async (req, res) => {
                     id: user.id
                 }
             }).then(async update => {
-            
+
                 common.writeMntLog('psusrprf', update, await psusrprf.findOne({ where: { psusrunm: user.psusrunm }, raw: true }), user.psusrunm, 'C', user.psusrunm);
                 return returnSuccessMessage(req, 200, "USERUPDATED", res);
             }).catch(err => {
@@ -765,5 +770,396 @@ async function validatePassword(password) {
             console.log(err);
             return reject(err);
         }
+    });
+}
+
+exports.profile = async (req, res) => {
+
+    if (req.user.psusrtyp === 'ADM') {
+        //CHECK PROFILE
+        psusrprf.findOne({
+            where: {
+                id: req.user.id
+            }, raw: true, attributes: [['id', 'psusrunm'], 'psusrunm', 'psusrtyp', 'psusrnam', 'psusreml', 'psusrsts', 'psusrphn'
+                // , 'psusrals', 'psredind'
+            ]
+        }).then(async profile => {
+            if (profile) {
+
+                if (!_.isEmpty(profile.psusrtyp)) {
+                    let usrtyp = await common.retrieveSpecificGenCodes(req, 'USRTYP', profile.psusrtyp);
+                    profile.psusrtypdsc = usrtyp.prgedesc ? usrtyp.prgedesc : '';
+                }
+                if (!_.isEmpty(profile.psusrsts)) {
+                    let usrsts = await common.retrieveSpecificGenCodes(req, 'USRSTS', profile.psusrsts);
+                    profile.psusrstsdsc = usrsts.prgedesc ? usrsts.prgedesc : '';
+                }
+                // if (!_.isEmpty(profile.psredind)) {
+                //     let redinddsc = await common.retrieveSpecificGenCodes(req, 'YESORNO', profile.psredind);
+                //     profile.psredinddsc = redinddsc.prgedesc ? redinddsc.prgedesc : '';
+                // }
+
+                return returnSuccess(200, profile, res);
+            } else return returnError(req, 400, "USERNOTFOUND", res);
+        }).catch(err => {
+            console.log(err);
+            return returnError(req, 400, 'UNEXPECTEDERROR', res);
+        });
+    }
+    // else if (req.user.psusrtyp === 'MBR') {
+    //     //CHECK PROFILE
+    //     psusrprf.findOne({
+    //         where: {
+    //             id: req.user.id
+    //         }, raw: true
+    //     }).then(async profile => {
+    //         if (profile) {
+    //             psmbrprf.findOne({
+    //                 where: {
+    //                     psdrawid: profile.psusrunm
+    //                 }, raw: true, attributes: [['psmberid', 'id'], 'psmberid', 'psusrsts', 'psmsaltn']
+    //             }).then(async mbrcon => {
+    //                 if (mbrcon) {
+    //                     let member = await psmember.findOne({
+    //                         where: {
+    //                             psmberid: mbrcon.psmberid
+    //                         }, raw: true
+    //                     });
+    //                     if (member) {
+    //                         mbrcon.psmbrnam = member.psmbrnam;
+    //                         mbrcon.psmbdate = member.psmbdate;
+    //                         mbrcon.psmbbzrn = member.psmbbzrn;
+    //                         mbrcon.psmblicn = member.psmblicn;
+
+    //                         if (!_.isEmpty(mbrcon.psmsaltn)) {
+    //                             let description = await common.retrieveSpecificGenCodes(req,'SALTN', mbrcon.psmsaltn);
+    //                             mbrcon.psmsaltndsc = description.prgedesc && !_.isEmpty(description.prgedesc) ? description.prgedesc : '';
+    //                         }
+    //                         if (!_.isEmpty(mbrcon.psusrsts)) {
+    //                             let description = await common.retrieveSpecificGenCodes(req,'USRSTS', mbrcon.psusrsts);
+    //                             mbrcon.psusrstsdsc = description.prgedesc && !_.isEmpty(description.prgedesc) ? description.prgedesc : '';
+    //                         }
+    //                         if (!_.isEmpty(profile.psredind)) {
+    //                             let redinddsc = await common.retrieveSpecificGenCodes(req,'YESORNO', profile.psredind);
+    //                             mbrcon.psredind = profile.psredind;
+    //                             mbrcon.psredinddsc = redinddsc.prgedesc ? redinddsc.prgedesc : '';
+    //                         }
+    //                         mbrcon.psusrnam = profile.psusrnam;
+    //                         mbrcon.psusrphn = profile.psusrphn;
+    //                         mbrcon.psusreml = profile.psusreml;
+    //                         mbrcon.psusrtyp = profile.psusrtyp;
+    //                         mbrcon.psusrals = profile.psusrals;
+    //                         mbrcon.psusrunm = profile.psusrunm;
+    //                         return returnSuccess(200, mbrcon, res);
+    //                     } else return returnError(req, 400, "USERNOTFOUND", res);
+    //                 } else return returnError(req, 400, "USERNOTFOUND", res);
+    //             })
+    //         } else return returnError(req, 400, "USERNOTFOUND", res);
+    //     }).catch(err => {
+    //         console.log(err);
+    //         return returnError(req, 400, 'UNEXPECTEDERROR', res);
+    //     });
+    // }
+
+    else {
+        return returnError(req, 500, 'INVALIDAUTHORITY', res);
+    }
+}
+
+exports.update_profile = async (req, res) => {
+
+
+    // if(req.user.psusrtyp==="MBR"){
+
+    //     //Validation
+    //     const { errors, isValid } = prUpdateProfileValidation(req.body, 'C');
+    //     if (!isValid) return returnError(req, 400, errors, res);
+
+    //     // Validate Code
+    //     let sts = await common.retrieveSpecificGenCodes(req,'USRSTS', req.body.psusrsts);
+    //     if (!sts || _.isEmpty(sts.prgedesc)) return returnError(req, 400, { psusrsts: "INVALIDDATAVALUE" }, res);
+
+    //     const t = await connection.sequelize.transaction();
+
+    //     await psmbrprf.findOne({where:{psmbrraw:req.user.psusrunm},attributes:['psmbruid'],raw:true})
+    //     .then(async (mbr)=>{
+
+    //         if(mbr){
+    //             await psmbrprf.update(
+    //                 {
+    //                     psmbrnam: req.body.psusrnam,
+    //                     psmbrphn: req.body.psusrphn,
+    //                     psmbreml: req.body.psusreml,
+    //                 },
+    //                 {
+    //                     where:{psmbrraw:req.user.psusrunm},
+    //                     transaction:t
+    //                 }
+    //             ).then(async ()=>{
+    //                 await psusrprf.findOne({where:{psusrunm:req.user.psusrunm},attributes:['psusrunm'],raw:true})
+    //                 .then(async (user)=>{
+    //                     if(user){
+    //                         await psusrprf.update(
+    //                             {
+    //                                 psusrnam:req.body.psusrnam,
+    //                                 psusreml:req.body.psusreml,
+    //                                 psusrphn: req.body.psusrphn,
+    //                                 psusrsts: req.body.psusrsts,
+    //                             },
+    //                             {
+    //                                 where:{psusrunm:user.psusrunm},
+    //                                 transaction:t
+    //                             }
+    //                         ).then(async()=>{
+    //                             common.writeMntLog('psrmbrprf', mbr, await psmbrprf.findByPk(mbr.id, { raw: true }), mbr.psmbruid, 'C', req.user.psusrunm); 
+    //                             common.writeMntLog('psusrprf', user, await psusrprf.findByPk(user.id, { raw: true }), user.psusrunm, 'C', req.user.psusrunm); 
+    //                             await t.commit();
+    //                             return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
+    //                         })
+    //                     }else{
+    //                         await t.rollback();
+    //                         return returnError(req,500,"USERNOTFOUND",res)
+    //                     }
+
+    //                 })
+
+    //             })
+    //         }else{
+    //             await t.rollback()
+    //             return returnError(req,500,"USERNOTFOUND",res)
+    //         }
+
+    //     })
+
+    // } else if (req.user.psusrtyp==="MCH"){
+    //     //Validation
+    //     const { errors, isValid } = prUpdateProfileValidation(req.body, 'C');
+    //     if (!isValid) return returnError(req, 400, errors, res);
+
+    //             // Validate Code
+    //     let sts = await common.retrieveSpecificGenCodes(req,'USRSTS', req.body.psusrsts);
+    //     if (!sts || _.isEmpty(sts.prgedesc)) return returnError(req, 400, { psusrsts: "INVALIDDATAVALUE" }, res);
+
+    //     const t = await connection.sequelize.transaction();
+    //     await mcmchpic.findOne({where:{psconunm:req.user.psusrunm},attributes:['psmchuid'],raw:true})
+    //     .then(async (mch)=>{
+    //         if(mch){
+    //             await mcmchpic.update({
+    //                 psconnam:req.body.psusrnam,
+    //                 psconeml: req.body.psusreml,
+    //                 psconphn: req.body.psusrphn,
+    //                 psconsts: req.body.psusrsts,
+    //             },
+    //             {
+    //                 where:{psconunm:req.user.psusrunm}
+    //             }).then(async ()=>{
+    //                 await psusrprf.findOne({where:{psusrunm:req.user.psusrunm},attributes:['psusrunm'],raw:true})
+    //                 .then(async(user)=>{
+    //                     if(user){
+    //                         await psusrprf.update({
+    //                             psusrnam:req.body.psusrnam,
+    //                             psusreml:req.body.psusreml,
+    //                             psusrphn:req.body.psusrphn,
+    //                             psusrsts: req.body.psusrsts,
+    //                         },
+    //                         {
+    //                             where:{psusrunm:req.user.psusrunm}
+    //                         }).then(async()=>{
+    //                             common.writeMntLog('mcmchpic',mch,await mcmchpic.findByPk(mch.id,{raw:true}),mch.psmchuid,'C',req.user.psusrunm )
+    //                             common.writeMntLog('psusrprf',user,await psusrprf.findByPk(user.id,{raw:true}),user.psusrunm,'C',req.user.psusrunm )
+    //                             await t.commit();
+    //                             return returnSuccessMessage(req, 200, "RECORDUPDATED",res)
+    //                         })
+    //                     }else{
+    //                         await t.rollback()
+    //                         return returnError(req,500,"USERNOTFOUND",res)
+    //                     }
+    //                 })
+    //             })
+    //         }
+    //         else{
+    //             await t.rollback()
+    //             return returnError(req,500,"USERNOTFOUND",res)
+    //         }
+    //     })
+
+    // }
+
+    // else 
+    if (req.user.psusrtyp === "ADM") {
+        //Validation
+        const { errors, isValid } = prUpdateProfileValidation(req.body, 'C');
+        if (!isValid) return returnError(req, 400, errors, res);
+        // Validate Code
+        let sts = await common.retrieveSpecificGenCodes(req, 'USRSTS', req.body.psusrsts);
+        if (!sts || _.isEmpty(sts.prgedesc)) return returnError(req, 400, { psusrsts: "INVALIDDATAVALUE" }, res);
+
+        // Validate Code
+        // let dsc = await common.retrieveSpecificGenCodes(req,'YESORNO', req.body.psredind);
+        // if (!dsc || _.isEmpty(dsc.prgedesc)) return returnError(req, 400, { psredind: "INVALIDDATAVALUE" }, res);
+
+        await psusrprf.findOne({
+            where: {
+                psusrunm: req.user.psusrunm
+            },
+            raw: true, attributes: { exclude: ['createdAt', 'updatedAt', 'crtuser', 'mntuser'] }
+        }).then(async user => {
+            if (!user) return returnError(req, 400, { psusrunm: "USERNOTFOUND" }, res);
+
+            let obj = req.body;
+
+            obj.mntuser = req.user.psusrunm;
+
+            const new_psusrprf = {
+                psusrunm: obj.psusrunm,
+                psusrnam: obj.psusrnam,
+                psusreml: obj.psusreml,
+                psusrsts: obj.psusrsts,
+                psusrphn: obj.psusrphn,
+                // psredind: obj.psredind
+            }
+
+            await psusrprf.update(new_psusrprf,
+                {
+                    where: {
+                        id: user.id
+                    }
+                }).then(async update => {
+                    common.writeMntLog('psusrprf', update, await psusrprf.findOne({ where: { psusrunm: user.psusrunm }, raw: true }), user.psusrunm, 'C', user.psusrunm);
+                    return returnSuccessMessage(req, 200, "USERUPDATED", res);
+                }).catch(err => {
+                    console.log(err);
+                    return returnError(req, 500, "UNEXPECTEDERROR", res);
+                });
+        }).catch(err => {
+            console.log(err);
+            return returnError(req, 500, "UNEXPECTEDERROR", res);
+        });
+    }
+    else {
+        return returnError(req, 500, "INVALIDAUTHORITY", res)
+    }
+}
+
+// Internal Function
+async function searchFunction(req, item, selected, counter) {
+    return new Promise(async (resolve, reject) => {
+        let formatted = {
+            actions: []
+        };
+        let result = '';
+        for (let k = 0; k < counter; k++) {
+            let obj = selected[k] || {};
+            formatted.function = item.prfuncde;
+            formatted.functiondsc = item.prfunnme;
+            formatted.functionlds = item.prfunlnm;
+
+            if (item.prfuncde == obj.pracsfun) {
+                formatted.checked = true;
+            }
+
+            if (obj.pracsfun && formatted.function == obj.pracsfun)
+                result = await formatAction(item, obj);
+
+            //Format Actions
+            let formatted_result = [];
+            for (var l = 0; l < result.length; l++) {
+                let obj = result[l];
+
+                let funact = await common.retrieveSpecificGenCodes(req, 'FUNACT', obj.key);
+                funact ? funact.prgedesc ? obj.label = funact.prgedesc : '' : '';
+                formatted_result.push(obj);
+            }
+            formatted.actions = formatted_result;
+        }
+        return resolve(formatted);
+        // return resolve({ checked: false });
+    });
+}
+
+async function formatAction(item, selected) {
+    return new Promise((resolve, reject) => {
+        let result = [];
+        if (item.prfuna01) {
+            result.push({
+                field: 'pracsa01',
+                key: item.prfunl01,
+                label: item.prfunl01,
+                checked: selected.pracsa01 ? 1 : 0
+            });
+        }
+        if (item.prfuna02) {
+            result.push({
+                field: 'pracsa02',
+                key: item.prfunl02,
+                label: item.prfunl02,
+                checked: selected.pracsa02 ? 1 : 0
+            });
+        }
+        if (item.prfuna03) {
+            result.push({
+                field: 'pracsa03',
+                key: item.prfunl03,
+                label: item.prfunl03,
+                checked: selected.pracsa03 ? 1 : 0
+            });
+        }
+        if (item.prfuna04) {
+            result.push({
+                field: 'pracsa04',
+                key: item.prfunl04,
+                label: item.prfunl04,
+                checked: selected.pracsa04 ? 1 : 0
+            });
+        }
+        if (item.prfuna05) {
+            result.push({
+                field: 'pracsa05',
+                key: item.prfunl05,
+                label: item.prfunl05,
+                checked: selected.pracsa05 || 0
+            });
+        }
+        if (item.prfuna06) {
+            result.push({
+                field: 'pracsa06',
+                key: item.prfunl06,
+                label: item.prfunl06,
+                checked: selected.pracsa06 || 0
+            });
+        }
+        if (item.prfuna07) {
+            result.push({
+                field: 'pracsa07',
+                key: item.prfunl07,
+                label: item.prfunl07,
+                checked: selected.pracsa07 || 0
+            });
+        }
+        if (item.prfuna08) {
+            result.push({
+                field: 'pracsa08',
+                key: item.prfunl08,
+                label: item.prfunl08,
+                checked: selected.pracsa08 || 0
+            });
+        }
+        if (item.prfuna09) {
+            result.push({
+                field: 'pracsa09',
+                key: item.prfunl09,
+                label: item.prfunl09,
+                checked: selected.pracsa09 || 0
+            });
+        }
+        if (item.prfuna10) {
+            result.push({
+                field: 'pracsa10',
+                key: item.prfunl10,
+                label: item.prfunl10,
+                checked: selected.pracsa10 || 0
+            });
+        }
+        return resolve(result);
     });
 }

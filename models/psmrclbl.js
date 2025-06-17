@@ -1,11 +1,8 @@
-// Merchant Label
-
 module.exports = (sequelize, Sequelize) => {
   const psmrclbl = sequelize.define("psmrclbl", {
     psmrcuid: {
       type: Sequelize.STRING(25),
       allowNull: false,
-      primaryKey: true, 
       comment: "Merchant ID"
     },
     psmrctyp: {
@@ -13,16 +10,17 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       comment: "Merchant Type"
     },
-   
-  }, { freezeTableName: true },
-    {
-      indexes: [
-        {
-          unique: true,
-          fields: ['psmrcuid', 'psmrctyp']
-        }
-      ]
-    });
+  }, {
+    freezeTableName: true,
+    timestamps: true,
+    primaryKey: false, // Not needed here
+    indexes: [
+      {
+        unique: true,
+        fields: ['psmrcuid', 'psmrctyp']
+      }
+    ]
+  });
 
   return psmrclbl;
 };

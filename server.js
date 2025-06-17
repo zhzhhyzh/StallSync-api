@@ -8,6 +8,8 @@ const fs = require("fs");
 const path = require("path");
 const moment = require("moment");
 const common = require("./common/common");
+const router = express.Router();
+
 
 // ------------  ROUTE DEFINE ----------------- //
 // Main Routes
@@ -33,6 +35,7 @@ const mntlog = require('./routes/mntlog');
 const prpwdpol = require('./routes/prpwdpol');
 const version = require('./routes/version');
 const pssyspar = require('./routes/pssyspar');
+const ddl = require("./routes/ddl");
 
 
 const app = express();
@@ -83,6 +86,7 @@ app.use('/api/mntlog', mntlog);
 app.use('/api/prpwdpol', prpwdpol);
 app.use('/api/version', version);
 app.use('/api/pssyspar', pssyspar);
+app.use('/api/ddl', ddl);
 
 //When there is no API found
 app.use(async function (req, res, next) {

@@ -63,12 +63,12 @@ module.exports = function validatePsmrcparInput(data, type) {
         }
     }
 
-    if (Validator.isEmpty(data.psmrcown) && data.psstftyp != "A") {
-        errors.psmrcown = "FIELDISREQUIRED";
-    } else {
+    // if (Validator.isEmpty(data.psmrcown) ) {
+    //     errors.psmrcown = "FIELDISREQUIRED";
+    // } else {
         if (data.psmrcown.length > 25) errors.psmrcown = "INVALIDVALUELENGTH&25";
 
-    }
+    // }
 
     if (Validator.isEmpty(data.psmrcssm)) {
         errors.psmrcssm = "FIELDISREQUIRED";

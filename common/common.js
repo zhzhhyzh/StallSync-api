@@ -684,6 +684,21 @@ async function writeLog(hostname, url, caller, party, type, body, header, mode) 
     }
   });
 }
+
+async function compareObject(obj1, obj2) {
+  return new Promise((resolve, reject) => {
+    Object.keys(obj1).forEach((key) => {
+      if (JSON.stringify("" + obj1[key]) != JSON.stringify("" + obj2[key])) {
+        return resolve(false);
+      }
+    });
+    return resolve(true);
+  }).catch((err) => {
+    console.log(err);
+    return reject(err);
+  });
+}
+
 module.exports = {
     logging,
     retrieveSpecificGenCodes,
@@ -700,4 +715,5 @@ module.exports = {
     getAPI,
     postAPI,
     writeLog,
+    compareObject,
 }

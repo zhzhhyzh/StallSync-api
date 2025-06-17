@@ -20,19 +20,23 @@ const errorMsgCN = require("../constant/errorMessageCN");
 exports.detail = async (req, res) => {
     let document = req.query.document ? req.query.document : '';
     if (_.isEmpty(document)) return returnError(req, 500, "RECORDIDISREQUIRED", res);
-
     let docmas = await psdocmas.findOne({
         where: {
             psdocfnm: req.query.document
         }, raw: true
     });
+
     if (!docmas) return returnError(req, 500, "DOCUMENTNOTFOUND", res);
 
     let DIR = "";
     let type = docmas.psdoctyp;
     if (type == 1) DIR = constant.documentTempPath;
 
-
+    else if (type == "2") DIR = constant.staffImagePath;
+    else if (type== "3") DIR = constant.merchantImagePath;
+    else if (type == "4") DIR = constant.ssmImagePath;
+    else if (type == "5") DIR = constant.productImagePath;
+    else if (type == "6") DIR = constant.announcementImg;
     let outputpath = DIR + document;
     // Check in Temp Folder if Image exist
     let file = fs.existsSync(outputpath);

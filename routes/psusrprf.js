@@ -22,10 +22,10 @@ router.post("/login_m", psusrprf.login_m);
 // @access  Public
 router.post('/reset', psusrprf.reset);
 
-// // @route   GET api/psusrprf/profile
-// // @desc    User Profile
-// // @access  Private
-// router.get('/profile', authenticateRoute, psusrprf.profile);
+// @route   GET api/psusrprf/profile
+// @desc    User Profile
+// @access  Private
+router.get('/profile', authenticateRoute, psusrprf.profile);
 
 // @route   POST api/psusrprf/change-password
 // @desc    Update user Password
@@ -40,7 +40,7 @@ router.post("/create", authenticateRoute, psusrprf.create);
 // // @route   POST api/psusrprf/update-profile
 // // @desc    Update user Profile
 // // @access  Public
-// router.post('/update_profile', authenticateRoute, psusrprf.update_profile);
+router.post('/update_profile', authenticateRoute, psusrprf.update_profile);
 
 // @route   GET api/psusrprf/list
 // @desc    List System Parameter

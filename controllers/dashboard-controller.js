@@ -10,7 +10,7 @@ const {
     psmrcpar,
     psusrprf,
     pssysann,
-    psanndtl
+
 } = db;
 
 // Common Functions
@@ -75,57 +75,57 @@ exports.main = async (req, res) => {
 
 //Announcement Build
 const buildOption = async (req) => {
-//   const userAnnouncements = await psanndtl.findAll({
-//     where: { psusrnme: req.user.psusrnme },
-//     attributes: ['psannuid'],
-//     raw: true
-//   });
+    //   const userAnnouncements = await psanndtl.findAll({
+    //     where: { psusrnme: req.user.psusrnme },
+    //     attributes: ['psannuid'],
+    //     raw: true
+    //   });
 
-//   const userAnnIds = userAnnouncements.map(a => a.psannuid);
+    //   const userAnnIds = userAnnouncements.map(a => a.psannuid);
 
-  const systemAnnouncements = await pssysann.findAll({
-    // where: { psannast: 'Y' },
-    attributes: ['psannuid'],
-    raw: true
-  });
+    const systemAnnouncements = await pssysann.findAll({
+        // where: { psannast: 'Y' },
+        attributes: ['psannuid'],
+        raw: true
+    });
 
-  const systemAnnIds = systemAnnouncements.map(a => a.psannuid);
+    const systemAnnIds = systemAnnouncements.map(a => a.psannuid);
 
-  // Merge and deduplicate
-  const allAnnIds = Array.from(new Set([ ...systemAnnIds]));
+    // Merge and deduplicate
+    const allAnnIds = Array.from(new Set([...systemAnnIds]));
 
-  // Check if empty
-  if (allAnnIds.length === 0) {
-    return { psannuid: { [Op.eq]: null } }; // Will return no rows
-  }
+    // Check if empty
+    if (allAnnIds.length === 0) {
+        return { psannuid: { [Op.eq]: null } }; // Will return no rows
+    }
 
-  return { psannuid: { [Op.in]: allAnnIds } };
+    return { psannuid: { [Op.in]: allAnnIds } };
 };
 
 const enrichAnnouncements = async (rows, req) => {
-  return Promise.all(
-    rows.map(async (obj) => {
-      if (obj.psanntyp) {
-        const description = await common.retrieveSpecificGenCodes(
-          req,
-          "ANNTYP",
-          obj.psanntyp
-        );
-        obj.psanntypdsc = description.prgedesc || "";
-      }
-      if (obj.psannsts) {
-        const description = await common.retrieveSpecificGenCodes(
-          req,
-          "YESORNO",
-          obj.psannsts
-        );
-        obj.psannstsdsc = description.prgedesc || "";
-      }
-      
-      obj.psanndat = await common.formatDateTime(obj.psanndat, "24");
-      return obj;
-    })
-  );
+    return Promise.all(
+        rows.map(async (obj) => {
+            if (obj.psanntyp) {
+                const description = await common.retrieveSpecificGenCodes(
+                    req,
+                    "ANNTYP",
+                    obj.psanntyp
+                );
+                obj.psanntypdsc = description.prgedesc || "";
+            }
+            if (obj.psannsts) {
+                const description = await common.retrieveSpecificGenCodes(
+                    req,
+                    "YESORNO",
+                    obj.psannsts
+                );
+                obj.psannstsdsc = description.prgedesc || "";
+            }
+
+            obj.psanndat = await common.formatDateTime(obj.psanndat, "24");
+            return obj;
+        })
+    );
 };
 
 
@@ -149,7 +149,6 @@ const getNumberBoard = async (req) => {
     let countPrd = 0;
 
     if (req.user.psusrtyp === "ADM") {
-        // Admin sees all
         const { count: ordCount } = await psordpar.findAndCountAll({
             raw: true,
             attributes: ["psorduid"]
@@ -160,10 +159,7 @@ const getNumberBoard = async (req) => {
         });
         countOrd = ordCount;
         countPrd = prdCount;
-    }
-
-    if (req.user.psusrtyp === "MCH") {
-        // Merchant sees own
+    } else if (req.user.psusrtyp === "MCH") {
         const { count: ordCount } = await psordpar.findAndCountAll({
             where: { psmrcuid: req.user.psmrcuid },
             raw: true,
@@ -178,12 +174,13 @@ const getNumberBoard = async (req) => {
         countPrd = prdCount;
     }
 
-    return {
-        countMch,
-        countMbr,
-        countOrd,
-        countPrd
-    };
+    // Return in required format
+    return [
+        { counts: countMbr, description: "Member" },
+        { counts: countMch, description: "Merchant" },
+        { counts: countOrd, description: "Order" },
+        { counts: countPrd, description: "Product" }
+    ];
 };
 
 

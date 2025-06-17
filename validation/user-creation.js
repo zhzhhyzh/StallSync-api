@@ -11,6 +11,7 @@ module.exports = function userCreationValidation(data, flag) {
   data.psusrtyp = !isEmpty(data.psusrtyp) ? data.psusrtyp : '';
   data.psusrpwd = !isEmpty(data.psusrpwd) ? data.psusrpwd : '';
   data.psusrphn = !isEmpty(data.psusrphn) ? data.psusrphn : '';
+  data.psusrpre = !isEmpty(data.psusrpre) ? data.psusrpre : '';
 
   if (Validator.isEmpty(data.psusrunm)) {
     errors.psusrunm = "FIELDISREQUIRED";
@@ -46,6 +47,12 @@ module.exports = function userCreationValidation(data, flag) {
     errors.psusrphn = "FIELDISREQUIRED";
   } else {
     if (data.psusrphn.length > 20) errors.psusrphn = 'INVALIDVALUELENGTH&20';
+  }
+
+    if (Validator.isEmpty(data.psusrpre)) {
+    errors.psusrpre = "FIELDISREQUIRED";
+  } else {
+    if (data.psusrpre.length > 20) errors.psusrpre = 'INVALIDVALUELENGTH&20';
   }
 
   return {
