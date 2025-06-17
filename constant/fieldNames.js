@@ -56,8 +56,8 @@ const prgeldes = "General Code Local Description";
 const prgtydsc = "General Type Code Description";
 const prgtylds = "General Type Code Local Description";
 const prgtylen = "General Type Length";
-const prgtyman = "Mandatory (GTMAND: M-Mandatory, O-Optional)";
-const prgtycat = "Category (GTCAT: B - Business, T - Technical)";
+const prgtyman = "Mandatory";
+const prgtycat = "Category";
 
 //prpwdpol
 const prpwdatm = "Failed Attempts to Lock Account";
@@ -84,7 +84,7 @@ const prmntusr = "Maintenance User";
 const psdocfnm = "Document File Name";
 const psdoconm = "Original File Name";
 const psdocudt = "Upload Date";
-const psdoctyp = "Document Path (1: temp_document, 2: store_front_image, 3: store_profile_picture_image)";
+const psdoctyp = "Document Path";
 const psdocext = "Document Extension";
 
 //psmbrprf
@@ -157,7 +157,7 @@ const psprdmnd = "Mandatory Indicator";
 const psprdpri = "Price";
 
 //psprdinv
-const psinvsty = "Stock Type (STKTYP)";
+const psinvsty = "Stock Type";
 const psinvqty = "Quantity";
 const psinvsdt = "Stock Date";
 
@@ -166,13 +166,13 @@ const psprdnme = "Product Name";
 const psprddsc = "Product Description";
 const psprdlds = "Product Local Description";
 const psprdimg = "Product Image";
-const psprdtyp = "Product Type (PRODTYP)";
-const psprdcat = "Product Category (PRODCAT)";
-const psprdfvg = "For Vegetarian (YESORNO)";
-const psprdhal = "Is Halal (YESORNO)";
-const psprdsts = "Product Status (PRODSTS)";
+const psprdtyp = "Product Type";
+const psprdcat = "Product Category";
+const psprdfvg = "For Vegetarian";
+const psprdhal = "Is Halal";
+const psprdsts = "Product Status";
 const psprdsdt = "Status Date";
-const psprdcid = "Countable Indicator (YESORNO)";
+const psprdcid = "Countable Indicator";
 const psprdlsr = "Low Stock Reminder";
 const psprdstk = "Stock";
 const psprdddt = "Discount Date";
@@ -185,8 +185,8 @@ const psprdrtg = "Rating";
 const psrolcde = "Role Code";
 const psroldsc = "Role Description";
 const psrollds = "Role Local Description";
-const psrolibi = "Interbranch Data Inquiry (YESORNO)";
-const psrolibm = "Interbranch Data Maintenance (YESORNO)";
+const psrolibi = "Interbranch Data Inquiry";
+const psrolibm = "Interbranch Data Maintenance";
 
 //psrwdpar
 const psrwdnme = "Reward Name";
@@ -194,13 +194,13 @@ const psrwddsc = "Reward Description";
 const psrwdlds = "Reward Local Description";
 const psrwdfdt = "From Date";
 const psrwdtdt = "To Date";
-const psrwdtyp = "Discount Type (DISTYPE)";
+const psrwdtyp = "Discount Type";
 const psrwddva = "Discount Value";
-const psrwdism = "Min Indicator (YES/NO)";
+const psrwdism = "Min Indicator";
 const psrwdmin = "Min Amount";
-const psrwdica = "Capped Indicator (YES/NO)";
+const psrwdica = "Capped Indicator";
 const psrwdcap = "Capped Amount";
-const psrwdaam = "Applicable to All Merchant (YES/NO)";
+const psrwdaam = "Applicable to All Merchant";
 const psrwdsts = "Reward Status";
 const psrwdqty = "Quantity";
 
@@ -247,7 +247,7 @@ const psannimg = "Image";
 //pssyspar
 const pscomnme = "Company Name";
 const pscomidn = "Company ID Number";
-const prpwdpol = "Password Policy Indicator (YESORNO)";
+const prpwdpol = "Password Policy Indicator";
 const pslotime = "Auto Logout timer(Seconds)";
 
 //pstblkey
@@ -265,15 +265,15 @@ const pstblpnt = "Table Parent";
 const psusrnam = "Name";
 const psusreml = "Email Address";
 const psusrpwd = "Password";
-const psusrsts = "Account Status - General Code (USRSTS, A - Active, L - Locked , C - Closed, E-Expired)";
-const psusrtyp = "User Type - General Code (USRTYP, ADM - Admin, MBR - Member, MCH - Merchant)";
+const psusrsts = "Account Status";
+const psusrtyp = "User Type";
 const psusrphn = "HP Number";
-const psusrpre = "HP Prefix (HPPRE)";
+const psusrpre = "HP Prefix";
 const psstsdt8 = "Status Change Date";
 const pspwdatm = "Password Attempts";
 const pschgpwd = "Change Password Flag";
 const psfstlgn = "First Login Flag";
-const psusrrol = "User Role - General Code (USRROLE)";
+const psusrrol = "User Role";
 const psmsgurd = "Unread Messages";
 
 //usrlgnpf
