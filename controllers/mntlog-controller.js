@@ -1,5 +1,6 @@
 // Import
 const db = require("../models");
+const Op = db.Sequelize.Op;
 
 // Table File
 const mntlogpf = db.mntlogpf;

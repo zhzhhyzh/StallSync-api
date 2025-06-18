@@ -146,4 +146,32 @@ router.get("/psmrcpar", authenticateRoute, async (req, res) => {
     });
 });
 
+
+// @route   GET api/ddl/fieldNames
+// @desc    Field names
+// @access  Private
+router.get("/fieldNames", authenticateRoute, async (req, res) => {
+  let fields = require("../constant/fieldNames");
+  if (req.query.search && !_.isEmpty('' + req.query.search)) fields = await match(fields, req.query.search);
+
+  // Format
+  let keys = Object.keys(fields);
+  let newData = [];
+  for (var i = 0; i < keys.length; i++) {
+    let key = keys[i];
+    newData.push({
+      field: key,
+      description: fields[key]
+    });
+  }
+
+  newData = newData.sort((a, b) => { return a.field.localeCompare(b.field) });
+  for (var i = 0; i < newData.length; i++) {
+    newData[i].id = (i + 1);
+  }
+
+  return returnSuccess(200, newData, res);
+});
+
+
 module.exports = router;

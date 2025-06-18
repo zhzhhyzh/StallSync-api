@@ -37,8 +37,8 @@ exports.list = async (req, res) => {
         }
     }
 
-    if (req.query.psrolibi && !_.isEmpty(req.query.psrolibi)) option.psrolibi = req.query.psrolibi;
-    if (req.query.psrolibm && !_.isEmpty(req.query.psrolibm)) option.psrolibm = req.query.psrolibm;
+    // if (req.query.psrolibi && !_.isEmpty(req.query.psrolibi)) option.psrolibi = req.query.psrolibi;
+    // if (req.query.psrolibm && !_.isEmpty(req.query.psrolibm)) option.psrolibm = req.query.psrolibm;
 
 
     const { count, rows } = await psrolpar.findAndCountAll({
@@ -53,15 +53,15 @@ exports.list = async (req, res) => {
     let newRows = [];
     for (var i = 0; i < rows.length; i++) {
         let obj = rows[i];
-        if (!_.isEmpty(obj.psrolibi)) {
-            let tbltyp = await common.retrieveSpecificGenCodes(req, 'DATAACCESS', obj.psrolibi);
-            obj.psrolibidsc = tbltyp.prgedesc ? tbltyp.prgedesc : '';
-        }
+        // if (!_.isEmpty(obj.psrolibi)) {
+        //     let tbltyp = await common.retrieveSpecificGenCodes(req, 'DATAACCESS', obj.psrolibi);
+        //     obj.psrolibidsc = tbltyp.prgedesc ? tbltyp.prgedesc : '';
+        // }
 
-        if (!_.isEmpty(obj.psrolibm)) {
-            let tbltyp = await common.retrieveSpecificGenCodes(req, 'DATAACCESS', obj.psrolibm);
-            obj.psrolibmdsc = tbltyp.prgedesc ? tbltyp.prgedesc : '';
-        }
+        // if (!_.isEmpty(obj.psrolibm)) {
+        //     let tbltyp = await common.retrieveSpecificGenCodes(req, 'DATAACCESS', obj.psrolibm);
+        //     obj.psrolibmdsc = tbltyp.prgedesc ? tbltyp.prgedesc : '';
+        // }
 
 
         newRows.push(obj);
@@ -94,16 +94,16 @@ exports.create = async (req, res) => {
     const { errors, isValid } = validatePsrolparInput(req.body, 'A');
     if (!isValid) return returnError(req, 400, errors, res);
 
-    const description1 = await common.retrieveSpecificGenCodes(req, 'DATAACCESS', req.body.psrolibi);
-    if (!description1 || _.isEmpty(description1.prgedesc)) {
-        return returnError(req, 400, { psrolibi: "INVALIDDATAVALUE" }, res);
-    }
+    // const description1 = await common.retrieveSpecificGenCodes(req, 'DATAACCESS', req.body.psrolibi);
+    // if (!description1 || _.isEmpty(description1.prgedesc)) {
+    //     return returnError(req, 400, { psrolibi: "INVALIDDATAVALUE" }, res);
+    // }
 
 
-    const description2 = await common.retrieveSpecificGenCodes(req, 'DATAACCESS', req.body.psrolibm);
-    if (!description2 || _.isEmpty(description2.prgedesc)) {
-        return returnError(req, 400, { psrolibm: "INVALIDDATAVALUE" }, res);
-    }
+    // const description2 = await common.retrieveSpecificGenCodes(req, 'DATAACCESS', req.body.psrolibm);
+    // if (!description2 || _.isEmpty(description2.prgedesc)) {
+    //     return returnError(req, 400, { psrolibm: "INVALIDDATAVALUE" }, res);
+    // }
 
     psrolpar.findOne({
         where: {
@@ -116,8 +116,8 @@ exports.create = async (req, res) => {
                 psrolcde: req.body.psrolcde,
                 psroldsc: req.body.psroldsc,
                 psrollds: req.body.psrollds,
-                psrolibm: req.body.psrolibm,
-                psrolibi: req.body.psrolibi,
+                // psrolibm: req.body.psrolibm,
+                // psrolibi: req.body.psrolibi,
                 crtuser: req.user.psusrunm,
                 mntuser: req.user.psusrunm
             }
@@ -142,15 +142,15 @@ exports.update = async (req, res) => {
     const { errors, isValid } = validatePsrolparInput(req.body, 'C');
     if (!isValid) return returnError(req, 400, errors, res);
 
-    const description1 = await common.retrieveSpecificGenCodes(req, 'DATAACCESS', req.body.psrolibi);
-    if (!description1 || _.isEmpty(description1.prgedesc)) {
-        return returnError(req, 400, { psrolibi: "INVALIDDATAVALUE" }, res);
-    }
+    // const description1 = await common.retrieveSpecificGenCodes(req, 'DATAACCESS', req.body.psrolibi);
+    // if (!description1 || _.isEmpty(description1.prgedesc)) {
+    //     return returnError(req, 400, { psrolibi: "INVALIDDATAVALUE" }, res);
+    // }
 
-    const description2 = await common.retrieveSpecificGenCodes(req, 'DATAACCESS', req.body.psrolibm);
-    if (!description2 || _.isEmpty(description2.prgedesc)) {
-        return returnError(req, 400, { psrolibm: "INVALIDDATAVALUE" }, res);
-    }
+    // const description2 = await common.retrieveSpecificGenCodes(req, 'DATAACCESS', req.body.psrolibm);
+    // if (!description2 || _.isEmpty(description2.prgedesc)) {
+    //     return returnError(req, 400, { psrolibm: "INVALIDDATAVALUE" }, res);
+    // }
 
     await psrolpar.findOne({
         where: {
@@ -165,8 +165,8 @@ exports.update = async (req, res) => {
             const new_found = {
                 psroldsc: req.body.psroldsc,
                 psrollds: req.body.psrollds,
-                psrolibm: req.body.psrolibm,
-                psrolibi: req.body.psrolibi,
+                // psrolibm: req.body.psrolibm,
+                // psrolibi: req.body.psrolibi,
                 mntuser: req.user.psusrunm
             }
 
