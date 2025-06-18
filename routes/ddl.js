@@ -8,6 +8,7 @@ const psrolpar = db.psrolpar;
 const psusrprf = db.psusrprf;
 const psmbrprf = db.psmbrprf;
 const psstfpar = db.psstfpar;
+const psmrcpar = db.psmrcpar;
 
 
 const Op = db.Sequelize.Op;
@@ -57,36 +58,36 @@ router.get("/psrolpar", authenticateRoute, async (req, res) => {
 // @access  Private
 
 router.get("/merchantUser", authenticateRoute, async (req, res) => {
-  const psmrcuid = req.query.psmrcuid;
-  if (!psmrcuid) return returnError(req, 400, "REQUIREDVALUE", res);
+    const psmrcuid = req.query.psmrcuid;
+    if (!psmrcuid) return returnError(req, 400, "FIELDISREQUIRED", res);
 
-  try {
-    // 1. Find all usernames in psstfpar for the given merchant
-    const assignedStaff = await psstfpar.findAll({
-      where: { psmrcuid },
-      attributes: ['psusrunm'],
-      raw: true
-    });
+    try {
+        // 1. Find all usernames in psstfpar for the given merchant
+        const assignedStaff = await psstfpar.findAll({
+            where: { psmrcuid },
+            attributes: ['psusrunm'],
+            raw: true
+        });
 
-    const assignedUsernames = assignedStaff.map(u => u.psusrunm);
+        const assignedUsernames = assignedStaff.map(u => u.psusrunm);
 
-    // 2. Find all users of type MCH that are NOT in the assignedUsernames
-    const availableUsers = await psusrprf.findAll({
-      where: {
-        psusrtyp: "MCH",
-        psusrunm: {
-          [Op.notIn]: assignedUsernames.length > 0 ? assignedUsernames : ['']
-        }
-      },
-      attributes: ["psusrunm", "psusrnam"],
-      raw: true
-    });
+        // 2. Find all users of type MCH that are NOT in the assignedUsernames
+        const availableUsers = await psusrprf.findAll({
+            where: {
+                psusrtyp: "MCH",
+                psusrunm: {
+                    [Op.notIn]: assignedUsernames.length > 0 ? assignedUsernames : ['']
+                }
+            },
+            attributes: ["psusrunm", "psusrnam"],
+            raw: true
+        });
 
-    return returnSuccess(200, { data: availableUsers }, res);
-  } catch (err) {
-    console.error(err);
-    return returnError(req, 400, "UNEXPECTEDERROR", res);
-  }
+        return returnSuccess(200, { data: availableUsers }, res);
+    } catch (err) {
+        console.error(err);
+        return returnError(req, 400, "UNEXPECTEDERROR", res);
+    }
 });
 
 
@@ -94,6 +95,10 @@ router.get("/merchantUser", authenticateRoute, async (req, res) => {
 // @desc    Courier
 // @access  Private
 router.get("/availableUser", authenticateRoute, async (req, res) => {
+    const psstftyp = req.query.psstftyp;
+    if (!psstftyp) return returnError(req, 400, "FIELDISREQUIRED", res);
+
+    const psusrtyp = psstftyp == "A" ? "ADM" : "MCH";
     try {
         const usedInStaff = await psstfpar.findAll({
             raw: true,
@@ -112,6 +117,7 @@ router.get("/availableUser", authenticateRoute, async (req, res) => {
 
         const availableUsers = await psusrprf.findAll({
             where: {
+                psusrtyp: psusrtyp,
                 psusrunm: {
                     [Op.notIn]: usedUsernames
                 }
@@ -125,6 +131,19 @@ router.get("/availableUser", authenticateRoute, async (req, res) => {
         console.error(err);
         return returnError(req, 400, "UNEXPECTEDERROR", res);
     }
+});
+
+// @route   POST api/ddl/psmrcpar
+// @desc    Courier
+// @access  Private
+router.get("/psmrcpar", authenticateRoute, async (req, res) => {
+    psmrcpar.findAll({ raw: true, attributes: ["psmrcuid", "psmrcnme"] }).then(result => {
+        if (result) return returnSuccess(200, { data: result }, res);
+        else return returnSuccess(200, { data: [] }, res);
+    }).catch(err => {
+        console.log(err);
+        return returnError(req, 400, "UNEXPECTEDERROR", res);
+    });
 });
 
 module.exports = router;

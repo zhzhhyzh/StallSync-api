@@ -113,7 +113,7 @@ exports.list = async (req, res) => {
           ? description.prgedesc
           : "";
     }
-   
+   obj.psstfjdt = await common.formatDate(obj.psstfjdt,"/")
     newRows.push(obj);
   }
 
