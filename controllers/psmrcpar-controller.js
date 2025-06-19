@@ -109,6 +109,7 @@ exports.list = async (req, res) => {
       raw: true,
       attributes: ["psusrnam"]
     });
+    console.log("KKLKLL: ", result)
     obj.psmrcowndsc = result?.psusrnam ?? "-";
 
     // }
@@ -416,7 +417,19 @@ exports.update = async (req, res) => {
   //Validation
   const { errors, isValid } = validatePsmrcparInput(req.body, "C");
   if (!isValid) return returnError(req, 400, errors, res);
+  if (!_.isEmpty(req.body.psmrcown)) {
+    //Check Username
+    let flag = await psusrprf.findOne({
+      where: {
+        psusrunm: req.body.psmrcown
+      }, raw: true, attributes: ['psusrunm', 'psusrnam']
+    });
 
+    if (!flag) {
+      return returnError(req, 400, { psusrunm: "NORECORDFOUND" }, res)
+    }
+
+  }
 
 
   await psmrcpar

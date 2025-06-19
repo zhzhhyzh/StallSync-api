@@ -282,6 +282,20 @@ const pslgidat = "Login Time";
 const pslgodat = "Logout Time";
 const pslgntkn = "Login Token";
 
+//psholpar
+const psholcde = "Holiday ID";
+const psholdsc = "Holiday Description";
+const pshollds = "Holiday Local Description";
+const psholtyp = "Holiday Type";
+const psholdat = "Holiday Date";
+const psholday = "Holiday Days";
+const psholsts = "Holiday Status";
+const psholstd = "Status Date";
+//pswdypar
+const pswdycde = "Working Day Code";
+const pswdydsc = "Description";
+const pswdylds = "Local Description";
+const pswdyind = "Work Day Indicator";
 
 module.exports = {
     // Misc
@@ -561,5 +575,22 @@ module.exports = {
     pslgnsts,
     pslgidat,
     pslgodat,
-    pslgntkn
+    pslgntkn,
+
+    //psholpar
+    psholcde,
+    psholdsc,
+    pshollds,
+    psholtyp,
+    psholdat,
+    psholdat,
+    psholday,
+    psholsts,
+    psholstd,
+
+    //pswdypar
+    pswdycde,
+    pswdydsc,
+    pswdylds,
+    pswdyind,
 };

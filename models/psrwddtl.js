@@ -1,8 +1,8 @@
 // Order Item
 
 module.exports = (sequelize, Sequelize) => {
-  const psorditm = sequelize.define("psorditm", {
-    psorduid: {
+  const psrwddtl = sequelize.define("psrwddtl", {
+    psrwduid: {
       type: Sequelize.STRING(25),
       allowNull: false,
       // Order Id
@@ -19,10 +19,10 @@ module.exports = (sequelize, Sequelize) => {
       indexes: [
         {
           unique: true,
-          fields: ['psorduid', 'psmrcuid']
+          fields: ['psrwduid', 'psmrcuid']
         }
       ]
     });
 
-  return psorditm;
+  return psrwddtl;
 };

@@ -5,6 +5,7 @@ const _ = require("lodash");
 // Table File
 const psrwdpar = db.psrwdpar;
 const psrwddtl = db.psrwddtl;
+const psmrcpar = db.psmrcpar;
 
 // Common Function
 const Op = db.Sequelize.Op;
@@ -13,6 +14,7 @@ const returnSuccess = require("../common/success");
 const returnSuccessMessage = require("../common/successMessage");
 const common = require("../common/common");
 const general = require("../common/general");
+const connection = require("../common/db");
 
 // Input Validation
 const validatePsrwdparInput = require("../validation/psrwdpar-validation");
@@ -26,11 +28,6 @@ exports.list = async (req, res) => {
   else from = parseInt(req.query.page) * parseInt(limit);
 
   let option = {};
-
-  req.query.psrwdpar = req.query.psrwdpar ? req.query.psrwdpar : "";
-  req.query.psrwddsc = req.query.psrwddsc ? req.query.psrwddsc : "";
-
-
 
   if (req.query.search && !_.isEmpty(req.query.search)) {
     option = {
@@ -353,7 +350,7 @@ exports.create = async (req, res) => {
 
               crtuser: req.user.psusrunm,
               mntuser: req.user.psusrunm,
-            })
+            }, { transaction: t })
             .then(async (data) => {
               let created = data.get({ plain: true });
               for (let i = 0; i < rewardDetail.length; i++) {
@@ -373,7 +370,7 @@ exports.create = async (req, res) => {
 
               for (let i = 0; i < rewardDetail.length; i++) {
                 common.writeMntLog(
-                  "psrwdpar",
+                  "psrwddtl",
                   null,
                   null,
                   created.psrwduid + "-" + rewardDetail[i],
@@ -549,7 +546,7 @@ exports.update = async (req, res) => {
               where: {
                 id: data.id,
               },
-            }
+            }, { transaction: t }
           )
           .then(async () => {
             for (let i = 0; i < toCreate.length; i++) {
@@ -643,7 +640,7 @@ exports.delete = async (req, res) => {
         psrwdpar
           .destroy({
             where: { id: trnscd.id },
-          })
+          }, { transaction: t })
           .then(async () => {
             await psrwddtl.findAll({
               where: {
