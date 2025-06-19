@@ -11,7 +11,8 @@ const returnError = require("../common/error");
 const returnSuccess = require("../common/success");
 const returnSuccessMessage = require("../common/successMessage");
 const common = require("../common/common");
-const general = require("../common/general");
+const connection = require("../common/db");
+const genConfig = require("../constant/generalConfig");
 
 // Input Validation
 const validatePssysannInput = require("../validation/pssysann-validation");
@@ -60,6 +61,7 @@ exports.list = async (req, res) => {
       let description = await common.retrieveSpecificGenCodes(req, 'YESORNO', obj.psannsts);
       obj.psannstsdsc = description.prgedesc && !_.isEmpty(description.prgedesc) ? description.prgedesc : '';
     }
+    obj.psanndat = await common.formatDate(obj.psanndat, "/");
     newRows.push(obj);
   }
 
