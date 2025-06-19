@@ -2,15 +2,15 @@ const db = require("../models");
 const _ = require("lodash");
 const multer = require("multer");
 const { parse } = require("csv-parse");
-
+const pathModule = require('path');
 const fs = require("fs");
+const fsP = require("fs").promises;
 const { v4: uuidv4 } = require("uuid");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const moment = require("moment");
 const axios = require("axios");
 const puppeteer = require("puppeteer");
 const { degrees, PDFDocument, rgb, StandardFonts } = require("pdf-lib");
-const fsP = require("fs/promises");
 const path = require("path");
 
 const mntlogpf = db.mntlogpf;
@@ -19,6 +19,7 @@ const prgencde = db.prgencde;
 const pssyspar = db.pssyspar;
 const syrnsqpf = db.syrnsqpf;
 const psdocmas = db.psdocmas;
+const prrpthis = db.prrpthis;
 
 const rc = require("./redis");
 
@@ -81,10 +82,10 @@ async function logging(type, message) {
 async function retrieveSpecificGenCodes(req, gentype, gencode) {
   return new Promise((resolve, reject) => {
     prgentyp.findOne({
-        where: { prgtycde: gentype },
-        raw: true,
-        attributes: ["id"],
-      })
+      where: { prgtycde: gentype },
+      raw: true,
+      attributes: ["id"],
+    })
       .then(async (typ) => {
         if (typ) {
           await prgencde
@@ -699,21 +700,125 @@ async function compareObject(obj1, obj2) {
   });
 }
 
+async function writeReport(
+  req,
+  header,
+  data,
+  rpthis,
+  filename,
+  type,
+  date,
+  format = "CSV" // default to CSV
+) {
+  return new Promise(async (resolve, reject) => {
+    const path = RPTPath + filename;
+    if (!fs.existsSync(RPTPath)) {
+      fs.mkdirSync(RPTPath, { recursive: true });
+    }
+
+
+    if (format === "CSV") {
+      const csvWriter = createCsvWriter({
+        path: path,
+        header: header,
+        alwaysQuote: true,
+      });
+
+      try {
+        await csvWriter.writeRecords(data);
+        appendStart(req, filename, date, type);
+        await prrpthis.update(
+          { prrptsts: "C" },
+          { where: { id: rpthis.id } }
+        );
+
+        resolve("");
+      } catch (err) {
+        console.error("writeReport CSV error:", err);
+
+        await prrpthis.update(
+          { prrptsts: "E" },
+          { where: { id: rpthis.id } }
+        );
+
+        reject(err);
+      }
+    } else {
+      console.warn("Unsupported format:", format);
+      reject(new Error("Unsupported format: " + format));
+    }
+  });
+}
+async function appendStart(req, filename, date, type, deliveryType = "") {
+  try {
+    const rpt = await prrpthis.findOne({
+      where: { prrptnme: filename },
+      raw: true,
+    });
+
+    if (!rpt) throw new Error("Report record not found");
+
+    const filePath = path.join(RPTPath, filename);
+
+    const firstLine = rpt.prrpttyp ? `${rpt.prrpttyp}\n` : "";
+
+    let secondLinePrefix = "";
+    if (type === "M") secondLinePrefix = "Month: ";
+    else if (type === "Y") secondLinePrefix = "Year: ";
+    else if (type === "T") secondLinePrefix = "Quarter: ";
+
+    const secondLine = date ? `${secondLinePrefix}${date}\n` : "";
+
+    const fileContent = await fsP.readFile(filePath, "utf8"); //  No error here
+    const newContent = `${firstLine}${secondLine}${fileContent}`;
+
+    await fsP.writeFile(filePath, newContent, "utf8"); //  Proper write
+
+  } catch (err) {
+    console.error(`Error in appendStart() for: ${filename}`, err);
+    throw err;
+  }
+}
+
+async function convertDate(date) {
+  return new Promise((resolve, reject) => {
+    if (!date) return resolve("");
+    try {
+      let new_date = new Date(date);
+      console.log(new_date);
+      let dd = String(new_date.getDate()).padStart(2, "0");
+      var mm = String(new_date.getMonth() + 1).padStart(2, "0");
+      var yyyy = new_date.getFullYear();
+      let hh = String(new_date.getHours()).padStart(2, "0");
+      let mn = String(new_date.getMinutes()).padStart(2, "0");
+
+      let formatted = dd + "/" + mm + "/" + yyyy + " " + hh + ":" + mn;
+      return resolve(formatted);
+    } catch (ex) {
+      console.log(ex);
+      return resolve("");
+    }
+  });
+}
+
 module.exports = {
-    logging,
-    retrieveSpecificGenCodes,
-    writeMntLog,
-    formatDate,
-    formatDateTime,
-    getSysPar,
-    redisGet,
-    redisSet,
-    retrieveGenCodes,
-    getNextRunning,
-    formatDecimal,
-    writeImage,
-    getAPI,
-    postAPI,
-    writeLog,
-    compareObject,
+  logging,
+  retrieveSpecificGenCodes,
+  writeMntLog,
+  formatDate,
+  formatDateTime,
+  getSysPar,
+  redisGet,
+  redisSet,
+  retrieveGenCodes,
+  getNextRunning,
+  formatDecimal,
+  writeImage,
+  getAPI,
+  postAPI,
+  writeLog,
+  compareObject,
+  writeReport,
+  convertDate,
+  appendStart,
 }

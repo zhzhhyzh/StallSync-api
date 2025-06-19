@@ -29,7 +29,7 @@ exports.list = async (req, res) => {
   let option = {
     [Op.and]: []
   };
-
+  const mrcId = req.user.psmrcuid;
   if (req.user.psusrtyp == "MCH") {
     option[Op.and].push({
       psmrcuid: req.user.psmrcuid
@@ -57,13 +57,13 @@ exports.list = async (req, res) => {
   //   option[Op.and].push({ psprdfvg: req.query.psprdfvg });
   // }
 
-  // if (req.query.psprdhal && !_.isEmpty(req.query.psprdhal)) {
-  //   option[Op.and].push({ psprdhal: req.query.psprdhal });
-  // }
-
-  if (req.query.psmrcuid && !_.isEmpty(req.query.psmrcuid) && req.user.psusrtyp != "MCH") {
-    option[Op.and].push({ psmrcuid: req.query.psmrcuid });
+  if (req.query.psprdcat && !_.isEmpty(req.query.psprdcat)) {
+    option[Op.and].push({ psprdcat: req.query.psprdcat });
   }
+
+  // if (req.query.psmrcuid && !_.isEmpty(req.query.psmrcuid) && req.user.psusrtyp != "MCH") {
+  //   option[Op.and].push({ psmrcuid: req.query.psmrcuid });
+  // }
 
 
 
@@ -89,13 +89,15 @@ exports.list = async (req, res) => {
       ["psprduid", "id"],
       "psprduid",
       "psprdnme",
-      "psprdcrd",
       "psprddsc",
       "psmrcuid",
       "psprdtyp",
       "psprdcat",
       "psprdsts",
-      "psprdpri"
+
+      "psprdpri",
+      "psprdcrd",
+
     ],
     order: [["psprduid", "asc"]],
   });
@@ -141,6 +143,14 @@ exports.list = async (req, res) => {
           : "";
     }
 
+    let result = await psmrcpar.findOne({
+      where: {
+        psmrcuid: obj.psmrcuid
+      }, raw: true, attributes: ["psmrcnme"]
+    })
+
+    obj.psmrcuiddsc = result.psmrcnme
+
 
     if (!_.isEmpty(obj.psprdpri)) {
       obj.psprdpri = common.formatDecimal(obj.psprdpri);
@@ -155,6 +165,7 @@ exports.list = async (req, res) => {
       {
         total: count,
         data: newRows,
+        headerInfo: mrcId || "123",
         extra: { file: "psprdpar", key: ["psprduid"] },
       },
       res
@@ -243,12 +254,7 @@ exports.findOne = async (req, res) => {
 
 
 exports.create = async (req, res) => {
-  let merchantid = req.body.psmrcuid
-  if (req.user.psusrtyp == "MCH") {
-    option[Op.and].push({
-      merchantid: req.user.psmrcuid
-    })
-  }
+  let merchantid = req.user.psusrtyp == "MCH"? req.query.psmrcuid: req.body.psmrcuid;
 
   //Validation
   const { errors, isValid } = validatePsprdparInput(req.body, "A");

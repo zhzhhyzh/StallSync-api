@@ -46,6 +46,7 @@ const ACCOUNTLOCKED = "Account Has Been Locked, Please Contact Customer Service 
 const RESETDENIED = "This account has been closed. Password reset request denied";
 const INVALIDVALUELENGTHMIN = "Invalid Value Length - Minimum &length Characters";
 const REPORTTYPEISREQUIRED = "Report Type is Required";
+const INVALIDREPORTTYPE = "Report Type is Invalid";
 const INVALIDDATERANGE = "Invalid Date Range. To Date cannot be greater than From Date";
 const INVALIDOTP = "Invalid OTP, Please Request OTP to perform Verification Before Proceed";
 const PHNNOTVERIFICATION = "Mobile Number not Verified, Please Perform Verification Before Proceed";
@@ -151,5 +152,6 @@ module.exports = {
     TABLEUNAVAILABLE: TABLEUNAVAILABLE
     , RECORDOUTOFSYNC: RECORDOUTOFSYNC,
     CANNOTUSEPOINT: CANNOTUSEPOINT,
-    NOTAMEMBER: NOTAMEMBER
+    NOTAMEMBER: NOTAMEMBER,
+    INVALIDREPORTTYPE:INVALIDREPORTTYPE
 }

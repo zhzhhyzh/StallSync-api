@@ -4,11 +4,11 @@ const merchantImagePath = "./documents/merchant_image/";
 const ssmImagePath = "./documents/ssm_image/";
 const productImagePath = "./documents/product_image/";
 const announcementImg = "./documents/announcement_image/";
-// const reportPath = "./documents/reports/";
+const reportPath = "./documents/reports/";
 // const backupPath = "./backups/";
 // const bannerImagePath = "./documents/banner_image/";
 // const privilegeImagePath = "./documents/privilege_image/";
-// const RoomImagePath = "./documents/room_image/";
+const forecastImagePath = "./documents/forecast_image/";
 
 module.exports = {
     documentTempPath: documentTempPath,
@@ -18,7 +18,8 @@ module.exports = {
     productImagePath: productImagePath,
     announcementImg: announcementImg,
     // cardLayoutPath: cardLayoutPath,
-    // reportPath: reportPath,
+    reportPath: reportPath,
+    forecastImagePath: forecastImagePath,
     // backupPath: backupPath,
     // catalogueItemPath: catalogueItemPath,
     // voucherImagePath: voucherImagePath,

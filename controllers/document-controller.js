@@ -33,10 +33,12 @@ exports.detail = async (req, res) => {
     if (type == 1) DIR = constant.documentTempPath;
 
     else if (type == "2") DIR = constant.staffImagePath;
-    else if (type== "3") DIR = constant.merchantImagePath;
+    else if (type == "3") DIR = constant.merchantImagePath;
     else if (type == "4") DIR = constant.ssmImagePath;
     else if (type == "5") DIR = constant.productImagePath;
     else if (type == "6") DIR = constant.announcementImg;
+    else if (type == "7") DIR = constant.forecastImagePath;
+
     let outputpath = DIR + document;
     // Check in Temp Folder if Image exist
     let file = fs.existsSync(outputpath);
@@ -560,6 +562,7 @@ exports.download = async (req, res) => {
             else if (file.psdoctyp == "4") DIR = constant.ssmImagePath;
             else if (file.psdoctyp == "5") DIR = constant.productImagePath;
             else if (file.psdoctyp == "6") DIR = constant.announcementImg;
+            else if (file.psdoctyp == "7") DIR = constant.forecastImagePath;
 
             if (!fs.existsSync(DIR + filename)) return returnError(req, 500, "DOCUMENTNOTFOUND", res);
             else {
