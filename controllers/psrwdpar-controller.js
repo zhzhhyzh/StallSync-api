@@ -6,6 +6,8 @@ const _ = require("lodash");
 const psrwdpar = db.psrwdpar;
 const psrwddtl = db.psrwddtl;
 const psmrcpar = db.psmrcpar;
+const psordpar = db.psordpar;
+const psmbrprf = db.psmbrprf;
 
 // Common Function
 const Op = db.Sequelize.Op;
@@ -18,6 +20,7 @@ const connection = require("../common/db");
 
 // Input Validation
 const validatePsrwdparInput = require("../validation/psrwdpar-validation");
+const { where } = require("sequelize");
 
 exports.list = async (req, res) => {
   let limit = 10;
@@ -494,8 +497,9 @@ exports.update = async (req, res) => {
 
           }
         }
+
         const existingTypes = await psrwddtl.findAll({
-          where: { psrwduid: req.body.psrwduid },
+          where: { psrwduid: id },
           attributes: ["psmrcuid"],
           raw: true
         });
@@ -521,6 +525,7 @@ exports.update = async (req, res) => {
         if (fromDate <= today && today <= toDate) {
           status = "A"; // Active
         }
+
         psrwdpar
           .update(
             {
@@ -544,11 +549,12 @@ exports.update = async (req, res) => {
             },
             {
               where: {
-                id: data.id,
+                psrwduid: data.psrwduid,
               },
             }, { transaction: t }
           )
           .then(async () => {
+
             for (let i = 0; i < toCreate.length; i++) {
               psrwddtl
                 .create({
@@ -561,6 +567,7 @@ exports.update = async (req, res) => {
                   return returnError(req, 500, "UNEXPECTEDERROR", res);
                 });
             }
+
             for (let i = 0; i < toDelete.length; i++) {
               psrwddtl
                 .destroy({
@@ -581,7 +588,7 @@ exports.update = async (req, res) => {
             common.writeMntLog(
               "psrwdpar",
               data,
-              await psrwdpar.findByPk(data.id, { raw: true }),
+              await psrwdpar.findOne({ where: { psrwduid: id }, raw: true }),
               data.psrwduid,
               "C",
               req.user.psusrunm
@@ -591,21 +598,21 @@ exports.update = async (req, res) => {
                 "psrwddtl",
                 null,
                 null,
-                created.psrwduid + "-" + toCreate[i],
+                data.psrwduid + "-" + toCreate[i],
                 "A",
                 req.user.psusrunm,
-                "", created.psrwduid + "-" + toCreate[i]);
+                "", data.psrwduid + "-" + toCreate[i]);
             }
             for (let i = 0; i < toDelete.length; i++) {
               common.writeMntLog(
                 "psrwddtl",
                 null,
                 null,
-                created.psrwduid + "-" + toDelete[i],
+                data.psrwduid + "-" + toDelete[i],
                 "D",
                 req.user.psusrunm,
                 "",
-                created.psrwduid + "-" + toDelete[i],
+                data.psrwduid + "-" + toDelete[i],
 
               );
             }
@@ -669,11 +676,11 @@ exports.delete = async (req, res) => {
                   "psrwddtl",
                   null,
                   null,
-                  created.psrwduid + "-" + existing[i],
+                  trnscd.psrwduid + "-" + existing[i],
                   "D",
                   req.user.psusrunm,
                   "",
-                  created.psrwduid + "-" + existing[i],
+                  trnscd.psrwduid + "-" + existing[i],
 
                 );
               }
@@ -696,4 +703,94 @@ exports.delete = async (req, res) => {
       console.log(err);
       return returnError(req, 500, "UNEXPECTEDERROR", res);
     });
+};
+
+
+//List redemption
+
+exports.listRdmp = async (req, res) => {
+  const id = req.query.id ? req.query.id : "";
+  if (id == "") return returnError(req, 500, "RECORDIDISREQUIRED", res);
+
+  let limit = 10;
+  if (req.query.limit) limit = req.query.limit;
+
+  let from = 0;
+  if (!req.query.page) from = 0;
+  else from = parseInt(req.query.page) * parseInt(limit);
+
+  let option = {};
+
+  const fromDateStr = '' + req.query.from;
+  const toDateStr = '' + req.query.to;
+
+  if (!_.isEmpty(fromDateStr) || !_.isEmpty(toDateStr)) {
+    let dateCondition = {};
+
+    if (!_.isEmpty(fromDateStr)) {
+      let fromDate = new Date(fromDateStr);
+      if (!isNaN(fromDate.getTime())) {
+        fromDate.setHours(0, 0, 0, 0);
+        dateCondition[Op.gte] = fromDate;
+      }
+    }
+
+    if (!_.isEmpty(toDateStr)) {
+      let toDate = new Date(toDateStr);
+      if (!isNaN(toDate.getTime())) {
+        toDate.setHours(23, 59, 59, 999);
+        dateCondition[Op.lte] = toDate;
+      }
+    }
+
+    if (!_.isEmpty(dateCondition)) {
+      option[Op.and].push({ psinvsdt: dateCondition });
+    }
+  }
+
+  option.psrwduid = req.query.id;
+
+
+  const { count, rows } = await psordpar.findAndCountAll({
+    limit: parseInt(limit),
+    offset: from,
+    where: option,
+    raw: true,
+    attributes: [
+      ["psorduid", "id"],
+      "psorduid",
+      "psordodt",
+      "psmbruid",
+    ],
+    order: [["id", "asc"]],
+  });
+
+  let newRows = [];
+  for (var i = 0; i < rows.length; i++) {
+    let obj = rows[i];
+
+    let result = await psmbrprf.findOne({
+      where: {
+        psmbruid: obj.psmbruid
+      }, raw: true, attributes: ["psmbrnam"]
+    })
+
+    obj.psmrbnam = result.psmbrnam;
+
+    obj.psordodt = await common.formatDate(obj.psordodt);
+
+    newRows.push(obj);
+  }
+
+  if (count > 0)
+    return returnSuccess(
+      200,
+      {
+        total: count,
+        data: newRows,
+        extra: { file: "psordpar", key: ["psorduid"] },
+      },
+      res
+    );
+  else return returnSuccess(200, { total: 0, data: [] }, res);
 };

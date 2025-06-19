@@ -7,28 +7,35 @@ const authenticateRoute = require('../common/authenticate');
 const psrwdpar = require("../controllers/psrwdpar-controller");
 
 // @route   GET api/psrwdpar/find-one
-// @desc    Find OTP Parameter
+// @desc    Find Rewards Parameter
 // @access  Private
 router.get("/detail", authenticateRoute, psrwdpar.findOne);
 
 // @route   GET api/psrwdpar/list
-// @desc    List OTP Parameter
+// @desc    List Rewards Parameter
 // @access  Private
 router.get("/list", authenticateRoute, psrwdpar.list);
 
 // @route   POST api/psrwdpar/create
-// @desc    Create OTP Parameter
+// @desc    Create Rewards Parameter
 // @access  Private
 router.post("/create", authenticateRoute, psrwdpar.create);
 
 // @route   POST api/psrwdpar/delete
-// @desc    Delete OTP Parameter
+// @desc    Delete Rewards Parameter
 // @access  Private
 router.post("/delete", authenticateRoute, psrwdpar.delete);
 
 // @route   POST api/psrwdpar/update
-// @desc    Update OTP Parameter
+// @desc    Update Rewards Parameter
 // @access  Private
 router.post("/update", authenticateRoute, psrwdpar.update);
+
+// @route   GET api/psrwdpar/listRdmp
+// @desc    List redemption Rewards Parameter
+// @access  Private
+router.get("/listRdmp", authenticateRoute, psrwdpar.listRdmp);
+
+
 
 module.exports = router;
