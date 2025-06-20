@@ -27,4 +27,9 @@ router.post("/generate", authenticateRoute, reporting.generate);
 // @access  Private
 router.get("/forecast", authenticateRoute, reporting.forecast);
 
+// @route   POST api/reporting/forecast
+// @desc    forecast Case Report
+// @access  Private
+router.get("/findForecast", authenticateRoute, reporting.findForecast);
+
 module.exports = router;

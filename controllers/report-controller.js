@@ -13,7 +13,8 @@ const fs = require('fs');
 const db_query = require('../common/db').sequelize;
 const sequelize = require("sequelize");
 const connection = require("../common/db");
-
+const fsP = require("fs").promises;
+const path = require("path");
 // Model
 const psmbrprf = db.psmbrprf;
 const prrpthis = db.prrpthis;
@@ -382,6 +383,78 @@ exports.forecast = async (req, res) => {
         console.error("Error in processing:", error);
         return returnError(req, 500, "UNEXPECTEDERROR", res);
     }
+}
+
+exports.findForecast = async (req, res) => {
+    const { prrptnme, prrptfcs, prrptfco } = req.query;
+    if (!prrptnme || !prrptfco || !prrptfcs) {
+        return returnError(req, 500, "UNEXPECTEDERROR", res);
+    }
+
+    console.log("HJHJHHH")
+
+    prrpthis.findOne({
+        where: {
+            prrptnme: prrptnme
+        }, raw: true, attributes: ['prrptnme']
+    }).then(async (data) => {
+        if (!data) return returnError(req, 500, "UNEXPECTEDERROR", res);
+        let order = {}, sales = {};
+
+        const basename = path.basename(prrptnme, path.extname(prrptnme));
+
+        if (prrptfco == "Y") {
+
+            // 2. Set image filename
+            order.ordFcImg = `order-${basename}.png`;
+
+            // 3. Read and parse forecast CSV
+            const filePath = `./documents/forecast_file/forecastOrder-${basename}.csv`;
+            try {
+                const fileContent = await fsP.readFile(filePath, "utf8");
+                const rows = fileContent.split("\n").slice(1);
+                order.ordFcValue = rows.filter(row => row.trim()).map(row => {
+                    const [rawDate, rawValue] = row.split(",");
+                    const dateObj = new Date(rawDate);
+                    const formattedDate = `${String(dateObj.getDate()).padStart(2, "0")}/${String(dateObj.getMonth() + 1).padStart(2, "0")}/${dateObj.getFullYear()}`;
+                    return { date: formattedDate, value: parseFloat(rawValue).toFixed(2) };
+                });
+            } catch (err) {
+                console.error("Failed to read Order forecast:", err.message);
+                order.ordFcValue = [];
+            }
+        }
+
+        if (prrptfcs == "Y") {
+            // 2. Set image filename
+            sales.slsFcImg = `sales-${basename}.png`;
+
+            // 3. Read and parse forecast CSV
+            const filePath = `./documents/forecast_file/forecastSales-${basename}.csv`;
+            try {
+                const fileContent = await fsP.readFile(filePath, "utf8");
+                const rows = fileContent.split("\n").slice(1);
+                sales.slsFcValue = rows.filter(row => row.trim()).map(row => {
+                    const [rawDate, rawValue] = row.split(",");
+                    const dateObj = new Date(rawDate);
+                    const formattedDate = `${String(dateObj.getDate()).padStart(2, "0")}/${String(dateObj.getMonth() + 1).padStart(2, "0")}/${dateObj.getFullYear()}`;
+                    return { date: formattedDate, value: parseFloat(rawValue).toFixed(2) };
+                });
+            } catch (err) {
+                console.error("Failed to read Sales forecast:", err.message);
+                sales.slsFcValue = [];
+            }
+        }
+        return returnSuccess(
+            200,
+            {
+                order,
+                sales
+            },
+            res
+        );
+
+    })
 }
 
 async function formatMonth(month, type) {
