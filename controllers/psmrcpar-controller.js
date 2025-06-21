@@ -28,6 +28,10 @@ const { raw } = require("express");
 const { where } = require("sequelize");
 
 exports.list = async (req, res) => {
+  let mchId = "";
+  if (req.user.psusrtyp == "MCH") {
+    mchId = req.user.psmrcuid;
+  }
   let limit = 10;
   if (req.query.limit) limit = req.query.limit;
 
@@ -38,7 +42,9 @@ exports.list = async (req, res) => {
   let option = {
     [Op.and]: []
   };
-
+  if (mchId != "") {
+    option[Op.and].push({ psmrcuid: mchId })
+  }
 
   if (req.query.psmrcsts && !_.isEmpty(req.query.psmrcsts)) {
     option[Op.and].push({ psmrcsts: req.query.psmrcsts });

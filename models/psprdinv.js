@@ -2,6 +2,11 @@
 
 module.exports = (sequelize, Sequelize) => {
   const psprdinv = sequelize.define("psprdinv", {
+    psstkuid: {
+      type: Sequelize.STRING(50),
+      allowNull: false,
+      comment: 'Stock UUID'
+    },
     psprduid: {
       type: Sequelize.STRING(25),
       allowNull: false,
@@ -11,6 +16,16 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING(10),
       allowNull: false,
       comment: "Stock Type (STKTYP)"
+    },
+    psinvven: {
+      type: Sequelize.STRING(255),
+      allowNull: false,
+      comment: "Vendor Name"
+    },
+    psinvpri: {
+      type: Sequelize.DECIMAL(10, 2),
+      allowNull: false,
+      comment: "Stock Price"
     },
     psinvqty: {
       type: Sequelize.INTEGER,

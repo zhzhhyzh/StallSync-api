@@ -48,7 +48,7 @@ module.exports = function validatePsmbrprfInput(data, type) {
             errors.psmbrdob = "INVALIDDATAVALUE";
         } else {
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            today.setHours(23,59,59,59);
             if (newDate > today) {
                 errors.psmbrdob = "FUTUREDATE";
             }
@@ -84,7 +84,7 @@ module.exports = function validatePsmbrprfInput(data, type) {
             errors.psmbrjdt = "INVALIDDATAVALUE";
         } else {
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            today.setHours(23,59,59,59);
             if (newDate > today) {
                 errors.psmbrjdt = "FUTUREDATE";
             }

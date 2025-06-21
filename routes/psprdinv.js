@@ -21,14 +21,14 @@ router.get("/list", authenticateRoute, psprdinv.list);
 // @access  Private
 router.post("/create", authenticateRoute, psprdinv.create);
 
-// @route   POST api/psprdinv/delete
-// @desc    Delete OTP Parameter
-// @access  Private
-router.post("/delete", authenticateRoute, psprdinv.delete);
-
-// // @route   POST api/psprdinv/update
-// // @desc    Update OTP Parameter
+// // @route   POST api/psprdinv/delete
+// // @desc    Delete OTP Parameter
 // // @access  Private
-// router.post("/update", authenticateRoute, psprdinv.update);
+// router.post("/delete", authenticateRoute, psprdinv.delete);
+
+// @route   POST api/psprdinv/update
+// @desc    Update OTP Parameter
+// @access  Private
+router.post("/update", authenticateRoute, psprdinv.update);
 
 module.exports = router;

@@ -724,7 +724,7 @@ exports.listRdmp = async (req, res) => {
   const fromDateStr = '' + req.query.from;
   const toDateStr = '' + req.query.to;
 
-  if (!_.isEmpty(fromDateStr) || !_.isEmpty(toDateStr)) {
+  if (fromDateStr||toDateStr) {
     let dateCondition = {};
 
     if (!_.isEmpty(fromDateStr)) {
@@ -743,7 +743,7 @@ exports.listRdmp = async (req, res) => {
       }
     }
 
-    if (!_.isEmpty(dateCondition)) {
+    if (dateCondition) {
       option[Op.and].push({ psinvsdt: dateCondition });
     }
   }

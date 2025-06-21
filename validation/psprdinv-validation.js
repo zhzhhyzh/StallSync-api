@@ -26,17 +26,21 @@ module.exports = function validatePsprdparInput(data, type) {
         if (data.psinvsty.length > 255) errors.psinvsty = "INVALIDVALUELENGTH&255";
     }
 
-    if (!Validator.isEmpty('' + data.psinvsdt)) {
-        let newDate = new Date(data.psinvsdt);
-        if (!newDate instanceof Date && isNaN(newDate)) {
-            errors.psinvsdt = "INVALIDDATAVALUE";
-        } else {
-            let today = new Date();
-            today.setHours(0, 0, 0, 0);
-            let notdvd = new Date(data.psinvsdt);
-            if (notdvd < today) errors.psinvsdt = "PASTDATE";
-        }
-    }
+   if (Validator.isEmpty(data.psinvsdt) && type == 'C') {
+           errors.psinvsdt = "FIELDISREQUIRED";
+       } else if (!Validator.isEmpty('' + data.psinvsdt)) {
+           let newDate = new Date(data.psinvsdt);
+   
+           if (isNaN(newDate.getTime())) {
+               errors.psinvsdt = "INVALIDDATAVALUE";
+           } else {
+               const today = new Date();
+               today.setHours(23, 59, 59, 59);
+               if (newDate > today) {
+                   errors.psinvsdt = "FUTUREDATE";
+               }
+           }
+       }
 
     if (!Validator.isEmpty("" + data.psinvqty) && isNaN(parseInt(data.psinvqty))) {
         errors.psinvqty = "INVALIDDATAVALUE";

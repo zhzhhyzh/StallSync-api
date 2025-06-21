@@ -163,12 +163,12 @@ exports.list = async (req, res) => {
       {
         total: count,
         data: newRows,
-        headerInfo: mrcId || "123",
+        headerInfo: mrcId || "",
         extra: { file: "psprdpar", key: ["psprduid"] },
       },
       res
     );
-  else return returnSuccess(200, { total: 0, data: [] }, res);
+  else return returnSuccess(200, { total: 0, data: [],headerInfo: mrcId || "", }, res);
 };
 
 exports.findOne = async (req, res) => {
@@ -398,8 +398,8 @@ exports.create = async (req, res) => {
 
               psprdrtg: 0,
 
-              crtuser: req.user.psusrnme,
-              mntuser: req.user.psusrnme,
+              crtuser: req.user.psusrunm,
+              mntuser: req.user.psusrunm,
             }, { transaction: t })
             .then(async (data) => {
               let created = data.get({ plain: true });
@@ -412,7 +412,7 @@ exports.create = async (req, res) => {
                     genConfig.productImagePath,
                     created.psprdimg,
                     // uuidv4(),
-                    req.user.psusrnme,
+                    req.user.psusrunm,
                     5,
 
                   )
@@ -430,7 +430,7 @@ exports.create = async (req, res) => {
                 null,
                 created.psprduid,
                 "A",
-                req.user.psusrnme,
+                req.user.psusrunm,
                 "", created.psprduid);
 
               return returnSuccessMessage(req, 200, "RECORDCREATED", res);
@@ -604,7 +604,7 @@ exports.update = async (req, res) => {
               psprdstk: req.body.psprdstk,
               psprdsts: req.body.psprdsts,
               psprdrtg: req.body.psprdrtg,
-              mntuser: req.user.psusrnme,
+              mntuser: req.user.psusrunm,
             },
             {
               where: {
@@ -628,7 +628,7 @@ exports.update = async (req, res) => {
                   genConfig.productImagePath,
                   req.body.psprdimg,
                   // uuidv4(),
-                  req.user.psusrnme,
+                  req.user.psusrunm,
                   5,
 
                 )
@@ -647,7 +647,7 @@ exports.update = async (req, res) => {
               await psprdpar.findByPk(data.id, { raw: true }),
               data.psprduid,
               "C",
-              req.user.psusrnme
+              req.user.psusrunm
             );
 
             return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
@@ -698,7 +698,7 @@ exports.delete = async (req, res) => {
               null,
               trnscd.psprduid,
               "D",
-              req.user.psusrnme,
+              req.user.psusrunm,
               "",
               trnscd.psprduid
             );

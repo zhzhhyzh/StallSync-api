@@ -56,7 +56,7 @@ module.exports = function validatePsmrcparInput(data, type) {
             errors.psmrcjdt = "INVALIDDATAVALUE";
         } else {
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            today.setHours(23,59,59,59);
             if (newDate > today) {
                 errors.psmrcjdt = "FUTUREDATE";
             }

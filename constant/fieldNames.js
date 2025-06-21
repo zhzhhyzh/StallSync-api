@@ -160,7 +160,9 @@ const psprdpri = "Price";
 const psinvsty = "Stock Type";
 const psinvqty = "Quantity";
 const psinvsdt = "Stock Date";
-
+const pssktuid = "Stock UUID";
+const psinvpri = "Stock In Price";
+const psinvven = "Stock In Vendor"
 //psprdpar
 const psprdnme = "Product Name";
 const psprddsc = "Product Description";
@@ -457,6 +459,9 @@ module.exports = {
     psinvsty,
     psinvqty,
     psinvsdt,
+    pssktuid,
+    psinvpri,
+    psinvven,
 
     // psprdpar
     psprdnme,

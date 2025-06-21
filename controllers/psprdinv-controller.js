@@ -2,10 +2,12 @@
 const db = require("../models");
 const _ = require("lodash");
 const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
 
 
 // Table File
 const psprdinv = db.psprdinv;
+const psprdpar = db.psprdpar;
 
 
 // Common Function
@@ -22,9 +24,10 @@ const genConfig = require("../constant/generalConfig");
 
 // Input Validation
 const validatePsprdinvInput = require("../validation/psprdinv-validation.js");
+const { psinvsdt } = require("../constant/fieldNames.js");
 
 exports.list = async (req, res) => {
-  if (!req.query.prodId) return returnError(req, 500, { prodId: "RECORDIDISREQUIRED" }, res);
+  if (!req.query.prodId) return returnError(req, 400, { prodId: "RECORDIDISREQUIRED" }, res);
 
 
   let limit = 10;
@@ -47,14 +50,19 @@ exports.list = async (req, res) => {
   if (req.query.psinvsty && !_.isEmpty(req.query.psinvsty)) {
     option[Op.and].push({ psinvsty: req.query.psinvsty });
   }
-  if (req.query.prodId && !_.isEmpty(req.query.prodId)) {
+
+  let prodId = req.query.prodId
+
+  if (prodId) {
     option[Op.and].push({ psprduid: req.query.prodId });
   }
 
   const fromDateStr = '' + req.query.from;
   const toDateStr = '' + req.query.to;
 
-  if (!_.isEmpty(fromDateStr) || !_.isEmpty(toDateStr)) {
+  
+
+  if (fromDateStr ||toDateStr) {
     let dateCondition = {};
 
     if (!_.isEmpty(fromDateStr)) {
@@ -73,45 +81,12 @@ exports.list = async (req, res) => {
       }
     }
 
-    if (!_.isEmpty(dateCondition)) {
+    if (dateCondition) {
       option[Op.and].push({ psinvsdt: dateCondition });
     }
   }
 
-  // if (req.query.from && !_.isEmpty('' + req.query.from)) {
-  //   let fromDate = new Date(req.query.from);
-  //   fromDate.setHours(0, 0, 0, 0);
-  //   if (!_.isNaN(fromDate.getTime())) {
-  //     if (req.query.to && !_.isEmpty('' + req.query.to)) {
-  //       let toDate = new Date(req.query.to);
-  //       toDate.setHours(23, 59, 59, 999);
-  //       if (!_.isNaN(toDate.getTime())) {
-  //         option.psinvsdt = {
-  //           [Op.and]: [
-  //             { [Op.gte]: fromDate },
-  //             { [Op.lte]: toDate }
-  //           ]
-  //         }
-  //       } else {
-  //         option.psinvsdt = {
-  //           [Op.gte]: fromDate
-  //         }
-  //       }
-  //     } else {
-  //       option.psinvsdt = {
-  //         [Op.gte]: fromDate
-  //       }
-  //     }
-  //   }
-  // } else if (req.query.to && !_.isEmpty('' + req.query.to)) {
-  //   let toDate = new Date(req.query.to);
-  //   toDate.setHours(23, 59, 59, 999);
-  //   if (!_.isNaN(toDate.getTime())) {
-  //     option.psinvsdt = {
-  //       [Op.lte]: toDate
-  //     }
-  //   }
-  // }
+  
 
   const { count, rows } = await psprdinv.findAndCountAll({
     limit: parseInt(limit),
@@ -119,11 +94,14 @@ exports.list = async (req, res) => {
     where: option,
     raw: true,
     attributes: [
-      ["psprduid", "id"],
+      ["psstkuid", "id"],
+      "psstkuid",
       "psprduid",
       "psinvsty",
       "psinvsdt",
       "psinvqty",
+      "psinvven",
+      "psinvpri"
     ],
     order: [["psprduid", "asc"]],
   });
@@ -145,6 +123,7 @@ exports.list = async (req, res) => {
           : "";
     }
 
+    obj.psinvsdt = await common.formatDateTime(obj.psinvsdt)
     newRows.push(obj);
   }
 
@@ -154,7 +133,7 @@ exports.list = async (req, res) => {
       {
         total: count,
         data: newRows,
-        extra: { file: "psprdinv", key: ["psprduid"] },
+        extra: { file: "psprdinv", key: ["pstkuid"] },
       },
       res
     );
@@ -166,7 +145,7 @@ exports.findOne = async (req, res) => {
   if (id === "") return returnError(req, 500, "RECORDIDISREQUIRED", res);
 
   try {
-    const obj = await psprdinv.findOne({ where: { psprduid: id }, raw: true });
+    const obj = await psprdinv.findOne({ where: { psstkuid: id }, raw: true });
 
     if (!obj) return returnError(req, 500, "NORECORDFOUND", res);
 
@@ -189,12 +168,14 @@ exports.create = async (req, res) => {
   //Validation
   const { errors, isValid } = validatePsprdinvInput(req.body, "A");
   if (!isValid) return returnError(req, 400, errors, res);
-
+  const psinvsdt = req.body.psinvsdt ? req.body.psinvsdt : new Date();
   // Duplicate Check
   psprdinv
     .findOne({
       where: {
         psprduid: req.body.psprduid,
+        psinvsdt: psinvsdt,
+        psinvsty: req.body.psinvsty
       },
       raw: true,
     })
@@ -217,28 +198,80 @@ exports.create = async (req, res) => {
           }
         }
 
+
+
         if (err_ind) return returnError(req, 400, ddlErrors, res);
         else {
-          // const t = await connection.sequelize.transaction();
+          const t = await connection.sequelize.transaction();
+          let result = await psprdpar.findOne({
+            where: {
+              psprduid: req.body.psprduid
+            }, raw: true, attributes: ['psprduid', 'psprdstk', 'psprdsts', 'psprdlsr']
+          });
+
+          let newQty = 0;
+          let newSts = "";
+          if (!result) {
+            return returnError(req, 500, { psprduid: "NORECORDFOUND" }, res)
+          }
+          newQty = result.psprdstk + req.body.psinvqty
+          if (newQty > result.psprdlsr) {
+            newSts = "A"
+          }
+          if (newQty <= result.psprdlsr) {
+            newSts = "L"
+          }
+
+          if (newQty == 0) {
+            newSts = "S"
+          }
+
+
 
           psprdinv
             .create({
+              psstkuid: uuidv4(),
               psinvsty: req.body.psinvsty,
               psprduid: req.body.psprduid,
               psinvqty: req.body.psinvqty,
               psinvsty: req.body.psinvsty,
               psinvsdt: req.body.psinvsdt ? req.body.psinvsdt : new Date(),
-              crtuser: req.user.psusrnme,
-              mntuser: req.user.psusrnme,
-            })
+              psinvpri: req.body.psinvsty == "I" ? req.body.psinvpri : 0,
+              psinvven: req.body.psinvsty == "I" ? req.body.psinvven : "",
+              crtuser: req.user.psusrunm,
+              mntuser: req.user.psusrunm,
+            }, {transaction: t})
             .then(async (data) => {
-            
+              let created = data.get({ plain: true });
+
+              const [updatedCount] = await psprdpar.update(
+                {
+                  psprdstk: newQty,
+                  psprdsts: newSts,
+                },
+                {
+                  where: {
+                    psprduid: req.body.psprduid,
+                  },
+                }
+              );
+
+              console.log("Update affected rows:", updatedCount);
+              common.writeMntLog(
+                "psprdinv",
+                null,
+                null,
+                created.psstkuid,
+                "A",
+                req.user.psusrunm,
+                "", created.psstkuid);
+
               return returnSuccessMessage(req, 200, "RECORDCREATED", res);
 
             })
             .catch((err) => {
               console.log(err);
-              // t.rollback();
+              t.rollback();
               return returnError(req, 500, "UNEXPECTEDERROR", res);
             });
         }
@@ -250,35 +283,153 @@ exports.create = async (req, res) => {
     });
 };
 
-exports.delete = async (req, res) => {
+
+
+exports.update = async (req, res) => {
   const id = req.body.id ? req.body.id : "";
   if (id == "") return returnError(req, 500, "RECORDIDISREQUIRED", res);
-  // const t = await connection.sequelize.transaction();
+
+  //Validation
+  const { errors, isValid } = validatePsprdinvInput(req.body, "C");
+  if (!isValid) return returnError(req, 400, errors, res);
 
   await psprdinv
     .findOne({
       where: {
-        psprduid: id,
+        psstkuid: id,
       },
-      raw: true
+      raw: true,
+      attributes: {
+        exclude: ["createdAt", "crtuser", "mntuser"],
+      },
     })
-    .then((trnscd) => {
-      if (trnscd) {
+    .then(async (data) => {
+      if (data) {
+
+        let ddlErrors = {};
+        let err_ind = false;
+
+        if (!_.isEmpty(req.body.psinvsty)) {
+          let STKTYP = await common.retrieveSpecificGenCodes(
+            req,
+            "STKTYP",
+            req.body.psinvsty
+          );
+          if (!STKTYP || !STKTYP.prgedesc) {
+            ddlErrors.psinvsty = "INVALIDDATAVALUE";
+            err_ind = true;
+          }
+        }
+
+        if (err_ind) return returnError(req, 400, ddlErrors, res);
+
+
+
+        if (isNaN(new Date(req.body.updatedAt)) || (new Date(data.updatedAt).getTime() !== new Date(req.body.updatedAt).getTime())) return returnError(req, 500, "RECORDOUTOFSYNC", res)
+
+
+        let result = await psprdpar.findOne({
+          where: {
+            psprduid: req.body.psprduid
+          }, raw: true, attributes: ['psprduid', 'psprdstk', 'psprdsts', 'psprdlsr']
+        });
+
+        let newQty = 0;
+        let newSts = "";
+        if (!result) {
+          return returnError(req, 500, { psprduid: "NORECORDFOUND" }, res)
+        } else {
+          newQty = result.psprdstk + req.body.psprdqty - data.psprdstk
+          if (newQty > result.psprdlsr) {
+            newSts = "A"
+          }
+          if (newQty <= result.psprdlsr) {
+            newSts = "L"
+          }
+
+          if (newQty = 0) {
+            newSts = "S"
+          }
+
+
+        }
+
         psprdinv
-          .destroy({
-            where: { psprduid: id },
-          })
+          .update(
+            {
+              // psstkuid: psstkuid,
+              psinvsty: req.body.psinvsty,
+              psprduid: req.body.psprduid,
+              psinvqty: req.body.psinvqty,
+              psinvsty: req.body.psinvsty,
+              psinvsdt: req.body.psinvsdt ? req.body.psinvsdt : new Date(),
+              psinvpri: req.body.psinvpri,
+              psinvven: req.body.psinvven,
+              mntuser: req.user.psusrunm,
+            },
+            {
+              where: {
+                psprduid: id,
+              },
+            }, { transaction: t }
+          )
           .then(async () => {
-            return returnSuccessMessage(req, 200, "RECORDDELETED", res);
-          })
-          .catch(async (err) => {
-            console.log(err);
-            return returnError(req, 500, "UNEXPECTEDERROR", res);
+            await psprdpar.update({
+              psprdstk: newQty,
+              psprdsts: newSts
+            }, {
+              where: {
+                psprduid: req.body.psprduid
+              }
+            })
+            common.writeMntLog(
+              "psprdinv",
+              data,
+              await psprdinv.findByPk(data.id, { raw: true }),
+              data.pssktuid,
+              "C",
+              req.user.psusrunm
+            );
+
+            return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
           });
       } else return returnError(req, 500, "NORECORDFOUND", res);
     })
     .catch((err) => {
-      console.log(err);
+      console.log("This is the unx error", err)
       return returnError(req, 500, "UNEXPECTEDERROR", res);
     });
 };
+
+// exports.delete = async (req, res) => {
+//   const id = req.body.id ? req.body.id : "";
+//   if (id == "") return returnError(req, 500, "RECORDIDISREQUIRED", res);
+//   // const t = await connection.sequelize.transaction();
+
+//   await psprdinv
+//     .findOne({
+//       where: {
+//         psprduid: id,
+//       },
+//       raw: true
+//     })
+//     .then((trnscd) => {
+//       if (trnscd) {
+//         psprdinv
+//           .destroy({
+//             where: { psprduid: id },
+//           })
+//           .then(async () => {
+//             return returnSuccessMessage(req, 200, "RECORDDELETED", res);
+//           })
+//           .catch(async (err) => {
+//             console.log(err);
+//             return returnError(req, 500, "UNEXPECTEDERROR", res);
+//           });
+//       } else return returnError(req, 500, "NORECORDFOUND", res);
+//     })
+//     .catch((err) => {
+//       console.log(err);
+//       return returnError(req, 500, "UNEXPECTEDERROR", res);
+//     });
+// };

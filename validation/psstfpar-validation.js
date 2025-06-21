@@ -95,7 +95,7 @@ module.exports = function validatePsstfparInput(data, type) {
       errors.psstfjdt = "INVALIDDATAVALUE";
     } else {
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      today.setHours(23,59,59,59  );
       if (newDate > today) {
         errors.psstfjdt = "FUTUREDATE";
       }
