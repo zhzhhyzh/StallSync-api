@@ -41,52 +41,56 @@ exports.list = async (req, res) => {
 
 
   let option = {
-    [Op.and]: []
+
   };
 
 
 
 
   if (req.query.psinvsty && !_.isEmpty(req.query.psinvsty)) {
-    option[Op.and].push({ psinvsty: req.query.psinvsty });
+    option.psinvsty = req.query.psinvsty;
   }
 
   let prodId = req.query.prodId
 
   if (prodId) {
-    option[Op.and].push({ psprduid: req.query.prodId });
+    option.psprduid = req.query.prodId;
   }
 
-  const fromDateStr = '' + req.query.from;
-  const toDateStr = '' + req.query.to;
 
-  
-
-  if (fromDateStr ||toDateStr) {
-    let dateCondition = {};
-
-    if (!_.isEmpty(fromDateStr)) {
-      let fromDate = new Date(fromDateStr);
-      if (!isNaN(fromDate.getTime())) {
-        fromDate.setHours(0, 0, 0, 0);
-        dateCondition[Op.gte] = fromDate;
-      }
-    }
-
-    if (!_.isEmpty(toDateStr)) {
-      let toDate = new Date(toDateStr);
-      if (!isNaN(toDate.getTime())) {
+  if (req.query.from && !_.isEmpty("" + req.query.from)) {
+    let fromDate = new Date(req.query.from);
+    fromDate.setHours(0, 0, 0, 0);
+    if (!_.isNaN(fromDate.getTime())) {
+      if (req.query.to && !_.isEmpty("" + req.query.to)) {
+        let toDate = new Date(req.query.to);
         toDate.setHours(23, 59, 59, 999);
-        dateCondition[Op.lte] = toDate;
+        if (!_.isNaN(toDate.getTime())) {
+          option.psinvsdt = {
+            [Op.and]: [{ [Op.gte]: fromDate }, { [Op.lte]: toDate }],
+          };
+        } else {
+          option.psinvsdt = {
+            [Op.gte]: fromDate,
+          };
+        }
+      } else {
+        option.psinvsdt = {
+          [Op.gte]: fromDate,
+        };
       }
     }
-
-    if (dateCondition) {
-      option[Op.and].push({ psinvsdt: dateCondition });
+  } else if (req.query.to && !_.isEmpty("" + req.query.to)) {
+    let toDate = new Date(req.query.to);
+    toDate.setHours(23, 59, 59, 999);
+    if (!_.isNaN(toDate.getTime())) {
+      option.psinvsdt = {
+        [Op.lte]: toDate,
+      };
     }
   }
 
-  
+
 
   const { count, rows } = await psprdinv.findAndCountAll({
     limit: parseInt(limit),
@@ -240,7 +244,7 @@ exports.create = async (req, res) => {
               psinvven: req.body.psinvsty == "I" ? req.body.psinvven : "",
               crtuser: req.user.psusrunm,
               mntuser: req.user.psusrunm,
-            }, {transaction: t})
+            }, { transaction: t })
             .then(async (data) => {
               let created = data.get({ plain: true });
 

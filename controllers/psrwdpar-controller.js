@@ -721,32 +721,40 @@ exports.listRdmp = async (req, res) => {
 
   let option = {};
 
-  const fromDateStr = '' + req.query.from;
-  const toDateStr = '' + req.query.to;
 
-  if (fromDateStr||toDateStr) {
-    let dateCondition = {};
 
-    if (!_.isEmpty(fromDateStr)) {
-      let fromDate = new Date(fromDateStr);
-      if (!isNaN(fromDate.getTime())) {
-        fromDate.setHours(0, 0, 0, 0);
-        dateCondition[Op.gte] = fromDate;
-      }
-    }
-
-    if (!_.isEmpty(toDateStr)) {
-      let toDate = new Date(toDateStr);
-      if (!isNaN(toDate.getTime())) {
+  if (req.query.from && !_.isEmpty("" + req.query.from)) {
+    let fromDate = new Date(req.query.from);
+    fromDate.setHours(0, 0, 0, 0);
+    if (!_.isNaN(fromDate.getTime())) {
+      if (req.query.to && !_.isEmpty("" + req.query.to)) {
+        let toDate = new Date(req.query.to);
         toDate.setHours(23, 59, 59, 999);
-        dateCondition[Op.lte] = toDate;
+        if (!_.isNaN(toDate.getTime())) {
+          option.psordodt = {
+            [Op.and]: [{ [Op.gte]: fromDate }, { [Op.lte]: toDate }],
+          };
+        } else {
+          option.psordodt = {
+            [Op.gte]: fromDate,
+          };
+        }
+      } else {
+        option.psordodt = {
+          [Op.gte]: fromDate,
+        };
       }
     }
-
-    if (dateCondition) {
-      option[Op.and].push({ psinvsdt: dateCondition });
+  } else if (req.query.to && !_.isEmpty("" + req.query.to)) {
+    let toDate = new Date(req.query.to);
+    toDate.setHours(23, 59, 59, 999);
+    if (!_.isNaN(toDate.getTime())) {
+      option.psordodt = {
+        [Op.lte]: toDate,
+      };
     }
   }
+
 
   option.psrwduid = req.query.id;
 

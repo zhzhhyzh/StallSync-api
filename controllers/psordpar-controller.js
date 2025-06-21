@@ -1,4 +1,4 @@
- // Import
+// Import
 const db = require("../models");
 const _ = require("lodash");
 const { v4: uuidv4 } = require("uuid");
@@ -35,92 +35,65 @@ exports.list = async (req, res) => {
 
 
   let option = {
-    [Op.and]: []
+    
   };
 
   if (req.user.psusrtyp == "MCH") {
-    option[Op.and].push({
-      psmrcuid: req.user.psmrcuid
-    })
+    option.psmrcuid= req.user.psmrcuid
+    
   }
 
   if (req.user.psusrtyp == "MBR") {
-    option[Op.and].push({
-      psordpre: req.user.psusrpre,
-      psordphn: req.user.psusrphn
-    })
+    option.psordpre= req.user.psusrpre;
+      option.psordphn= req.user.psusrphn;
+    
   }
 
   //For admin use only
   if (req.query.psmrcuid && !_.isEmpty(req.query.psmrcuid)) {
-    option[Op.and].push({ psmrcuid: req.query.psmrcuid });
+    option.psmrcuid = req.query.psmrcuid;
   }
 
   if (req.query.psordphn && !_.isEmpty(req.query.psordphn)) {
-    option[Op.and].push({ psordphn: req.query.psordphn });
+    option.psordphn = req.query.psordphn;
   }
 
-  const fromDateStr = '' + req.query.from;
-  const toDateStr = '' + req.query.to;
 
-  if (fromDateStr|| toDateStr) {
-    let dateCondition = {};
 
-    if (!_.isEmpty(fromDateStr)) {
-      let fromDate = new Date(fromDateStr);
-      if (!isNaN(fromDate.getTime())) {
-        fromDate.setHours(0, 0, 0, 0);
-        dateCondition[Op.gte] = fromDate;
-      }
-    }
-
-    if (!_.isEmpty(toDateStr)) {
-      let toDate = new Date(toDateStr);
-      if (!isNaN(toDate.getTime())) {
+  if (req.query.from && !_.isEmpty('' + req.query.from)) {
+    let fromDate = new Date(req.query.from);
+    fromDate.setHours(0, 0, 0, 0);
+    if (!_.isNaN(fromDate.getTime())) {
+      if (req.query.to && !_.isEmpty('' + req.query.to)) {
+        let toDate = new Date(req.query.to);
         toDate.setHours(23, 59, 59, 999);
-        dateCondition[Op.lte] = toDate;
+        if (!_.isNaN(toDate.getTime())) {
+          option.psordodt = {
+            [Op.and]: [
+              { [Op.gte]: fromDate },
+              { [Op.lte]: toDate }
+            ]
+          }
+        } else {
+          option.psordodt = {
+            [Op.gte]: fromDate
+          }
+        }
+      } else {
+        option.psordodt = {
+          [Op.gte]: fromDate
+        }
       }
     }
-
-    if (dateCondition) {
-      option[Op.and].push({ psordodt: dateCondition });
+  } else if (req.query.to && !_.isEmpty('' + req.query.to)) {
+    let toDate = new Date(req.query.to);
+    toDate.setHours(23, 59, 59, 999);
+    if (!_.isNaN(toDate.getTime())) {
+      option.psordodt = {
+        [Op.lte]: toDate
+      }
     }
   }
-
-  // if (req.query.from && !_.isEmpty('' + req.query.from)) {
-  //   let fromDate = new Date(req.query.from);
-  //   fromDate.setHours(0, 0, 0, 0);
-  //   if (!_.isNaN(fromDate.getTime())) {
-  //     if (req.query.to && !_.isEmpty('' + req.query.to)) {
-  //       let toDate = new Date(req.query.to);
-  //       toDate.setHours(23, 59, 59, 999);
-  //       if (!_.isNaN(toDate.getTime())) {
-  //         option.psordodt = {
-  //           [Op.and]: [
-  //             { [Op.gte]: fromDate },
-  //             { [Op.lte]: toDate }
-  //           ]
-  //         }
-  //       } else {
-  //         option.psordodt = {
-  //           [Op.gte]: fromDate
-  //         }
-  //       }
-  //     } else {
-  //       option.psordodt = {
-  //         [Op.gte]: fromDate
-  //       }
-  //     }
-  //   }
-  // } else if (req.query.to && !_.isEmpty('' + req.query.to)) {
-  //   let toDate = new Date(req.query.to);
-  //   toDate.setHours(23, 59, 59, 999);
-  //   if (!_.isNaN(toDate.getTime())) {
-  //     option.psordodt = {
-  //       [Op.lte]: toDate
-  //     }
-  //   }
-  // }
 
   const { count, rows } = await psordpar.findAndCountAll({
     limit: parseInt(limit),
