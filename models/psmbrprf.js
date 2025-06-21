@@ -54,7 +54,7 @@ module.exports = (sequelize, Sequelize) => {
       //Member Cart no
     },
     psusrnme: {
-      type: Sequelize.STRING(20),
+      type: Sequelize.STRING(255),
       allowNull: false,
       //Username
     },

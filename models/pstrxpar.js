@@ -22,53 +22,53 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false,
             // Transaction Amount
         },
-         pstrxsts: { 
+        pstrxsts: {
             type: Sequelize.STRING(10),
             allowNull: false,
             // Transaction Status
-            // (N- New, CA- Cancelled, C- Completed)
-         },
-         pstrxcrc: {
+
+        },
+        pstrxcrc: {
             type: Sequelize.STRING(10),
             allowNull: false,
             // Transaction Currency
-         },
-         pstrxmtd: {
+        },
+        pstrxmtd: {
             type: Sequelize.STRING(10),
             allowNull: false,
             // Transaction Method
-         },
-         pstrxba1: {
+        },
+        pstrxba1: {
             type: Sequelize.STRING(255),
             allowNull: true,
             //Transaction Billing Address 1
-         },
-         pstrxba2: {
+        },
+        pstrxba2: {
             type: Sequelize.STRING(255),
             allowNull: true,
             //Transaction Billing Address 2
         },
-         pstrxbpo: {
+        pstrxbpo: {
             type: Sequelize.STRING(25),
             allowNull: true,
             //Transaction Billing Postcode
-         },
-         pstrxbci: {
+        },
+        pstrxbci: {
             type: Sequelize.STRING(25),
             allowNull: true,
             //Transaction Billing City
-         },
-         pstrxbst: {
+        },
+        pstrxbst: {
             type: Sequelize.STRING(25),
             allowNull: true,
             //Transaction Billing State
-         },
-         pstrxstr: {
+        },
+        pstrxstr: {
             type: Sequelize.STRING(25),
             allowNull: true,
             //Transaction Stripe ID
-         }
-        }, { freezeTableName: true },
+        }
+    }, { freezeTableName: true },
         {
             indexes: [
                 {
@@ -76,6 +76,6 @@ module.exports = (sequelize, Sequelize) => {
                     fields: ['pstrcuid']
                 }
             ]
-        }); 
-
+        });
+    return pstrxpar;
 }

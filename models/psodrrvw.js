@@ -2,7 +2,7 @@
 
 module.exports = (sequelize, Sequelize) => {
 
-    const Psodrrvw = sequelize.define('psodrrvw', {
+    const psodrrvw = sequelize.define('psodrrvw', {
         psorduid: {
             type: Sequelize.STRING(25),
             allowNull: false,
@@ -21,8 +21,8 @@ module.exports = (sequelize, Sequelize) => {
         psrvwrtg: {
             type: Sequelize.INTEGER,
             allowNull: false,
-            defaultValue: 5,
-            // Review Rating
+            // defaultValue: 5,
+            // Rating
         },
         psrvwdsc: {
             type: Sequelize.STRING(255),
@@ -53,5 +53,5 @@ module.exports = (sequelize, Sequelize) => {
             ]
         });
 
-    return Psodrrvw;
+    return psodrrvw;
 }

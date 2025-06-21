@@ -7,12 +7,12 @@ module.exports = function validatePsmbrprfInput(data, type) {
     data.psmbrnam = !isEmpty(data.psmbrnam) ? data.psmbrnam : "";
     data.psmbreml = !isEmpty(data.psmbreml) ? data.psmbreml : "";
     data.psmbrdob = !isEmpty(data.psmbrdob) ? data.psmbrdob : "";
-    data.psmbrpts = !isEmpty(data.psmbrpts) ? data.psmbrpts : 0;
-    data.psmbracs = !isEmpty(data.psmbracs) ? data.psmbracs : 0;
+    // data.psmbrpts = !isEmpty(data.psmbrpts) ? data.psmbrpts : 500;
+    // data.psmbracs = !isEmpty(data.psmbracs) ? data.psmbracs : 0;
     data.psmbrtyp = !isEmpty(data.psmbrtyp) ? data.psmbrtyp : "";
-    data.psmbrexp = !isEmpty(data.psmbrexp) ? data.psmbrexp : "";
+    // data.psmbrexp = !isEmpty(data.psmbrexp) ? data.psmbrexp : "";
     data.psmbrjdt = !isEmpty(data.psmbrjdt) ? data.psmbrjdt : "";
-    data.psmbrcar = !isEmpty(data.psmbrcar) ? data.psmbrcar : "";
+    // data.psmbrcar = !isEmpty(data.psmbrcar) ? data.psmbrcar : "";
     data.psusrnme = !isEmpty(data.psusrnme) ? data.psusrnme : "";
     data.psmbrpre = !isEmpty(data.psmbrpre) ? data.psmbrpre : "";
     data.psmbrphn = !isEmpty(data.psmbrphn) ? data.psmbrphn : "";
@@ -38,21 +38,34 @@ module.exports = function validatePsmbrprfInput(data, type) {
         if (data.psmbreml.length > 255) errors.psmbreml = "INVALIDVALUELENGTH&255";
     }
 
-    if (Validator.isEmpty(data.psmbrdob) && type == 'C') {
+
+    if (Validator.isEmpty(data.psmbrdob)) {
         errors.psmbrdob = "FIELDISREQUIRED";
-    } 
+    } else if (!Validator.isEmpty('' + data.psmbrdob)) {
+        let newDate = new Date(data.psmbrdob);
 
-    if (data.psmbrpts < 0) {
-        errors.psmbrpts = "INVALIDDATAVALUE";
-    } else if (data.psmbrpts > 999999999999.99) {
-        errors.psmbrpts = "INVALIDVALUELENGTH&15,2";
+        if (isNaN(newDate.getTime())) {
+            errors.psmbrdob = "INVALIDDATAVALUE";
+        } else {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (newDate > today) {
+                errors.psmbrdob = "FUTUREDATE";
+            }
+        }
     }
 
-    if (data.psmbracs < 0) {
-        errors.psmbracs = "INVALIDDATAVALUE&ACCTS";
-    } else if (data.psmbracs > 999999999999.99) {
-        errors.psmbracs = "INVALIDVALUELENGTH&15,2";
-    }
+    // if (data.psmbrpts < 0) {
+    //     errors.psmbrpts = "INVALIDDATAVALUE";
+    // } else if (data.psmbrpts > 999999999999.99) {
+    //     errors.psmbrpts = "INVALIDVALUELENGTH&15,2";
+    // }
+
+    // if (data.psmbracs < 0) {
+    //     errors.psmbracs = "INVALIDDATAVALUE&ACCTS";
+    // } else if (data.psmbracs > 999999999999.99) {
+    //     errors.psmbracs = "INVALIDVALUELENGTH&15,2";
+    // }
 
     if (Validator.isEmpty(data.psmbrtyp)) {
         errors.psmbrtyp = "FIELDISREQUIRED";
@@ -60,11 +73,11 @@ module.exports = function validatePsmbrprfInput(data, type) {
         if (data.psmbrtyp.length > 10) errors.psmbrtyp = "INVALIDVALUELENGTH&10";
     }
 
-    if (Validator.isEmpty(data.psmbrexp)) {
-        errors.psmbrexp = "FIELDISREQUIRED";
-    }
+    // if (Validator.isEmpty(data.psmbrexp)) {
+    //     errors.psmbrexp = "FIELDISREQUIRED";
+    // }
 
-    if (Validator.isEmpty(data.psmbrjdt) && type == 'C') {
+    if (Validator.isEmpty(data.psmbrjdt)) {
         errors.psmbrjdt = "FIELDISREQUIRED";
     } else if (!Validator.isEmpty('' + data.psmbrjdt)) {
         let newDate = new Date(data.psmbrjdt);
@@ -80,16 +93,16 @@ module.exports = function validatePsmbrprfInput(data, type) {
         }
     }
 
-    if (Validator.isEmpty(data.psmbrcar)) {
-        errors.psmbrcar = "FIELDISREQUIRED";
-    } else {
-        if (data.psmbrcar.length > 50) errors.psmbrcar = "INVALIDVALUELENGTH&50";
-    }
+    // if (Validator.isEmpty(data.psmbrcar)) {
+    //     errors.psmbrcar = "FIELDISREQUIRED";
+    // } else {
+    //     if (data.psmbrcar.length > 50) errors.psmbrcar = "INVALIDVALUELENGTH&50";
+    // }
 
     if (Validator.isEmpty(data.psusrnme)) {
         errors.psusrnme = "FIELDISREQUIRED";
     } else {
-        if (data.psusrnme.length > 20) errors.psusrnme = "INVALIDVALUELENGTH&20";
+        if (data.psusrnme.length > 255) errors.psusrnme = "INVALIDVALUELENGTH&255";
     }
 
     if (Validator.isEmpty(data.psmbrpre)) {

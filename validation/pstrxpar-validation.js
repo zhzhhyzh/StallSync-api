@@ -43,7 +43,7 @@ module.exports = function validatePstrxparInput(data, type) {
 
     if (Validator.isEmpty(data.pstrxsts)) {
         errors.pstrxsts = "FIELDISREQUIRED";
-    } 
+    }
 
     if (Validator.isEmpty(data.pstrxcrc)) {
         errors.pstrxcrc = "FIELDISREQUIRED";
@@ -51,6 +51,8 @@ module.exports = function validatePstrxparInput(data, type) {
 
     if (Validator.isEmpty(data.pstrxmtd)) {
         errors.pstrxmtd = "FIELDISREQUIRED";
+    } else if (data.pstrxmtd.length > 10) {
+        errors.pstrxmtd = "INVALIDVALUELENGTH&10";
     }
 
     if (!isEmpty(data.pstrxba1) && data.pstrxba1.length > 255) {

@@ -1,7 +1,7 @@
 //Cart Table
 
 module.exports = (sequelize, Sequelize) => {
-    const Cart = sequelize.define('psmbrcrt', {
+    const psmbrcrt = sequelize.define('psmbrcrt', {
         psmbrcar: {
             type: Sequelize.STRING(50),
             allowNull: false,
@@ -10,7 +10,7 @@ module.exports = (sequelize, Sequelize) => {
         psitmcno: {
             type: Sequelize.INTEGER,
             allowNull: false,
-            // Increment Number
+            // Cart Increment Number
         },
         psmrcuid: {
             type: Sequelize.STRING(25),
@@ -27,10 +27,10 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false,
             // Cart Item Quantity
         },
-        psitmdesc: {
+        psitmdsc: {
             type: Sequelize.STRING(255),
             allowNull: false,
-            // Cart Item Description
+            // Add On Description
         },
         psitmunt: {
             type: Sequelize.DECIMAL(15, 2),
@@ -45,7 +45,7 @@ module.exports = (sequelize, Sequelize) => {
         psitmrmk: {
             type: Sequelize.TEXT,
             defaultValue: '',
-            // Cart Item Remark
+            // Cart Item Remarks
         },
     }, {freezeTableName: true},
         {

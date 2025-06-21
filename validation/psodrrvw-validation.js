@@ -4,8 +4,8 @@ const isEmpty = require("./is-empty");
 module.exports = function validatePsodrrvwInput(data, type) {
     let errors = {};
     data.psorduid = !isEmpty(data.psorduid) ? data.psorduid : "";
-    //data.psrvwimg = !isEmpty(data.psrvwimg) ? data.psrvwimg : "";
-    //data.psrvwvid = !isEmpty(data.psrvwvid) ? data.psrvwvid : "";
+    data.psrvwimg = !isEmpty(data.psrvwimg) ? data.psrvwimg : "";
+    data.psrvwvid = !isEmpty(data.psrvwvid) ? data.psrvwvid : "";
     data.psrvwrtg = !isEmpty(data.psrvwrtg) ? data.psrvwrtg : 5;
     data.psrvwdsc = !isEmpty(data.psrvwdsc) ? data.psrvwdsc : "";
 
@@ -22,13 +22,21 @@ module.exports = function validatePsodrrvwInput(data, type) {
         errors.psrvwdsc = "INVALIDVALUELENGTH&255";
     }
 
+
+    if (!Validator.isEmpty(data.psrvwimg) && data.psrvwimg.length > 255) {
+        errors.psrvwimg = "INVALIDVALUELENGTH&255";
+    }
+
+
+    if (!Validator.isEmpty(data.psrvwvid) && data.psrvwvid.length > 255) {
+        errors.psrvwvid = "INVALIDVALUELENGTH&255";
+    }
+
     if (!isEmpty(data.psrvwrtg)) {
         if (data.psrvwrtg < 1 || data.psrvwrtg > 5) {
             errors.psrvwrtg = "INVALIDDATAVALUE";
         }
-    } else {
-        data.psrvwrtg = 5; // Default value
-    }
+    } 
 
     return {
         errors,

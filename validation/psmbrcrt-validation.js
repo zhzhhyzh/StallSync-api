@@ -4,11 +4,11 @@ const isEmpty = require("./is-empty");
 module.exports = function validatePsmbrcrtInput(data, type) {
     let errors = {};
     data.psmbrcar = !isEmpty(data.psmbrcar) ? data.psmbrcar : "";
-    data.psitmcno = !isEmpty(data.psitmcno) ? data.psitmcno : "";
+    // data.psitmcno = !isEmpty(data.psitmcno) ? data.psitmcno : "";
     data.psmrcuid = !isEmpty(data.psmrcuid) ? data.psmrcuid : "";
     data.psprduid = !isEmpty(data.psprduid) ? data.psprduid : "";
     data.psitmqty = !isEmpty(data.psitmqty) ? data.psitmqty : 0;
-    data.psitmdesc = !isEmpty(data.psitmdesc) ? data.psitmdesc : "";
+    data.psitmdsc = !isEmpty(data.psitmdsc) ? data.psitmdsc : "";
     data.psitmunt = !isEmpty(data.psitmunt) ? data.psitmunt : 0;
     data.psitmsbt = !isEmpty(data.psitmsbt) ? data.psitmsbt : 0;
     data.psitmrmk = !isEmpty(data.psitmrmk) ? data.psitmrmk : "";   
@@ -24,15 +24,15 @@ module.exports = function validatePsmbrcrtInput(data, type) {
         errors.psmbrcar = "INVALIDVALUELENGTH&50";
     }
 
-    if (Validator.isEmpty(data.psitmcno) && type == "A") {
-        errors.psitmcno = "FIELDISREQUIRED";
-    } else if (
-        type == "A" &&
-        !Validator.isEmpty(data.psitmcno) &&
-        data.psitmcno > 50
-    ) {
-        errors.psitmcno = "INVALIDDATAVALUE";
-    }
+    // if (Validator.isEmpty(data.psitmcno) && type == "A") {
+    //     errors.psitmcno = "FIELDISREQUIRED";
+    // } else if (
+    //     type == "A" &&
+    //     !Validator.isEmpty(data.psitmcno) &&
+    //     data.psitmcno > 50
+    // ) {
+    //     errors.psitmcno = "INVALIDDATAVALUE";
+    // }
 
     if (Validator.isEmpty(data.psmrcuid)) {
         errors.psmrcuid = "FIELDISREQUIRED";
@@ -61,10 +61,10 @@ module.exports = function validatePsmbrcrtInput(data, type) {
         errors.psitmqty = "INVALIDDATAVALUE";
     }
 
-    if (Validator.isEmpty(data.psitmdesc)) {
-        errors.psitmdesc = "FIELDISREQUIRED";
-    } else if (data.psitmdesc.length > 255) {
-        errors.psitmdesc = "INVALIDVALUELENGTH&255";
+    if (Validator.isEmpty(data.psitmdsc)) {
+        errors.psitmdsc = "FIELDISREQUIRED";
+    } else if (data.psitmdsc.length > 255) {
+        errors.psitmdsc = "INVALIDVALUELENGTH&255";
     }
 
     if (Validator.isEmpty(data.psitmunt)) {
