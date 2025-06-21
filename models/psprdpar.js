@@ -91,12 +91,12 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       comment: "Discount Price"
     },
-    psprdddt: {
-      type: Sequelize.STRING(10),
+    psprdtak: {
+      type: Sequelize.STRING(1),
       allowNull: false,
-      comment: "Discount Date"
+      comment: "Able to Takeaway"
     },
-    psprddva: {
+    psprdtpr: {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
       comment: "Discount Value"

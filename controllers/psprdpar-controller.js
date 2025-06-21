@@ -6,7 +6,6 @@ const fs = require("fs");
 
 // Table File
 const psprdpar = db.psprdpar;
-const psprddtl = db.psprddtl;
 const psmrcpar = db.psmrcpar;
 
 // Common Function
@@ -23,7 +22,6 @@ const genConfig = require("../constant/generalConfig");
 
 // Input Validation
 const validatePsprdparInput = require("../validation/psprdpar-validation");
-const validatePsprddtlInput = require("../validation/psprddtl-validation");
 
 exports.list = async (req, res) => {
   let option = {
@@ -182,34 +180,6 @@ exports.findOne = async (req, res) => {
 
     if (!obj) return returnError(req, 500, "NORECORDFOUND", res);
 
-    const productTypes = await psprddtl.findAll({
-      where: { psprduid: id },
-      raw: true,
-      attributes: ['psprduid', 'psprdaty', 'psprdapn', 'psprdmnd', 'psprdpri']
-    });
-
-    for (let i = 0; i < productTypes.length; i++) {
-      if (!_.isEmpty(productTypes[i].psprdaty)) {
-        const description = await common.retrieveSpecificGenCodes(
-          req,
-          "ADDON",
-          productTypes[i].psprdaty
-        );
-        productTypes[i].psprdatydsc = description?.prgedesc || "";
-      }
-
-      if (!_.isEmpty(productTypes[i].psprdmnd)) {
-        const description = await common.retrieveSpecificGenCodes(
-          req,
-          "YESORNO",
-          productTypes[i].psprdmnd
-        );
-        productTypes[i].psprdmnddsc = description?.prgedesc || "";
-      }
-    }
-
-    obj.psprddtl = productTypes;
-
     if (!_.isEmpty(obj.psprdtyp)) {
       const description = await common.retrieveSpecificGenCodes(req, "PRODTYP", obj.psprdtyp);
       obj.psprdtypdsc = description?.prgedesc || "";
@@ -243,6 +213,11 @@ exports.findOne = async (req, res) => {
       obj.psprdciddsc = description?.prgedesc || "";
     }
 
+    if (!_.isEmpty(obj.psprdtak)) {
+      const description = await common.retrieveSpecificGenCodes(req, "YESORNO", obj.psprdtak);
+      obj.psprdtakdsc = description?.prgedesc || "";
+    }
+
 
 
     return returnSuccess(200, obj, res);
@@ -254,7 +229,7 @@ exports.findOne = async (req, res) => {
 
 
 exports.create = async (req, res) => {
-  let merchantid = req.user.psusrtyp == "MCH"? req.query.psmrcuid: req.body.psmrcuid;
+  let merchantid = req.user.psusrtyp == "MCH" ? req.query.psmrcuid : req.body.psmrcuid;
 
   //Validation
   const { errors, isValid } = validatePsprdparInput(req.body, "A");
@@ -295,33 +270,10 @@ exports.create = async (req, res) => {
         let ddlErrors = {};
         let err_ind = false;
 
-        let psprddtlT = req.body.psprddtl;
-        for (let i = 0; i < psprddtlT.length; i++) {
-          const { errors, isValid } = validatePsprddtlInput(req.body, "A");
-          if (!isValid) return returnError(req, 400, errors, res);
-
-          let aff1 = await common.retrieveSpecificGenCodes(
-            req,
-            "ADDON",
-            psprddtlT[i].psprdaty
-          );
-          if (!aff1 || !aff1.prgedesc) {
-            ddlErrors.psprddtlT[i].psprdaty = "INVALIDDATAVALUE";
-            err_ind = true;
-          }
-
-          let aff2 = await common.retrieveSpecificGenCodes(
-            req,
-            "YESORNO",
-            psprddtlT[i].psprdmnd
-          );
-          if (!aff2 || !aff2.prgedesc) {
-            ddlErrors.psprddtlT[i].psprdmnd = "INVALIDDATAVALUE";
-            err_ind = true;
-          }
 
 
-        }
+
+
 
 
         let prodtype = await common.retrieveSpecificGenCodes(
@@ -394,6 +346,18 @@ exports.create = async (req, res) => {
           }
         }
 
+        if (!_.isEmpty(req.body.psprdtak)) {
+          let yesorno = await common.retrieveSpecificGenCodes(
+            req,
+            "YESORNO",
+            req.body.psprdtak
+          );
+          if (!yesorno || !yesorno.prgedesc) {
+            ddlErrors.psprdtak = "INVALIDDATAVALUE";
+            err_ind = true;
+          }
+        }
+
 
 
         if (err_ind) return returnError(req, 400, ddlErrors, res);
@@ -423,8 +387,8 @@ exports.create = async (req, res) => {
               psprdlsr: req.body.psprdlsr,
               psprdstk: req.body.psprdstk,
               psprdpri: req.body.psprdpri,
-              psprdddt: req.body.psprdddt,
-              psprddva: req.body.psprddva,
+              psprdtak: req.body.psprdtak ? req.body.psprdtak : "N",
+              psprdtpr: req.body.psprdtak == "Y" ? req.body.psprdtpr : 0,
               psprdrmk: req.body.psprdrmk,
               psprdsdt: new Date(),
               psprdcrd: req.body.psprdcrd ? req.body.psprdcrd : new Date(),
@@ -436,25 +400,10 @@ exports.create = async (req, res) => {
 
               crtuser: req.user.psusrnme,
               mntuser: req.user.psusrnme,
-            })
+            }, { transaction: t })
             .then(async (data) => {
               let created = data.get({ plain: true });
-              for (let i = 0; i < psprddtlT.length; i++) {
-                psprddtl
-                  .create({
-                    psprduid: reference,
-                    psprdaty: psprddtlT[i].psprdaty,
-                    psprdapn: psprddtlT[i].psprdapn,
-                    psprdmnd: psprddtlT[i].psprdmnd ? psprddtlT[i].psprdmnd : "N",
-                    psprdpri: psprddtlT[i].psprdpri,
 
-
-                  }).catch(async (err) => {
-                    await t.rollback();
-                    console.log("Error when creating Product Type: ", err);
-                    return returnError(req, 500, "UNEXPECTEDERROR", res);
-                  });
-              }
 
               if (profilePic) {
                 await common
@@ -465,7 +414,7 @@ exports.create = async (req, res) => {
                     // uuidv4(),
                     req.user.psusrnme,
                     5,
-                    t
+
                   )
                   .catch(async (err) => {
                     console.log(err);
@@ -484,16 +433,6 @@ exports.create = async (req, res) => {
                 req.user.psusrnme,
                 "", created.psprduid);
 
-              for (let i = 0; i < psprddtlT.length; i++) {
-                common.writeMntLog(
-                  "psprddtl",
-                  null,
-                  null,
-                  created.psprduid + "-" + psprddtlT[i].psprdapn,
-                  "A",
-                  req.user.psusrnme,
-                  "", created.psprduid + "-" + psprddtlT[i].psprdapn);
-              }
               return returnSuccessMessage(req, 200, "RECORDCREATED", res);
 
             })
@@ -545,54 +484,7 @@ exports.update = async (req, res) => {
         let err_ind = false;
 
 
-        let psprddtlT = req.body.psprddtl;
-        for (let i = 0; i < psprddtlT.length; i++) {
-
-          const { errors, isValid } = validatePsprddtlInput(req.body, "A");
-          if (!isValid) return returnError(req, 400, errors, res);
-
-          let aff1 = await common.retrieveSpecificGenCodes(
-            req,
-            "ADDON",
-            psprddtlT[i].psprdaty
-          );
-          if (!aff1 || !aff1.prgedesc) {
-            ddlErrors.psprddtlT[i].psprdaty = "INVALIDDATAVALUE";
-            err_ind = true;
-          }
-
-          let aff2 = await common.retrieveSpecificGenCodes(
-            req,
-            "YESORNO",
-            psprddtlT[i].psprdmnd
-          );
-          if (!aff2 || !aff2.prgedesc) {
-            ddlErrors.psprddtlT[i].psprdmnd = "INVALIDDATAVALUE";
-            err_ind = true;
-          }
-
-
-        }
-
-        const existingTypes = await psprddtl.findAll({
-          where: { psprduid: req.body.psprduid },
-          attributes: ['psprduid', 'psprdaty', 'psprdapn', 'psprdmnd', 'psprdpri'],
-          raw: true
-        });
-
-        const newTypes = req.body.psprddtlT || []; // Ensure it's an array
-
-        // Types to create
-        const toCreate = newTypes.filter(newItem =>
-          !existingTypes.some(existingItem => _.isEqual(newItem, existingItem))
-        );
-
-        // Types to delete
-        const toDelete = existingTypes.filter(existingItem =>
-          !newTypes.some(newItem => _.isEqual(newItem, existingItem))
-        );
-
-
+       
 
         let prodtype = await common.retrieveSpecificGenCodes(
           req,
@@ -664,6 +556,19 @@ exports.update = async (req, res) => {
           }
         }
 
+        
+        if (!_.isEmpty(req.body.psprdtak)) {
+          let yesorno = await common.retrieveSpecificGenCodes(
+            req,
+            "YESORNO",
+            req.body.psprdtak
+          );
+          if (!yesorno || !yesorno.prgedesc) {
+            ddlErrors.psprdtak = "INVALIDDATAVALUE";
+            err_ind = true;
+          }
+        }
+
 
 
         if (err_ind) return returnError(req, 400, ddlErrors, res);
@@ -690,10 +595,10 @@ exports.update = async (req, res) => {
               psprdlsr: req.body.psprdlsr,
               psprdstk: req.body.psprdstk,
               psprdpri: req.body.psprdpri,
-              psprdddt: req.body.psprdddt,
-              psprddva: req.body.psprddva,
+              psprdtak: req.body.psprdtak,
+              psprdtpr: req.body.psprdtak == "Y" ? req.body.psprdtpr : 0,
               psprdrmk: req.body.psprdrmk,
-              psprdsdt: req.body.psprdsdt,
+              psprdsdt: new Date(),
               psprdcrd: req.body.psprdcrd,
               psprdlsr: req.body.psprdlsr,
               psprdstk: req.body.psprdstk,
@@ -705,30 +610,9 @@ exports.update = async (req, res) => {
               where: {
                 psprduid: id,
               },
-            }
+            }, { transaction: t }
           )
           .then(async () => {
-            for (let i = 0; i < toCreate.length; i++) {
-              psprddtl
-                .create(toCreate[i]).catch(async (err) => {
-                  await t.rollback();
-                  console.log("Error when creating Product Type: ", err);
-                  return returnError(req, 500, "UNEXPECTEDERROR", res);
-                });
-            }
-            for (let i = 0; i < toDelete.length; i++) {
-              psprddtl
-                .destroy({
-                  where: {
-                    psprduid: id,
-                    psprdaty: toDelete[i].psprdaty,
-                  }
-                }).catch(async (err) => {
-                  await t.rollback();
-                  console.log("Error when deleting Product Type: ", err);
-                  return returnError(req, 500, "UNEXPECTEDERROR", res);
-                });
-            }
 
 
 
@@ -746,7 +630,7 @@ exports.update = async (req, res) => {
                   // uuidv4(),
                   req.user.psusrnme,
                   5,
-                  t
+
                 )
                 .catch(async (err) => {
                   console.log(err);
@@ -765,29 +649,7 @@ exports.update = async (req, res) => {
               "C",
               req.user.psusrnme
             );
-            for (let i = 0; i < toCreate.length; i++) {
-              common.writeMntLog(
-                "psprddtl",
-                null,
-                null,
-                created.psprduid + "-" + toCreate[i].psprdapn,
-                "A",
-                req.user.psusrnme,
-                "", created.psprduid + "-" + toCreate[i].psprdapn);
-            }
-            for (let i = 0; i < toDelete.length; i++) {
-              common.writeMntLog(
-                "psprddtl",
-                null,
-                null,
-                created.psprduid + "-" + toDelete[i].psprdapn,
-                "D",
-                req.user.psusrnme,
-                "",
-                created.psprduid + "-" + toDelete[i].psprdapn,
 
-              );
-            }
             return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
           });
       } else return returnError(req, 500, "NORECORDFOUND", res);
@@ -817,66 +679,38 @@ exports.delete = async (req, res) => {
             where: { psprduid: id },
           })
           .then(async () => {
-            await psprddtl.findAll({
-              where: {
-                psprduid: id
-              }, raw: true, attributes: ["psprdaty"]
-            }).then(async (productTypes) => {
-              const existing = productTypes.map(exist => exist.psprdaty);
-              await psprddtl.destroy({
-                where: {
-                  psprduid: id
-                }
-              });
 
 
-              try {
+            try {
 
-                if (fs.existsSync(genConfig.productImagePath + item.psprdimg)) {
-                  fs.unlinkSync(genConfig.productImagePath + item.psprdimg);
-                }
-              } catch (err) {
-                console.log("Remove Image Error :", err);
-                await t.rollback();
-                return returnError(req, 500, "UNEXPECTEDERROR", res);
+              if (fs.existsSync(genConfig.productImagePath + item.psprdimg)) {
+                fs.unlinkSync(genConfig.productImagePath + item.psprdimg);
               }
-
-              common.writeMntLog(
-                "psprdpar",
-                null,
-                null,
-                trnscd.psprduid,
-                "D",
-                req.user.psusrnme,
-                "",
-                trnscd.psprduid
-              );
-              for (let i = 0; i < existing.length; i++) {
-                common.writeMntLog(
-                  "psprddtl",
-                  null,
-                  null,
-                  created.psprduid + "-" + existing[i],
-                  "D",
-                  req.user.psusrnme,
-                  "",
-                  created.psprduid + "-" + existing[i],
-
-                );
-              }
-              return returnSuccessMessage(req, 200, "RECORDDELETED", res);
-            }).catch(async (err) => {
-              console.log(err);
+            } catch (err) {
+              console.log("Remove Image Error :", err);
               await t.rollback();
               return returnError(req, 500, "UNEXPECTEDERROR", res);
-            });
+            }
 
-          })
-          .catch(async (err) => {
+            common.writeMntLog(
+              "psprdpar",
+              null,
+              null,
+              trnscd.psprduid,
+              "D",
+              req.user.psusrnme,
+              "",
+              trnscd.psprduid
+            );
+
+            return returnSuccessMessage(req, 200, "RECORDDELETED", res);
+          }).catch(async (err) => {
             console.log(err);
             await t.rollback();
             return returnError(req, 500, "UNEXPECTEDERROR", res);
           });
+
+
       } else return returnError(req, 500, "NORECORDFOUND", res);
     })
     .catch((err) => {

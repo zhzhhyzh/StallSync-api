@@ -175,11 +175,13 @@ const psprdsdt = "Status Date";
 const psprdcid = "Countable Indicator";
 const psprdlsr = "Low Stock Reminder";
 const psprdstk = "Stock";
-const psprdddt = "Discount Date";
-const psprddva = "Discount Value";
+// const psprdddt = "Discount Date";
+// const psprddva = "Discount Value";
 const psprdcrd = "Creation Date";
 const psprdrmk = "Remarks";
 const psprdrtg = "Rating";
+const psprdtak = "Able to Takeaway";
+const psprdtpr = "Takeaway Charges";
 
 //psrolpar  
 const psrolcde = "Role Code";
@@ -471,12 +473,11 @@ module.exports = {
     psprdlsr,
     psprdstk,
     psprdpri,
-    psprdddt,
-    psprddva,
     psprdcrd,
     psprdrmk,
     psprdrtg,
-
+    psprdtak,
+    psprdtpr,
     // psrolpar
     psrolcde,
     psroldsc,
