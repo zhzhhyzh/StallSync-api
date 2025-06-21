@@ -11,13 +11,15 @@ module.exports = function validatePsprdparInput(data, type) {
     data.psprdfvg = !isEmpty(data.psprdfvg) ? data.psprdfvg : "N";
     data.psprdhal = !isEmpty(data.psprdhal) ? data.psprdhal : "N";
     data.psprdcid = !isEmpty(data.psprdcid) ? data.psprdcid : "N";
+    data.psprdtak = !isEmpty(data.psprdtak) ? data.psprdtak : "N";
     data.psmrcuid = !isEmpty(data.psmrcuid) ? data.psmrcuid : "";
     data.psprdtyp = !isEmpty(data.psprdtyp) ? data.psprdtyp : "";
     data.psprdlsr = !isEmpty(data.psprdlsr) ? data.psprdlsr : 10;
     data.psprdstk = !isEmpty(data.psprdstk) ? data.psprdstk : 0;
     data.psprdpri = !isEmpty(data.psprdpri) ? data.psprdpri : 0;
-    data.psprdddt = !isEmpty(data.psprdddt) ? data.psprdddt : '';
-    data.psprddva = !isEmpty(data.psprddva) ? data.psprddva : '';
+    data.psprdtpr = !isEmpty(data.psprdtpr) ? data.psprdtpr : 0;
+    // data.psprdddt = !isEmpty(data.psprdddt) ? data.psprdddt : '';
+    // data.psprddva = !isEmpty(data.psprddva) ? data.psprddva : '';
 
     data.psprdcat = !isEmpty(data.psprdcat) ? data.psprdcat : "";
     // data.psprdsdt = !isEmpty(data.psprdsdt) ? data.psprdsdt : new Date();
@@ -54,17 +56,17 @@ module.exports = function validatePsprdparInput(data, type) {
     if (data.psprdlds.length > 255) errors.psprdlds = "INVALIDVALUELENGTH&255";
 
 
-    if (!Validator.isEmpty('' + data.psprdddt)) {
-        let newDate = new Date(data.psprdddt);
-        if (!newDate instanceof Date && isNaN(newDate)) {
-            errors.psprdddt = "INVALIDDATAVALUE";
-        } else {
-            let today = new Date();
-            today.setHours(0, 0, 0, 0);
-            let notdvd = new Date(data.psprdddt);
-            if (notdvd < today) errors.psprdddt = "PASTDATE";
-        }
-    }
+    // if (!Validator.isEmpty('' + data.psprdddt)) {
+    //     let newDate = new Date(data.psprdddt);
+    //     if (!newDate instanceof Date && isNaN(newDate)) {
+    //         errors.psprdddt = "INVALIDDATAVALUE";
+    //     } else {
+    //         let today = new Date();
+    //         today.setHours(0, 0, 0, 0);
+    //         let notdvd = new Date(data.psprdddt);
+    //         if (notdvd < today) errors.psprdddt = "PASTDATE";
+    //     }
+    // }
 
 
 
@@ -84,6 +86,12 @@ module.exports = function validatePsprdparInput(data, type) {
         errors.psprdcid = "FIELDISREQUIRED";
     } else {
         if (data.psprdcid.length > 10) errors.psprdcid = "INVALIDVALUELENGTH&10";
+    }
+
+    if (Validator.isEmpty(data.psprdtak)) {
+        errors.psprdtak = "FIELDISREQUIRED";
+    } else {
+        if (data.psprdtak.length > 1) errors.psprdtak = "INVALIDVALUELENGTH&1";
     }
 
 
@@ -151,17 +159,30 @@ module.exports = function validatePsprdparInput(data, type) {
     }
 
 
-     if (!Validator.isEmpty("" + data.psprddva)) {
-           const value = parseFloat(data.psprddva);
-   
-           if (isNaN(value)) {
-               errors.psprddva = "INVALIDDATAVALUE";
-           } else if (value > 999999999.99) {
-               errors.psprddva = "INVALIDVALUELENGTH&999999999.99";
-           } else if (value < 0) {
-               errors.psprddva = "INVALIDVALUELENGTHMIN&0";
-           }
-       }
+    if (!Validator.isEmpty("" + data.psprdtpr)) {
+        const value = parseFloat(data.psprdtpr);
+
+        if (isNaN(value)) {
+            errors.psprdtpr = "INVALIDDATAVALUE";
+        } else if (value > 100) {
+            errors.psprdtpr = "INVALIDVALUELENGTH&100";
+        } else if (value < 0) {
+            errors.psprdtpr = "INVALIDVALUELENGTHMIN&0";
+        }
+    }
+
+
+    //  if (!Validator.isEmpty("" + data.psprddva)) {
+    //        const value = parseFloat(data.psprddva);
+
+    //        if (isNaN(value)) {
+    //            errors.psprddva = "INVALIDDATAVALUE";
+    //        } else if (value > 999999999.99) {
+    //            errors.psprddva = "INVALIDVALUELENGTH&999999999.99";
+    //        } else if (value < 0) {
+    //            errors.psprddva = "INVALIDVALUELENGTHMIN&0";
+    //        }
+    //    }
 
 
 
