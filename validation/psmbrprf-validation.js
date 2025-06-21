@@ -3,7 +3,7 @@ const isEmpty = require("./is-empty");
 
 module.exports = function validatePsmbrprfInput(data, type) {
     let errors = {};
-    data.psmbruid = !isEmpty(data.psmbruid) ? data.psmbruid : "";
+    // data.psmbruid = !isEmpty(data.psmbruid) ? data.psmbruid : "";
     data.psmbrnam = !isEmpty(data.psmbrnam) ? data.psmbrnam : "";
     data.psmbreml = !isEmpty(data.psmbreml) ? data.psmbreml : "";
     data.psmbrdob = !isEmpty(data.psmbrdob) ? data.psmbrdob : "";
@@ -11,20 +11,20 @@ module.exports = function validatePsmbrprfInput(data, type) {
     // data.psmbracs = !isEmpty(data.psmbracs) ? data.psmbracs : 0;
     data.psmbrtyp = !isEmpty(data.psmbrtyp) ? data.psmbrtyp : "";
     // data.psmbrexp = !isEmpty(data.psmbrexp) ? data.psmbrexp : "";
-    data.psmbrjdt = !isEmpty(data.psmbrjdt) ? data.psmbrjdt : "";
+    data.psmbrjdt = !isEmpty(data.psmbrjdt) ? data.psmbrjdt : new Date();
     // data.psmbrcar = !isEmpty(data.psmbrcar) ? data.psmbrcar : "";
     data.psusrnme = !isEmpty(data.psusrnme) ? data.psusrnme : "";
     data.psmbrpre = !isEmpty(data.psmbrpre) ? data.psmbrpre : "";
     data.psmbrphn = !isEmpty(data.psmbrphn) ? data.psmbrphn : "";
 
-    if (type == "A" && Validator.isEmpty(data.psmbruid)) {
-        errors.psmbruid = "FIELDISREQUIRED";
-    } else if (
-        type == "A" &&
-        !Validator.isEmpty(data.psmbruid) &&
-        data.psmbruid.length > 25
-    )
-        errors.psmbruid = "INVALIDVALUELENGTH&25";
+    // if (type == "A" && Validator.isEmpty(data.psmbruid)) {
+    //     errors.psmbruid = "FIELDISREQUIRED";
+    // } else if (
+    //     type == "A" &&
+    //     !Validator.isEmpty(data.psmbruid) &&
+    //     data.psmbruid.length > 25
+    // )
+    //     errors.psmbruid = "INVALIDVALUELENGTH&25";
 
     if (Validator.isEmpty(data.psmbrnam)) {
         errors.psmbrnam = "FIELDISREQUIRED";
@@ -67,19 +67,17 @@ module.exports = function validatePsmbrprfInput(data, type) {
     //     errors.psmbracs = "INVALIDVALUELENGTH&15,2";
     // }
 
-    if (Validator.isEmpty(data.psmbrtyp)) {
+    if (Validator.isEmpty(data.psmbrtyp) && type == "C") {
         errors.psmbrtyp = "FIELDISREQUIRED";
     } else {
-        if (data.psmbrtyp.length > 10) errors.psmbrtyp = "INVALIDVALUELENGTH&10";
+        if (data.psmbrtyp.length > 10 && type == 'C') errors.psmbrtyp = "INVALIDVALUELENGTH&10";
     }
 
     // if (Validator.isEmpty(data.psmbrexp)) {
     //     errors.psmbrexp = "FIELDISREQUIRED";
     // }
 
-    if (Validator.isEmpty(data.psmbrjdt)) {
-        errors.psmbrjdt = "FIELDISREQUIRED";
-    } else if (!Validator.isEmpty('' + data.psmbrjdt)) {
+    if (!Validator.isEmpty('' + data.psmbrjdt)) {
         let newDate = new Date(data.psmbrjdt);
 
         if (isNaN(newDate.getTime())) {

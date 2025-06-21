@@ -31,6 +31,7 @@ const dashboard = require("./routes/dashboard");
 const psholpar = require("./routes/psholpar");
 const pswdypar = require("./routes/pswdypar");
 const report = require("./routes/report");
+const psmbrprf = require("./routes/psmbrprf");
 
 // MISC Routes
 const document = require('./routes/document');
@@ -85,6 +86,7 @@ app.use('/api/dashboard', dashboard);
 app.use('/api/psholpar', psholpar);
 app.use('/api/pswdypar', pswdypar);
 app.use('/api/report', report);
+app.use('/api/psmbrprf', psmbrprf);
 
 // MISC Routes
 app.use('/api/document', document);
