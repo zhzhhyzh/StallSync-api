@@ -52,7 +52,7 @@ module.exports = (sequelize, Sequelize) => {
             indexes: [
                 {
                     unique: true,
-                    fields: ['psmbrcar', 'psitmcno']
+                    fields: ['psmbrcar']
                 }
             ]
         }); 

@@ -112,7 +112,8 @@ exports.create = async (req, res) => {
             where: {
                 psodruid: req.body.psodruid,
                 crtusr: req.body.crtusr
-            }
+            },
+            raw: true
         });
 
         if (exist) {
@@ -155,7 +156,10 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
     const { psodruid, crtusr } = req.body;
     if (_.isEmpty(psodruid) || _.isEmpty(crtusr)) {
-            return returnError(req, 400, "NORECORDFOUND", res);
+            return returnError(req, 400, {
+            psodruid: "ORDERIDREQUIRED",
+            crtusr: "USERNAMEISREQUIRED"
+        }, res);
         }
 
     // Validate input
@@ -212,6 +216,54 @@ exports.update = async (req, res) => {
     }
 }
 
+exports.delete = async (req, res) => {
+    const { psodruid, crtusr } = req.query;
+    if (_.isEmpty(psodruid) || _.isEmpty(crtusr)) {
+        return returnError(req, 400, {
+            psodruid: "ORDERIDREQUIRED",
+            crtusr: "USERNAMEISREQUIRED"
+        }, res);
+    }
+
+    try {
+        // Check Record exists
+        const exist = await psodrrvw.findOne({
+            where: {
+                psodruid: psodruid,
+                crtusr: crtusr
+            },
+            raw: true 
+        });
+
+        if (!exist) {
+            return returnError(req, 400, "NORECORDFOUND", res);
+        }
+
+        // Delete review
+        await psodrrvw.destroy({
+            where: {
+                psodruid: psodruid,
+                crtusr: crtusr
+            }
+        }).then(async (data) => {
+            common.writeMntLog(
+                "psodrrvw",
+                null,
+                null,
+                psodruid,
+                "D",
+                req.user.psusrunm,
+                "",
+                [psodruid, crtusr]
+            );
+
+            return returnSuccessMessage(200, "RECORDDELETED", res);
+        });
+    } catch (err) {
+        console.error("Error deleting review:", err);
+        return returnError(req, 500, "UNEXPECTEDERROR", res);
+    }
+}
 
 
 

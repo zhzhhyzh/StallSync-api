@@ -18,7 +18,7 @@ const connection = require("../common/db");
 
 // Input Validation
 const validatePsmbrprfInput = require("../validation/psmbrprf-validation");
-const { mntuser } = require("../constant/fieldNames");
+
 
 exports.list = async (req, res) => {
     // default 10 records per page
