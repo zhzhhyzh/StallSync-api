@@ -259,7 +259,8 @@ exports.create = async (req, res) => {
                 reference += _.padStart(code, 6, '0');
 
         pstrxpar.create({
-            psorduid: reference,
+            pstrcuid: reference,
+            psorduid: req.body.psorduid,
             pstrxdat: new Date(),
             pstrxamt: req.body.pstrxamt,
             pstrxsts: req.body.pstrxsts,
@@ -276,16 +277,16 @@ exports.create = async (req, res) => {
 
         }).then(async (data) => {
             let created = data.get({ plain: true });
-         
+         TRX
             common.writeMntLog(
                 "pstrxpar",
                 null,
                 null,
-                created.psmtrcuid,
+                created.pstrcuid,
                 "A",
                 req.user.psusrunm,
                 "",
-                created.psmbrcuid);
+                created.pstrcuid);
 
             return returnSuccessMessage(req, 200, "RECORDCREATED", res);
         });
@@ -296,3 +297,143 @@ exports.create = async (req, res) => {
     }
 }
 
+exports.update = async (req, res) => {
+    const id = req.query.pstrcuid ? req.query.pstrcuid : "";
+    if (!id || id == "") {
+        return returnError(req, 500, "RECORDIDISREQUIRED", res);
+    }
+
+    const { errors, isValid } = validatePstrxparInput(req.body, "C");
+    if (!isValid) {
+        return returnError(req, 400, errors, res);
+    }
+
+    try {
+        const exist = await pstrxpar.findOne({
+            where: { pstrcuid: id },
+            raw: true,
+        });
+
+        if (!exist) {
+            return returnError(req, 400, "NORECORDFOUND", res);
+        }
+
+        let ddlErrors = {};
+        let err_ind = false;
+
+
+        if (!_.isEmpty(req.body.pstrxsts)) {
+            let description = await common.retrieveSpecificGenCodes(
+                req,
+                "TRXSTS",
+                req.body.pstrxsts
+            );
+            if (_.isEmpty(description)) {
+                ddlErrors.pstrxsts = "INVALIDDATAVALUE";
+                err_ind = true;
+            }
+        }
+
+        if (!_.isEmpty(req.body.pstrxmtd)) {
+            let description = await common.retrieveSpecificGenCodes(
+                req,
+                "PYMTHD",
+                req.body.pstrxmtd
+            );
+            if (_.isEmpty(description)) {
+                ddlErrors.pstrxmtd = "INVALIDDATAVALUE";
+                err_ind = true;
+            }
+        }
+
+        if (!_.isEmpty(req.body.pstrxcrc)) {
+            let description = await common.retrieveSpecificGenCodes(
+                req,
+                "CRCY",
+                req.body.pstrxcrc
+            );
+            if (_.isEmpty(description)) {
+                ddlErrors.pstrxcrc = "INVALIDDATAVALUE";
+                err_ind = true;
+            }
+        }
+
+        if (err_ind) return returnError(req, 400, ddlErrors, res);
+
+
+        await pstrxpar.update(
+            {
+                // psorduid: reference,
+                pstrxdat: req.body.pstrxdat ? req.body.pstrxdat : exist.pstrxdat,
+                pstrxamt: req.body.pstrxamt,
+                pstrxsts: req.body.pstrxsts,
+                pstrxcrc: req.body.pstrxcrc,
+                pstrxmtd: req.body.pstrxmtd,
+                pstrxba1: req.body.pstrxba1,
+                pstrxba2: req.body.pstrxba2,
+                pstrxbpo: req.body.pstrxbpo,
+                pstrxbci: req.body.pstrxbci,
+                pstrxbst: req.body.pstrxbst,
+                pstrxstr: req.body.pstrxstr,
+                crtuser: req.user.psusrunm,
+                mntuser: req.user.psusrunm
+        }, 
+        { where: { pstrcuid: id } }
+    ).then(() => {
+                common.writeMntLog(
+                    "pstrxpar",
+                    null,
+                    null,
+                    id,
+                    "C",
+                    req.user.psusrunm,
+                );
+    
+                return returnSuccessMessage(req, 200, "UPDATESUCCESSFUL", res);
+    
+            });
+    } catch (err) {
+        console.log("Error in update:", err);
+        return returnError(req, 500, "UNEXPECTEDERROR", res);
+    }
+}
+
+exports.delete = async (req, res) => { 
+    const id = req.body.id ? req.body.id: "";
+    if (!id || id == "") {
+        return returnError(req, 500, "RECORDIDISREQUIRED", res);
+    }
+
+    try {
+        const exist = await pstrxpar.findOne({
+            where: {pstrcuid: id},
+            raw: true
+        })
+
+        if (!exist) {
+            return returnError(req, 400, "NORECORDFOUND", res);
+        }
+
+        await pstrxpar.destroy({
+            where: { pstrcuid: id }
+        }).then( async() => {
+            common.writeMntLog(
+                "pstrxpar",
+                null,
+                null,
+                id,
+                "D",
+                req.user.psusrunm,
+                "",
+                id
+            );
+        })
+    
+
+
+
+    } catch (err) {
+        console.log("Error in delete:", err);
+        return returnError(req, 500, "UNEXPECTEDERROR", res);
+    }
+}
