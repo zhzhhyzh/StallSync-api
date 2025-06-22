@@ -3,7 +3,7 @@
 module.exports = (sequelize, Sequelize) => {
 
     const psodrrvw = sequelize.define('psodrrvw', {
-        psorduid: {
+        psodruid: {
             type: Sequelize.STRING(25),
             allowNull: false,
             // Order ID
@@ -48,7 +48,7 @@ module.exports = (sequelize, Sequelize) => {
             indexes: [
                 {
                     unique: true,
-                    fields: ['psorduid']
+                    fields: ['psodruid', 'crtusr']
                 }
             ]
         });

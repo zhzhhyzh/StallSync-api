@@ -18,7 +18,7 @@ const connection = require("../common/db");
 
 // Input Validation
 const validatePsmbrprfInput = require("../validation/psmbrprf-validation");
-const { mntuser } = require("../constant/fieldNames");
+
 
 exports.list = async (req, res) => {
     // default 10 records per page
@@ -185,11 +185,9 @@ exports.create = async (req, res) => {
 
         if (exist) return returnError(req, 400, { psmbreml: "RECORDEXISTS" }, res);
 
-        // 3. gENCODE Validation
+        // 3. GENCODE Validation
         let ddlErrors = {};
         let err_ind = false;
-
-
 
         // if (!_.isEmpty(req.body.psmbrtyp)) {
         //     let yesorno = await common.retrieveSpecificGenCodes(
@@ -216,6 +214,8 @@ exports.create = async (req, res) => {
         }
 
         if (err_ind) return returnError(req, 400, ddlErrors, res);
+
+        // Set Expiry Date to one year from now
         const oneYearFromNow = new Date();
         oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
 
