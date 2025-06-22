@@ -10,7 +10,7 @@ const {
     psmrcpar,
     psusrprf,
     pssysann,
-
+    psmbrprf
 } = db;
 
 // Common Functions
@@ -138,10 +138,10 @@ const getNumberBoard = async (req) => {
     });
 
     // Count active members
-    const { count: countMbr } = await psusrprf.findAndCountAll({
-        where: { psusrsts: "A", psusrtyp: "MBR" },
+    const { count: countMbr } = await psmbrprf.findAndCountAll({
+
         raw: true,
-        attributes: ["psusrunm"]
+        attributes: ["psmbrnam"]
     });
 
     // Initialize counters

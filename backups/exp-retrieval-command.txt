@@ -1,0 +1,1 @@
+openssl smime -decrypt -in stallsync-20250622-122443.sql.enc -binary -inform DER -inkey ../config/mysqldump-key.pem -out stallsync-decrypted.sql

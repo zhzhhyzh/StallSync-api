@@ -6,6 +6,7 @@ const speakeasy = require('speakeasy');
 const _ = require("lodash");
 const short = require('short-uuid');
 const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 
 //Table import
@@ -14,7 +15,6 @@ const psusrprf = db.psusrprf;
 const psrstpwd = db.psrstpwd;
 const prfuncde = db.prfuncde;
 const prfunacs = db.prfunacs;
-const psmbrprf = db.psmbrprf;
 
 //Common Function
 // Common Function
@@ -24,7 +24,7 @@ const returnSuccess = require('../common/success');
 const returnSuccessMessage = require('../common/successMessage');
 const common = require('../common/common');
 const connection = require("../common/db");
-
+const general = require("../common/general")
 // Input Validation
 const userCreationValidation = require('../validation/user-creation');
 const prUpdateProfileValidation = require('../validation/user-update');
@@ -239,17 +239,17 @@ exports.login_m = async (req, res) => {
 
 
 exports.reset = async (req, res) => {
-    let username = req.body.username;
+    let username = req.body.email;
     if (!username) return returnError(req, 400, { username: 'USERNAMEISREQUIRED' }, res);
 
     // Check if user exists
     let user = await psusrprf.findOne({
-        where: { psusrunm: username },
+        where: { psusreml: username },
         raw: true,
         attributes: { exclude: ['createdAt', 'updatedAt', 'crtuser', 'mntuser'] }
     });
 
-    if (!user) return returnError(req, 400, { psusrunm: 'USERNOTFOUND' }, res);
+    if (!user) return returnError(req, 400, { psusreml: 'USERNOTFOUND' }, res);
 
     // Generate a new random hexadecimal password (8 characters)
     const rawPassword = crypto.randomBytes(4).toString('hex');
@@ -262,7 +262,7 @@ exports.reset = async (req, res) => {
         psusrpwd: hashedPassword, // change to hashedPassword if using hashing
         pschgpwd: true
     }, {
-        where: { psusrunm: username }
+        where: { psusrunm: user.psusrunm }
     });
 
     if (!update) return returnError(req, 500, "FAILEDTOUPDATEPASSWORD", res);
@@ -276,7 +276,7 @@ exports.reset = async (req, res) => {
         psrststs: 'A'
     };
 
-    const check = await psrstpwd.findOne({ where: { psrstusr: username } });
+    const check = await psrstpwd.findOne({ where: { psrstusr: user.psusrunm } });
 
     if (check) {
         await psrstpwd.update(resetLog, { where: { psrstusr: username } });
@@ -297,17 +297,21 @@ exports.reset = async (req, res) => {
     `;
 
     // Send email
-    await general.sendEmail(req, user.psusreml, 'Your Password Has Been Reset', message)
-        .catch(err => {
-            console.error(err);
-            return returnError(req, 500, "EMAILSENDFAILED", res);
-        });
+    await general.sendEmail({
+        toEmail: user.psusreml,
+        toName: user.psusrnam,
+        subject: 'Your Password Has Been Reset',
+        htmlContent: message
+    }).catch(err => {
+        console.error(err);
+        return returnError(req, 500, "EMAILSENDFAILED", res);
+    });
 
     return returnSuccessMessage(req, 200, "PASSWORDRESETSUCCESS", res);
 };
 
 exports.change_password = async (req, res) => {
-    const oldpassword = req.body.oldpassword
+    const oldpassword = req.body.password
     const newpassword = req.body.newpassword
 
     //Validation
@@ -484,7 +488,7 @@ exports.detail = (req, res) => {
     psusrprf.findOne({
         where: {
             psusrunm: usrnm
-        }, raw: true, attributes: [['id', 'psusrunm'], 'psusrunm', 'psusrnam', 'psusreml', 'psusrsts', 'psusrtyp', 'psusrphn', 'psusrrol']
+        }, raw: true, attributes: [['id', 'psusrunm'], 'psusrunm', 'psusrnam', 'psusreml', 'psusrsts', 'psusrtyp', 'psusrphn', 'psusrrol', 'psusrpre']
     }).then(async usrunme => {
         if (usrunme) {
             if (!_.isEmpty(usrunme.psusrtyp)) {
@@ -534,6 +538,7 @@ exports.update = async (req, res) => {
             psusrnam: obj.psusrnam,
             psusreml: obj.psusreml,
             psusrphn: obj.psusrphn,
+            psusrpre: obj.psusrpre,
             psusrsts: obj.psusrsts,
             psusrtyp: obj.psusrtyp,
             psusrrol: obj.psusrrol,

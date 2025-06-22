@@ -4,7 +4,7 @@ const axios = require('axios');
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 
 const senderEmail = 'yeohzh-wp22@student.tarc.edu.my';
-const senderName = 'VELORA';
+const senderName = 'StallSync';
 
 async function sendEmail({
   toEmail,

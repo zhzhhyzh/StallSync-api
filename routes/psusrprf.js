@@ -57,6 +57,11 @@ router.get("/detail", authenticateRoute, psusrprf.detail);
 // @access  Private
 router.post("/update", authenticateRoute, psusrprf.update);
 
+// @route   POST api/psusrprf/reset
+// @desc    Reset password System Parameter
+// @access  Private
+router.post("/reset", authenticateRoute, psusrprf.reset);
+
 // @route   POST api/psusrprf/delete
 // @desc    delete System Parameter
 // @access  Private
