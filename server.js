@@ -40,6 +40,9 @@ const prpwdpol = require('./routes/prpwdpol');
 const version = require('./routes/version');
 const pssyspar = require('./routes/pssyspar');
 const ddl = require("./routes/ddl");
+const pssysjob = require('./routes/pssysjob');
+const backup = require('./routes/backup');
+
 
 
 const app = express();
@@ -95,6 +98,10 @@ app.use('/api/prpwdpol', prpwdpol);
 app.use('/api/version', version);
 app.use('/api/pssyspar', pssyspar);
 app.use('/api/ddl', ddl);
+app.use('/api/pssysjob', pssysjob);
+app.use('/api/backup', backup);
+
+
 
 //When there is no API found
 app.use(async function (req, res, next) {
@@ -128,6 +135,17 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // -- Cron Definition -- //
+const dailyJob = require("./cron/daily-job");
+const backupJob = require("./cron/backup-job");
+
+// -- Cron Execution -- //
+dailyJob.voucher_expiry();
+dailyJob.voucher_activate();
+backupJob.backupDB();
+backupJob.cleanFS();
+backupJob.cleanDB();
+backupJob.swingLog();
+
 // Socket
 async function startServer() {
   try {

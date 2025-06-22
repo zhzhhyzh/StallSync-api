@@ -5,7 +5,7 @@ const ssmImagePath = "./documents/ssm_image/";
 const productImagePath = "./documents/product_image/";
 const announcementImg = "./documents/announcement_image/";
 const reportPath = "./documents/reports/";
-// const backupPath = "./backups/";
+const backupPath = "./backups/";
 // const bannerImagePath = "./documents/banner_image/";
 // const privilegeImagePath = "./documents/privilege_image/";
 const forecastImagePath = "./documents/forecast_image/";
@@ -20,7 +20,7 @@ module.exports = {
     // cardLayoutPath: cardLayoutPath,
     reportPath: reportPath,
     forecastImagePath: forecastImagePath,
-    // backupPath: backupPath,
+    backupPath: backupPath,
     // catalogueItemPath: catalogueItemPath,
     // voucherImagePath: voucherImagePath,
     // bannerImagePath: bannerImagePath,
