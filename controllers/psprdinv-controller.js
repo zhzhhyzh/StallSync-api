@@ -343,7 +343,7 @@ exports.update = async (req, res) => {
         if (!result) {
           return returnError(req, 500, { psprduid: "NORECORDFOUND" }, res)
         } else {
-          newQty = result.psprdstk + req.body.psprdqty - data.psprdstk
+          newQty = result.psprdstk + req.body.psinvqty - data.psinvqty;
           if (newQty > result.psprdlsr) {
             newSts = "A"
           }
@@ -351,12 +351,14 @@ exports.update = async (req, res) => {
             newSts = "L"
           }
 
-          if (newQty = 0) {
+          if (newQty == 0) {
             newSts = "S"
           }
 
 
         }
+
+        const t = await connection.sequelize.transaction();
 
         psprdinv
           .update(
@@ -373,7 +375,7 @@ exports.update = async (req, res) => {
             },
             {
               where: {
-                psprduid: id,
+                psstkuid: id,
               },
             }, { transaction: t }
           )
@@ -386,17 +388,22 @@ exports.update = async (req, res) => {
                 psprduid: req.body.psprduid
               }
             })
+            t.commit();
             common.writeMntLog(
               "psprdinv",
               data,
               await psprdinv.findByPk(data.id, { raw: true }),
-              data.pssktuid,
+              data.psstkuid,
               "C",
               req.user.psusrunm
-            );
-
+            )
             return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
-          });
+          }).catch(async err => {
+              console.log(err);
+              await t.rollback();
+              return returnError(req, 500, "UNEXPECTEDERROR", res)
+            });
+;
       } else return returnError(req, 500, "NORECORDFOUND", res);
     })
     .catch((err) => {
