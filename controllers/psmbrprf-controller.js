@@ -160,7 +160,7 @@ exports.findOne = async (req, res) => {
         }
 
 
-        return returnSuccess(200, { data: result }, res);
+        return returnSuccess(200, result, res);
 
     } catch (err) {
         console.log("Error in findOne:", err);
