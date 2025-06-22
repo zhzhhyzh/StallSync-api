@@ -313,7 +313,7 @@ exports.update = async (req, res) => {
             raw: true,
         });
 
-        if (!exist) return returnError(req, 404, "NORECORDFOUND", res);
+        if (!exist) return returnError(req, 400, "NORECORDFOUND", res);
 
         // 3. gENCODE Validation
         let ddlErrors = {};
@@ -419,7 +419,11 @@ exports.delete = async (req, res) => {
 
         if (!exist) return returnError(req, 400, "NORECORDFOUND", res);
 
-        await psmbrprf.destroy({ where: { psmbruid: id } }, { transaction: t }).then(async () => {
+        await psmbrprf.destroy({ 
+            where: { psmbruid: id } },
+             { transaction: t }
+             
+            ).then(async () => {
             await psmbrcrt.destroy({
                 where: {
                     psmbrcar: exist.psmbrcar
