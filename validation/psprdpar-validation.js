@@ -3,7 +3,7 @@ const isEmpty = require("./is-empty");
 
 module.exports = function validatePsprdparInput(data, type) {
     let errors = {};
-    data.psprduid = !isEmpty(data.psprduid) ? data.psprduid : "";
+    // data.psprduid = !isEmpty(data.psprduid) ? data.psprduid : "";
     data.psprdnme = !isEmpty(data.psprdnme) ? data.psprdnme : "";
     data.psprddsc = !isEmpty(data.psprddsc) ? data.psprddsc : "";
     data.psprdlds = !isEmpty(data.psprdlds) ? data.psprdlds : "";
@@ -31,14 +31,14 @@ module.exports = function validatePsprdparInput(data, type) {
 
 
 
-    if (type == "A" && Validator.isEmpty(data.psprduid)) {
-        errors.psprduid = "FIELDISREQUIRED";
-    } else if (
-        type == "A" &&
-        !Validator.isEmpty(data.psprduid) &&
-        data.psprduid.length > 25
-    )
-        errors.psprduid = "INVALIDVALUELENGTH&25";
+    // if (type == "A" && Validator.isEmpty(data.psprduid)) {
+    //     errors.psprduid = "FIELDISREQUIRED";
+    // } else if (
+    //     type == "A" &&
+    //     !Validator.isEmpty(data.psprduid) &&
+    //     data.psprduid.length > 25
+    // )
+    //     errors.psprduid = "INVALIDVALUELENGTH&25";
 
     if (Validator.isEmpty(data.psprdnme)) {
         errors.psprdnme = "FIELDISREQUIRED";
