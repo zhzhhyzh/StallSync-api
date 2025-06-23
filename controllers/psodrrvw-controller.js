@@ -15,7 +15,7 @@ const returnSuccessMessage = require("../common/successMessage");
 const common = require("../common/common");
 
 //Input Validation
-const { validate } = require("../validations/psodrrvw-validation");
+const { validatePsodrrvwInput } = require("../validation/psodrrvw-validation");
 const { raw } = require("express");
 
 exports.list = async (req, res) => {
@@ -90,6 +90,16 @@ exports.list = async (req, res) => {
             );
         else return returnSuccess(200, { total: 0, data: [] }, res);
 }
+
+
+
+exports.findOne = async (req, res) => {
+    const psorduid = req.query.psodruid? req.query.psodruid : "";
+    const crtusr = req.query.crtusr? req.query.crtusr : "";
+    
+    if (psorduid )
+}
+
 
 exports.create = async (req, res) => {
     // Validate Input
