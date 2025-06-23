@@ -168,7 +168,7 @@ exports.list = async (req, res) => {
       },
       res
     );
-  else return returnSuccess(200, { total: 0, data: [],headerInfo: mrcId || "", }, res);
+  else return returnSuccess(200, { total: 0, data: [], headerInfo: mrcId || "", }, res);
 };
 
 exports.findOne = async (req, res) => {
@@ -484,7 +484,7 @@ exports.update = async (req, res) => {
         let err_ind = false;
 
 
-       
+
 
         let prodtype = await common.retrieveSpecificGenCodes(
           req,
@@ -556,7 +556,7 @@ exports.update = async (req, res) => {
           }
         }
 
-        
+
         if (!_.isEmpty(req.body.psprdtak)) {
           let yesorno = await common.retrieveSpecificGenCodes(
             req,
@@ -677,14 +677,14 @@ exports.delete = async (req, res) => {
         psprdpar
           .destroy({
             where: { psprduid: id },
-          })
+          }, { transaction: t })
           .then(async () => {
 
 
             try {
 
-              if (fs.existsSync(genConfig.productImagePath + item.psprdimg)) {
-                fs.unlinkSync(genConfig.productImagePath + item.psprdimg);
+              if (fs.existsSync(genConfig.productImagePath + trnscd.psprdimg)) {
+                fs.unlinkSync(genConfig.productImagePath + trnscd.psprdimg);
               }
             } catch (err) {
               console.log("Remove Image Error :", err);

@@ -1,9 +1,9 @@
-// Review
+// Order Review
 
 module.exports = (sequelize, Sequelize) => {
 
-    const psodrrvw = sequelize.define('psodrrvw', {
-        psodruid: {
+    const psordrvw = sequelize.define('psordrvw', {
+        psorduid: {
             type: Sequelize.STRING(25),
             allowNull: false,
             // Order ID
@@ -29,12 +29,12 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false,
             // Review Description
         },
-        crtusr: {
+        crtuser: {
             type: Sequelize.STRING(255),
             allowNull: true,
             // Create User
         },
-        mntusr: {
+        mntuser: {
             type: Sequelize.STRING(255),
             allowNull: true,
             // Maintenance User
@@ -42,16 +42,16 @@ module.exports = (sequelize, Sequelize) => {
     }, {
         timestamps: true,
         freezeTableName: true,
-        tableName: 'psodrrvw'
+        tableName: 'psordrvw'
     },
         {
             indexes: [
                 {
                     unique: true,
-                    fields: ['psodruid', 'crtusr']
+                    fields: ['psorduid']
                 }
             ]
         });
 
-    return psodrrvw;
+    return psordrvw;
 }

@@ -1,7 +1,7 @@
 const Validator = require("validator");
 const isEmpty = require("./is-empty");
 
-module.exports = function validatePsodrrvwInput(data, type) {
+module.exports = function validatePsordrvwInput(data, type) {
     let errors = {};
     data.psodruid = !isEmpty(data.psodruid) ? data.psodruid : "";
     data.psrvwimg = !isEmpty(data.psrvwimg) ? data.psrvwimg : "";
