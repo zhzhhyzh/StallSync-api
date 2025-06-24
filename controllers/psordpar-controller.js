@@ -35,18 +35,22 @@ exports.list = async (req, res) => {
 
 
   let option = {
-    
+
   };
+  let userId = "";
 
   if (req.user.psusrtyp == "MCH") {
-    option.psmrcuid= req.user.psmrcuid
-    
+    option.psmrcuid = req.user.psmrcuid
+    userId = req.user.psmrcuid;
+
   }
 
   if (req.user.psusrtyp == "MBR") {
-    option.psordpre= req.user.psusrpre;
-      option.psordphn= req.user.psusrphn;
-    
+    option.psordpre = req.user.psusrpre;
+    option.psordphn = req.user.psusrphn;
+    userId = req.user.psmbruid;
+
+
   }
 
   //For admin use only
@@ -146,10 +150,15 @@ exports.list = async (req, res) => {
         total: count,
         data: newRows,
         extra: { file: "psordpar", key: ["psorduid"] },
+        headerInfo: userId || ""
       },
       res
     );
-  else return returnSuccess(200, { total: 0, data: [] }, res);
+  else return returnSuccess(200, {
+    total: 0, data: [],
+    headerInfo: userId || ""
+
+  }, res);
 };
 
 
