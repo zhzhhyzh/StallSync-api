@@ -2,7 +2,7 @@
 
 module.exports = (sequelize, Sequelize) => {
     const pstrxpar = sequelize.define("pstrxpar", {
-        pstrcuid: {
+        pstrxuid: {
             type: Sequelize.STRING(50),
             allowNull: false,
             // Transaction ID
