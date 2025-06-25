@@ -54,6 +54,7 @@
     "sequelize": "^6.37.7",
     "short-uuid": "^5.2.0",
     "speakeasy": "^2.0.0",
+    "stripe": "^18.2.1",
     "web-push": "^3.6.7"
   },
   "devDependencies": {
