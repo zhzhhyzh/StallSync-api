@@ -30,7 +30,7 @@ module.exports = passport => {
           }
 
           if (user.psusrtyp == "MBR") {
-            let mbr = await psmbrprf.findOne({ where: { psmbrphn: user.psusrunm }, raw: true, attributes: ['psmbruid'] })
+            let mbr = await psmbrprf.findOne({ where: { psusrnme: user.psusrunm }, raw: true, attributes: ['psmbruid'] })
 
             if (mbr) {
               user.psmbruid = mbr.psmbruid

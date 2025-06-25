@@ -24,11 +24,11 @@ module.exports = (sequelize, Sequelize) => {
       // Order Item Remark
     },
 
-    psitmdsc: {
-      type: Sequelize.STRING(255),
-      allowNull: false
-      // Order Item Description
-    },
+    // psitmdsc: {
+    //   type: Sequelize.STRING(255),
+    //   allowNull: false
+    //   // Order Item Description
+    // },
     psitmunt: {
       type: Sequelize.DECIMAL(15, 2),
       allowNull: false,

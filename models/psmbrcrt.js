@@ -27,11 +27,11 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false,
             // Cart Item Quantity
         },
-        psitmdsc: {
-            type: Sequelize.STRING(255),
-            allowNull: false,
-            // Add On Description
-        },
+        // psitmdsc: {
+        //     type: Sequelize.STRING(255),
+        //     allowNull: false,
+        //     // Add On Description
+        // },
         psitmunt: {
             type: Sequelize.DECIMAL(15, 2),
             allowNull: false,

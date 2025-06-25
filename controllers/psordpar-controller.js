@@ -9,6 +9,9 @@ const psrwdpar = db.psrwdpar;
 const psmbrprf = db.psmbrprf;
 const psorditm = db.psorditm;
 const psmbrcrt = db.psmbrcrt;
+const psmrcpar = db.psmrcpar;
+const psstfpar = db.psstfpar;
+const psprdpar = db.psprdpar;
 // Common Function
 const Op = db.Sequelize.Op;
 const returnError = require("../common/error");
@@ -112,7 +115,8 @@ exports.list = async (req, res) => {
       "psordphn",
       "psordpre",
       "psordsts",
-      "psordgra"
+      "psordgra",
+      "psmrcuid"
     ],
     order: [["psorduid", "asc"]],
   });
@@ -134,12 +138,37 @@ exports.list = async (req, res) => {
           : "";
     }
 
-    if (!_.isEmpty(obj.psordamt)) {
-      obj.psordamt = common.formatDecimal(obj.psordamt);
+    if (!_.isEmpty(obj.psordpre)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "HPPRE",
+        obj.psordpre
+      );
+      obj.psordpredsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
     }
-    if (!_.isEmpty(obj.psordgra)) {
-      obj.psordgra = common.formatDecimal(obj.psordgra);
+
+    if (!_.isEmpty(obj.psmrcuid)) {
+      await psmrcpar.findOne({
+        where: {
+          psmrcuid: obj.psmrcuid
+        }, raw: true, attributes: ["psmrcuid", "psmrcnme"]
+      }).then(async result => {
+        obj.psmrcuiddsc = result.psmrcnme && !_.isEmpty(result.psmrcnme)
+          ? result.psmrcnme
+          : "";
+      })
+
     }
+
+
+    obj.psordodt = await common.formatDateTime(obj.psordodt)
+    // console.log("KLKLKL", obj.psordamt);
+    // console.log("KLKLKL", obj.psordgra);
+    // obj.psordamt = common.formatDecimal(obj.psordamt);
+    // obj.psordgra = obj.psordgra ? common.formatDecimal(obj.psordgra) : 0;
     newRows.push(obj);
   }
 
@@ -199,6 +228,53 @@ exports.findOne = async (req, res) => {
               : "";
         }
 
+        if (!_.isEmpty(obj.psmbruid)) {
+          let member = await psmbrprf.findOne({
+            where: {
+              psmbruid: obj.psmbruid
+            }, raw: true, attributes: ["psmbruid", "psmbrnam"]
+          })
+          if (member) {
+            obj.psmbrnam = member.psmbrnam;
+          }
+        }
+
+
+        if (!_.isEmpty(obj.psmrcuid)) {
+          await psmrcpar.findOne({
+            where: {
+              psmrcuid: obj.psmrcuid
+            }, raw: true, attributes: ["psmrcuid", "psmrcnme", "psmrcown"]
+          }).then(async result => {
+
+            obj.psmrcuiddsc = result.psmrcnme && !_.isEmpty(result.psmrcnme)
+              ? result.psmrcnme
+              : "";
+            let owner = await psstfpar.findOne({
+              where: {
+                psusrunm: result.psmrcown
+              }, raw: true, attributes: ["psstfchp", "psstfepr", "psstfeml"]
+            });
+            if (owner) {
+
+              if (!_.isEmpty(owner.psstfepr)) {
+                let description = await common.retrieveSpecificGenCodes(
+                  req,
+                  "HPPRE",
+                  owner.psstfepr
+                );
+                owner.psstfeprdsc =
+                  description.prgedesc && !_.isEmpty(description.prgedesc)
+                    ? description.prgedesc
+                    : "";
+              }
+              obj.psmrceml = owner.psstfeml;
+              obj.psmrcphn = owner.psstfeprdsc + owner.psstfchp;
+            }
+          })
+
+        }
+
 
         if (!_.isEmpty(obj.psordrap)) {
           let description = await common.retrieveSpecificGenCodes(
@@ -223,6 +299,32 @@ exports.findOne = async (req, res) => {
               : "";
         }
 
+        let orderItm = await psorditm.findAll({
+          where: {
+            psorduid: obj.psorduid
+          }, raw: true
+        })
+
+        let itm = [];
+        let total = 0;
+        for (let i = 0; i < orderItm.length; i++) {
+          let item = orderItm[i];
+          let product = await psprdpar.findOne({
+            where: {
+              psprduid: item.psprduid
+            }, raw: true, attributes: ["psprduid", "psprdnme"]
+          })
+
+          if (product) {
+            item.psprdnme = product.psprdnme
+          }
+
+          total += parseFloat(item.psitmsbt);
+          itm.push(item);
+        }
+        obj.psorditm = itm;
+        obj.total = await common.formatDecimal(total);
+        obj.psordodt = await common.formatDateTime(obj.psordodt);
         return returnSuccess(200, obj, res);
       } else return returnError(req, 500, "NORECORDFOUND", res);
     })
@@ -237,7 +339,11 @@ exports.create = async (req, res) => {
   if (req.user.psusrrol == "ADM") {
     return returnError(req, 500, "INVALIDAUTHORITY", res);
   }
-  let memberId = req.user.psmbruid ? req.user.psmbruid : "";
+  let memberId = ""
+  if (req.user.psusrrol == "MBR") {
+    memberId = req.user.psmbruid
+  }
+
   req.body.psmbruid = memberId;
   //Validation
   const { errors, isValid } = validatePsordparInput(req.body, "A");
@@ -293,6 +399,11 @@ exports.create = async (req, res) => {
   }
 
   if (err_ind) return returnError(req, 400, ddlErrors, res);
+
+  let merchantId = await psmrcpar.findOne({ where: { psmrcuid: req.body.psmrcuid }, raw: true, attributes: ['psmrcnme', 'psmrcuid'] });
+  if (!merchantId) {
+    return returnError(req, 400, { psmrcuid: "INVALIDDATAVALUE" }, res)
+  }
   else {
     const t = await connection.sequelize.transaction();
 
@@ -312,7 +423,10 @@ exports.create = async (req, res) => {
           }
 
         })
-        // let psorditm = req.body.psorditm;
+        // let psorditmT = req.body.psorditm;
+        if (!orderItem) {
+          return returnError(req, 400, "Order is empty", res);
+        }
         let orderAmount = 0;
         let grandTotal = 0;
         for (let i = 0; i < count; i++) {
