@@ -34,35 +34,5 @@ router.post("/update", authenticateRoute, pstrxpar.update);
 
 router.post("/create-checkout-session", authenticateRoute, pstrxpar.createStripeSession);
 
-router.post("/create-checkout-session", async (req, res) => {
-  try {
-    const { orderId, products } = req.body;
 
-    const lineItems = products.map((product) => ({
-      price_data: {
-        currency: "myr",
-        product_data: {
-          name: product.psprdnme,
-          images: [product.psprdimg],
-        },
-        unit_amount: Math.round(Number(product.psprdpri) * 100),
-        quantity: product.quantity,
-      },
-    }));
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['fpx', 'grabpay', 'card'], //card, fpx, grabpay, alipay, card+UnionPay BIN, wechat_pay, konbini, promptpay
-      line_items: lineItems,
-      mode: "payment",
-      success_url: "http://localhost:5040/payment-success?orderId=${orderId}",
-      cancel_url: "http://localhost:5040/payment-cancelled?orderId=${orderId}",
-    });
-
-    //  create a pstrxpar record here (with psorduid, session.id, etc.)
-    res.json({ id:session.id});
-  } catch (err) {
-    console.error("Stripe session error:", err);
-    res.status(500).json({ error: "Failed to create checkout session" });
-  }
-});
 module.exports = router;
