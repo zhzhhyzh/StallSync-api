@@ -8,9 +8,9 @@ module.exports = function validatePsmbrcrtInput(data, type) {
     data.psmrcuid = !isEmpty(data.psmrcuid) ? data.psmrcuid : "";
     data.psprduid = !isEmpty(data.psprduid) ? data.psprduid : "";
     data.psitmqty = !isEmpty(data.psitmqty) ? data.psitmqty : 0;
-    data.psitmdsc = !isEmpty(data.psitmdsc) ? data.psitmdsc : "";
-    data.psitmunt = !isEmpty(data.psitmunt) ? data.psitmunt : 0;
-    data.psitmsbt = !isEmpty(data.psitmsbt) ? data.psitmsbt : 0;
+    // data.psitmdsc = !isEmpty(data.psitmdsc) ? data.psitmdsc : "";
+    // data.psitmunt = !isEmpty(data.psitmunt) ? data.psitmunt : 0;
+    // data.psitmsbt = !isEmpty(data.psitmsbt) ? data.psitmsbt : 0;
     data.psitmrmk = !isEmpty(data.psitmrmk) ? data.psitmrmk : "";   
 
 
@@ -61,29 +61,29 @@ module.exports = function validatePsmbrcrtInput(data, type) {
         errors.psitmqty = "INVALIDDATAVALUE";
     }
 
-    if (Validator.isEmpty(data.psitmdsc)) {
-        errors.psitmdsc = "FIELDISREQUIRED";
-    } else if (data.psitmdsc.length > 255) {
-        errors.psitmdsc = "INVALIDVALUELENGTH&255";
-    }
+    // if (Validator.isEmpty(data.psitmdsc)) {
+    //     errors.psitmdsc = "FIELDISREQUIRED";
+    // } else if (data.psitmdsc.length > 255) {
+    //     errors.psitmdsc = "INVALIDVALUELENGTH&255";
+    // }
 
-    if (Validator.isEmpty(data.psitmunt)) {
-        errors.psitmunt = "FIELDISREQUIRED";
-    } else if (
-        !Validator.isEmpty(data.psitmunt) &&
-        (isNaN(data.psitmunt) || data.psitmunt < 0 || data.psitmunt > 999999999.99)
-    ) {
-        errors.psitmunt = "INVALIDDATAVALUE";
-    }
+    // if (Validator.isEmpty(data.psitmunt)) {
+    //     errors.psitmunt = "FIELDISREQUIRED";
+    // } else if (
+    //     !Validator.isEmpty(data.psitmunt) &&
+    //     (isNaN(data.psitmunt) || data.psitmunt < 0 || data.psitmunt > 999999999.99)
+    // ) {
+    //     errors.psitmunt = "INVALIDDATAVALUE";
+    // }
 
-    if (Validator.isEmpty(data.psitmsbt)) {
-        errors.psitmsbt = "FIELDISREQUIRED";
-    } else if (
-        !Validator.isEmpty(data.psitmsbt) &&
-        (isNaN(data.psitmsbt) || data.psitmsbt < 0 || data.psitmsbt > 999999999.99)
-    ) {
-        errors.psitmsbt = "INVALIDDATAVALUE";
-    }
+    // if (Validator.isEmpty(data.psitmsbt)) {
+    //     errors.psitmsbt = "FIELDISREQUIRED";
+    // } else if (
+    //     !Validator.isEmpty(data.psitmsbt) &&
+    //     (isNaN(data.psitmsbt) || data.psitmsbt < 0 || data.psitmsbt > 999999999.99)
+    // ) {
+    //     errors.psitmsbt = "INVALIDDATAVALUE";
+    // }
 
     if (data.psitmrmk.length > 255) {
         errors.psitmrmk = "INVALIDVALUELENGTH&255";

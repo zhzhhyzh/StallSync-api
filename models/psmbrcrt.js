@@ -47,15 +47,15 @@ module.exports = (sequelize, Sequelize) => {
             defaultValue: '',
             // Cart Item Remarks
         },
-    }, {freezeTableName: true},
+    }, { freezeTableName: true },
         {
             indexes: [
                 {
                     unique: true,
-                    fields: ['psmbrcar']
+                    fields: ['psmbrcar', 'psmrcuid', 'psitmcno']
                 }
             ]
-        }); 
+        });
 
-        return psmbrcrt;
-    };  
+    return psmbrcrt;
+};  

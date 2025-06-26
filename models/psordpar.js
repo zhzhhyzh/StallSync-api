@@ -2,6 +2,12 @@
 
 module.exports = (sequelize, Sequelize) => {
     const psordpar = sequelize.define("psordpar", {
+        id: {
+            type: Sequelize.INTEGER,
+            autoIncrement: true,
+            primaryKey: true,
+            allowNull: false,
+        },
         psorduid: {
             type: Sequelize.STRING(25),
             allowNull: false,

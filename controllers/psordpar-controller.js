@@ -580,10 +580,10 @@ exports.create = async (req, res) => {
               "psordpar",
               null,
               null,
-              created.psordpar,
+              created.psorduid,
               "A",
               req.user.psusrunm,
-              "", created.psordpar);
+              "", created.psorduid);
             return returnSuccessMessage(req, 200, "RECORDCREATED", res);
           })
       } else if ((req.body.psordpap == 'Y' || req.body.psordpap == 'Y') && !memberId) {
@@ -607,7 +607,7 @@ exports.update_paid = async (req, res) => {
   await psordpar
     .findOne({
       where: {
-        psordpar: id,
+        psorduid: id,
       },
       raw: true,
       attributes: {
@@ -617,7 +617,8 @@ exports.update_paid = async (req, res) => {
     .then(async (data) => {
       if (data) {
         if (isNaN(new Date(req.body.updatedAt)) || (new Date(data.updatedAt).getTime() !== new Date(req.body.updatedAt).getTime())) return returnError(req, 500, "RECORDOUTOFSYNC", res)
-        if (data.psordsts != 'G')
+        if (data.psordsts != 'G') {
+          console.log("WJWJWJ")
           psordpar
             .update(
               {
@@ -634,12 +635,13 @@ exports.update_paid = async (req, res) => {
                 "psordpar",
                 data,
                 await psordpar.findByPk(data.id, { raw: true }),
-                data.psordpar,
+                data.psorduid,
                 "C",
                 req.user.psusrunm
               );
               return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
             });
+        }
         else {
           console.log("Pre status must be G - Pending")
           return returnError(req, 500, "UNEXPECTEDERROR", res);
@@ -659,7 +661,7 @@ exports.update_completed = async (req, res) => {
   await psordpar
     .findOne({
       where: {
-        psordpar: id,
+        psorduid: id,
       },
       raw: true,
       attributes: {
@@ -672,7 +674,7 @@ exports.update_completed = async (req, res) => {
 
         const t = await connection.sequelize.transaction();
         try {
-          if (data.psordsts != 'A') {
+          if (data.psordsts == 'A') {
             if (data.psmbruid != '' && !_.isEmpty(data.psmbruid)) {
 
               let member = await psmbrprf.findOne({
@@ -723,7 +725,7 @@ exports.update_completed = async (req, res) => {
                   "psordpar",
                   data,
                   await psordpar.findByPk(data.id, { raw: true }),
-                  data.psordpar,
+                  data.psorduid,
                   "C",
                   req.user.psusrunm
                 );
@@ -757,7 +759,7 @@ exports.update_preparing = async (req, res) => {
   await psordpar
     .findOne({
       where: {
-        psordpar: id,
+        psorduid: id,
       },
       raw: true,
       attributes: {
@@ -768,7 +770,7 @@ exports.update_preparing = async (req, res) => {
       if (data) {
         if (isNaN(new Date(req.body.updatedAt)) || (new Date(data.updatedAt).getTime() !== new Date(req.body.updatedAt).getTime())) return returnError(req, 500, "RECORDOUTOFSYNC", res)
 
-        if (data.psordsts != 'P')
+        if (data.psordsts == 'P')
 
           psordpar
             .update(
@@ -786,7 +788,7 @@ exports.update_preparing = async (req, res) => {
                 "psordpar",
                 data,
                 await psordpar.findByPk(data.id, { raw: true }),
-                data.psordpar,
+                data.psorduid,
                 "C",
                 req.user.psusrunm
               );
@@ -812,7 +814,7 @@ exports.update_cancelled = async (req, res) => {
   await psordpar
     .findOne({
       where: {
-        psordpar: id,
+        psorduid: id,
       },
       raw: true,
       attributes: {
@@ -824,39 +826,41 @@ exports.update_cancelled = async (req, res) => {
         if (isNaN(new Date(req.body.updatedAt)) || (new Date(data.updatedAt).getTime() !== new Date(req.body.updatedAt).getTime())) return returnError(req, 500, "RECORDOUTOFSYNC", res)
         const t = await connection.sequelize.transaction();
         try {
-          if (data.psordsts == 'A' || data.psordsts == 'D') {
+          if (data.psordsts != 'A' || data.psordsts != 'D') {
             if (data.psmbruid != '' && !_.isEmpty(data.psmbruid)) {
-              let reward = await psrwdpar.findOne({
-                where: {
-                  psrwduid: data.psrwduid
-                }, raw: true, attributes: ['psrwduid', 'psrwdqty', 'psrwdsts']
-              });
-              let rewardStatus = reward.psrwdsts != 'P' ? 'A' : 'P';
-              await psrwdpar.update({
-                where: {
-                  psrwdqty: reward.psrwdqty + 1,
-                  psrwdsts: rewardStatus
+              if (data.psordrap == 'Y') {
+                let reward = await psrwdpar.findOne({
+                  where: {
+                    psrwduid: data.psrwduid
+                  }, raw: true, attributes: ['psrwduid', 'psrwdqty', 'psrwdsts']
+                });
+                let rewardStatus = reward.psrwdsts != 'P' ? 'A' : 'P';
+                await psrwdpar.update({
+                  where: {
+                    psrwdqty: reward.psrwdqty + 1,
+                    psrwdsts: rewardStatus
 
-                }
-              }, {
-                where: {
-                  psrwduid: data.psrwduid
-                }
-              });
+                  }
+                }, {
+                  where: {
+                    psrwduid: data.psrwduid
+                  }
+                });
+              }
 
               let dva = data.psorddva ? data.psorddva : 0;
-
               let member = await psmbrprf.findOne({
                 where: {
                   psmbruid: data.psmbruid
-                }, raw: true, attributes: ['psmbruid', 'psmbracs', 'psmbrpts']
+                }, raw: true, attributes: ['id', 'psmbruid', 'psmbracs', 'psmbrpts']
               })
+
               await psmbrprf.update({
                 psmbracs: member.psmbracs - data.psordgra,
                 psmbrpts: member.psmbrpts + (dva / 100)
               }, {
                 where: {
-                  psmrbuid: data.psmbruid
+                  id: member.id
                 }
               });
             }
@@ -877,14 +881,14 @@ exports.update_cancelled = async (req, res) => {
                   "psordpar",
                   data,
                   await psordpar.findByPk(data.id, { raw: true }),
-                  data.psordpar,
+                  data.psorduid,
                   "C",
                   req.user.psusrunm
                 );
                 return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
               });
           } else {
-            console.log("Pre status can't be A - Preparing OR D - Completed");
+            console.log("Pre status can't be Cancelled when A - Preparing OR D - Completed");
             await t.rollback();
             return returnError(req, 500, "UNEXPECTEDERROR", res);
           }
