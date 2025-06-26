@@ -23,6 +23,7 @@ const connection = require("../common/db");
 
 // Input Validation
 const validatePsordparInput = require("../validation/psordpar-validation.js");
+const { where } = require("sequelize");
 
 exports.list = async (req, res) => {
 
@@ -165,8 +166,6 @@ exports.list = async (req, res) => {
 
 
     obj.psordodt = await common.formatDateTime(obj.psordodt)
-    // console.log("KLKLKL", obj.psordamt);
-    // console.log("KLKLKL", obj.psordgra);
     // obj.psordamt = common.formatDecimal(obj.psordamt);
     // obj.psordgra = obj.psordgra ? common.formatDecimal(obj.psordgra) : 0;
     newRows.push(obj);
@@ -414,7 +413,10 @@ exports.create = async (req, res) => {
             psmbruid: memberId
           }, raw: true, attributes: ["psmbruid", "psmbrpre", "psmbrphn", "psmbrpts", "psmbracs", 'psmbrcar']
         });
-        const { count, orderItem } = await psmbrcrt.findAndCountAll({
+        member.psmbrpts = parseInt(member.psmbrpts);
+        member.psmbracs = parseFloat(member.psmbracs);
+
+        const orderItem = await psmbrcrt.findAll({
           where: {
             psmrcuid: req.body.psmrcuid,
             psmbrcar: member.psmbrcar
@@ -429,8 +431,8 @@ exports.create = async (req, res) => {
         }
         let orderAmount = 0;
         let grandTotal = 0;
-        for (let i = 0; i < count; i++) {
-          orderAmount += orderItem[i].psitmsbt;
+        for (let i = 0; i < orderItem.length; i++) {
+          orderAmount += parseFloat(orderItem[i].psitmsbt);
         }
         grandTotal = orderAmount;
 
@@ -519,7 +521,7 @@ exports.create = async (req, res) => {
 
         //Points Using and updates
         if (req.body.psordpap == 'Y' && memberId) {
-          let mPoint = req.user.psmbrpts;
+          let mPoint = parseInt(req.user.psmbrpts);
           pointValue = mPoint / 100;
           if (pointValue > grandTotal) {
             balancePoint = (pointValue - grandTotal) * 100;
@@ -539,9 +541,10 @@ exports.create = async (req, res) => {
         //SST Add on
         let sst = 0;
         sst = grandTotal * 0.06;
-        grandTotal -= sst;
+        grandTotal += sst;
+        const t = await connection.sequelize.transaction();
 
-        psordpar
+        await psordpar
           .create({
             psorduid: ref,
             psordrap: req.body.psordrap,
@@ -558,23 +561,39 @@ exports.create = async (req, res) => {
             psordsts: 'N',
             psordocd: '',
             psordsst: sst
-          })
+          }, { transaction: t })
           .then(async (data) => {
             let created = data.get({ plain: true });
-            for (let i = 0; i < count; i++) {
+            for (let i = 0; i < orderItem.length; i++) {
 
               await psorditm.create({
                 psorduid: ref,
                 psprduid: orderItem[i].psprduid,
                 psitmcno: orderItem[i].psitmcno,
                 psitmqty: orderItem[i].psitmqty,
-                psitmarm: orderItem[i].psitmarm,
-                psitmdsc: orderItem[i].psitmdsc,
                 psitmrmk: orderItem[i].psitmrmk,
                 psitmsbt: orderItem[i].psitmsbt,
                 psitmunt: orderItem[i].psitmunt,
+              }).catch(async err => {
+                console.log(err);
+                await t.rollback();
+                return returnError(req, 500, "UNEXPECTEDERROR", res);
               })
             }
+
+            for (let i = 0; i < orderItem.length; i++) {
+              await psmbrcrt.destroy({
+                where: {
+                  id: orderItem[i].id
+                }
+              }).catch(async err => {
+                console.log(err);
+                await t.rollback();
+                return returnError(req, 500, "UNEXPECTEDERROR", res);
+              })
+
+            }
+            await t.commit();
 
             common.writeMntLog(
               "psordpar",
@@ -618,7 +637,7 @@ exports.update_paid = async (req, res) => {
       if (data) {
         if (isNaN(new Date(req.body.updatedAt)) || (new Date(data.updatedAt).getTime() !== new Date(req.body.updatedAt).getTime())) return returnError(req, 500, "RECORDOUTOFSYNC", res)
         if (data.psordsts != 'G') {
-          console.log("WJWJWJ")
+          ("WJWJWJ")
           psordpar
             .update(
               {
