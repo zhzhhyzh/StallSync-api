@@ -4,6 +4,8 @@ const _ = require("lodash");
 
 //Table
 const psmbrcrt = db.psmbrcrt;
+const psmrcpar = db.psmrcpar;
+const psprdpar = db.psprdpar;
 
 //Common Functions
 const Op = db.Sequelize.Op;
@@ -15,15 +17,29 @@ const common = require("../common/common");
 //Input Validation
 const validatePsmbrcrtInput = require("../validation/psmbrcrt-validation");
 const { ExpressValidator } = require("express-validator");
+const { where } = require("sequelize");
 
 
-exports.listCartItem = async (req, res) => {
+exports.list = async (req, res) => {
 
-    const psmbrcar = req.query.psmbrcar ? req.query.psmbrcar : "";
-    if (!psmbrcar || psmbrcar == "") {
-        return returnError(req, 400, "RECORDIDISREQUIRED", res);
+    const psmrcuid = req.query.psmrcuid ? req.query.psmrcuid : "";
+    if (!psmrcuid || psmrcuid == "") {
+        return returnError(req, 500, "RECORDIDISREQUIRED", res);
     }
 
+    let userId = "";
+    let cartId = "";
+    if (req.user.psusrtyp == "MBR") {
+        console.log("JKJKWDJW", cartId)
+
+        userId = req.user.psmbruid;
+        cartId = req.user.psmbrcar;
+    } else {
+        return returnError(req, 500, "INVALIDAUTHORITY", res);
+    }
+
+    console.log("JKJKWDJW", cartId)
+    console.log("JKJKWDJW", req.user.psusrtyp)
     // // default 10 records per page
     // let limit = 10;
     // if (req.query.limit) limit = parseInt(req.query.limit);
@@ -34,19 +50,22 @@ exports.listCartItem = async (req, res) => {
     // else from = parseInt(req.query.page) * limit;
 
     // // filter
-    // let options = {};
+    let options = {
+        psmbrcar: cartId
+    };
 
     try {
         const { count, rows } = await psmbrcrt.findAndCountAll({
-            where: {psmbrcar},
+            where: options,
             raw: true,
             attributes: [
-                //"psmbrcar",
+                "id",
+                "psmbrcar",
                 "psitmcno",
                 "psmrcuid",
                 "psprduid",
                 "psitmqty",
-                "psitmdsc",
+                // "psitmdsc",
                 "psitmunt",
                 "psitmsbt",
                 "psitmrmk",
@@ -60,18 +79,23 @@ exports.listCartItem = async (req, res) => {
                 {
                     total: count,
                     data: rows,
-                    extra: { file: "psmbrcrt", key: ["psmbrcar", "psitmcno"] },
+                    extra: { file: "psmbrcrt", key: ["id"] },
+                    cartId: cartId,
                 },
                 res
             );
-        else return returnSuccess(200, { total: 0, data: [] }, res);
+        else return returnSuccess(200, {
+            total: 0, data: [],
+            cartId: cartId,
+
+        }, res);
     } catch (err) {
         console.log("Cart list error: ", err);
         return returnError(req, 500, "UNEXPECTEDERROR", res);
     }
 }
 
-exports.addCartItem = async (req, res) => {
+exports.create = async (req, res) => {
 
     const { errors, isValid } = validatePsmbrcrtInput(req.body, "A");
     if (!isValid) {
@@ -79,210 +103,221 @@ exports.addCartItem = async (req, res) => {
     }
     const {
         psmbrcar,
-        psitmcno,
+        // psitmcno,
         psmrcuid,
         psprduid,
         psitmqty,
-        psitmdsc,
-        psitmunt,
-        psitmsbt,
+        // psitmdsc,
+        // psitmunt,
+        // psitmsbt,
         psitmrmk
     } = req.body;
+    //Find Merchant (check existance only)
+    const merchant = await psmrcpar.findOne({
+        where: {
+            psmrcuid: psmrcuid
+        }, raw: true
+    })
 
-    if (!psmbrcar || !psprduid) {
-        return returnError(req, 400, {
-        psmbrcar: "REQUIRED",
-        psprduid: "REQUIRED"
-        }, res);
-    }
+    //Find Product (check exist, get unit price)
+    const product = await psprdpar.findOne({
+        where: {
+            psprduid: psprduid
+        }, raw: true, attributes: ['psprdpri']
+    })
+    //Calculate subtotal (qty * unit)
+    const psitmunt = product.psprdpri;
+    const psitmsbt = parseFloat(product.psprdpri) * psitmqty;
 
-    try {
-        const exist = await psmbrcrt.findOne({
+
+    if (merchant && product)
+        //Find member cart (check existance get current running itmcno)
+        await psmbrcrt.findOne({
             where: {
-                psmbrcar,
-                psprduid,
-                psitmrmk
-            },
-            raw: true,
-        });
-
-        if (exist) {
-            const newQty = exist.psitmqty + psitmqty;
-            const newSbt = newQty * parseFloat(psitmunt);
-
-            await psmbrcrt.update({
-            psitmqty: newQty,
-            psitmsbt: newSbt.toFixed(2)
-        }, {
-            where: {
-                psmbrcar,
-                psprduid,
-                psitmrmk
+                psmbrcar: psmbrcar,
+                psmrcuid: psmrcuid,
+            }, raw: true,
+            attributes: ['psmbrcar', 'psmrcuid', 'psitmcno'],
+            order: [['psitmcno', 'DESC']]
+        }).then(async memberCart => {
+            let running = 1;
+            if (memberCart) {
+                // Having item in cart
+                //Assign new running item no
+                //**No sequence order needed
+                running = parseInt(memberCart.psitmcnm) + 1;
             }
-        });
+            //Add cart
+            await psmbrcrt.create({
+                psmbrcar,
+                psmrcuid,
+                psprduid,
+                psitmcno: running,
+                psitmqty,
+                psitmunt,
+                psitmsbt,
+                psitmrmk
+            });
+            //return success 
 
-        return returnSuccessMessage(req, 200, "QUANTITYUPDATED", res);
-        }
+            return returnSuccessMessage(req, 200, "RECORDCREATED", res)
 
-    // Add new cart row with next item number
-    const maxItem = await psmbrcrt.max("psitmcno", { where: { psmbrcar } });
-    if (!maxItem) maxItem = 0;
-    const nextItemNo = (maxItem) + 1;
-
-    await psmbrcrt.create({
-      psmbrcar,
-      psitmcno: nextItemNo,
-      psmrcuid,
-      psprduid,
-      psitmqty,
-      psitmdsc,
-      psitmunt,
-      psitmsbt: (psitmqty * parseFloat(psitmunt)).toFixed(2),
-      psitmrmk
-    });
-
-    return returnSuccessMessage(req, 200, "CARTITEMADDED", res);
-        
-    } catch (err) {
-        console.log("Cart add error: ", err);
-        return returnError(req, 500, "UNEXPECTEDERROR", res);
-    }
+        }).catch(err => {
+            console.log(err);
+            return returnError(req, 500, "UNEXPECTEDERROR", res)
+        })
+    else return returnError(req, 400, { psmrcuid: "INVALIDDATAVALUE", psprduid: "INVALIDDATAVALUE" }, res)
 
 }
 
-exports.updateCartItem = async (req, res) => {
+exports.update = async (req, res) => {
 
-    const { errors, isValid } = validatePsmbrcrtInput(req.body, "U");
+    const { errors, isValid } = validatePsmbrcrtInput(req.body, "C");
     if (!isValid) {
         return returnError(req, 400, errors, res);
     }
+
     const {
         psmbrcar,
+        psmrcuid,
         psitmcno,
+
         psitmqty,
-        psitmsbt,
         psitmrmk
     } = req.body;
 
-    if (!psmbrcar || !psitmcno) {
-        return returnError(req, 400, {
-            psmbrcar: "REQUIRED",
-            psitmcno: "REQUIRED"
+    if (!psmbrcar || !psitmcno || !psmrcuid) {
+        return returnError(req, 500, {
+            psmbrcar: "FIELDISREQUIRED",
+            psitmcno: "FIELDISREQUIRED",
+            psmrcuid: "FIELDISREQUIRED"
         }, res);
     }
 
-    try {
-        const exist = await psmbrcrt.findOne({
+    //Find Merchant (check existance only)
+    const merchant = await psmrcpar.findOne({
+        where: {
+            psmrcuid: psmrcuid
+        }, raw: true
+    })
+
+    //Find Product (check exist, get unit price)
+    const product = await psprdpar.findOne({
+        where: {
+            psprduid: psprduid
+        }, raw: true, attributes: ['psprdpri']
+    })
+    //Calculate subtotal (qty * unit)
+    const psitmunt = product.psprdpri;
+    const psitmsbt = parseFloat(product.psprdpri) * psitmqty;
+
+
+    if (merchant && product)
+        //Find member cart (check existance get current running itmcno)
+        await psmbrcrt.findOne({
             where: {
-                psmbrcar,
-                psitmcno
-            },
-            raw: true,
-        });
+                psmbrcar: psmbrcar,
+                psmrcuid: psmrcuid,
+                psitmcno: psitmcno,
 
-        if (!exist) return returnError(req, 404, "NORECORDFOUND", res);
+            }, raw: true,
+            attributes: ['psmbrcar', 'psmrcuid', 'psitmcno', 'id'],
+            order: [['psitmcno', 'DESC']]
+        }).then(async memberCart => {
 
-        const newQty = parseInt(psitmqty);
-
-        // // delete item if qty < 1
-        // if (newQty < 1) {
-        //     await psmbrcrt.destroy({
-        //         where: {
-        //             psmbrcar,
-        //             psitmcno
-        //         },
-        //         raw: true,
-        //     }); 
-
-        //     // Reorder item numbers
-        //     const remainingItems = await psmbrcrt.findAll({
-        //         where: { psmbrcar },
-        //         order: [["psitmcno", "asc"]],
-        //         raw: true
-        //     });
-
-        //     // Reassign item numbers starting from 1
-        //     for (let i = 0; i < remainingItems.length; i++) {
-        //         await psmbrcrt.update(
-        //         { psitmcno: i + 1 },
-        //         { where: { psmbrcar, psitmcno: remainingItems[i].psitmcno } }
-        //         );
-        //     }
-
-        //     return returnSuccessMessage(req, 200, "CARTITEMDELETED", res);
-  
-        // }
-
-        const newSbt = newQty * parseFloat(exist.psitmunt);
-
-        await psmbrcrt.update({
-            psitmqty: newQty,
-            psitmsbt: newSbt.toFixed(2),
-            psitmrmk: psitmrmk ? psitmrmk: exist.psitmrmk
-        }, {
-            where: {
-                psmbrcar,
-                psitmcno
+            if (memberCart) {
+                //Add cart
+                await psmbrcrt.update({
+                    // psmbrcar,
+                    // psmrcuid,
+                    // psprduid,
+                    // psitmcno,
+                    psitmqty,
+                    psitmunt,
+                    psitmsbt,
+                    psitmrmk
+                }, {
+                    where: {
+                        id: data.id
+                    }
+                });
+            } else {
+                return returnError(req, 500, { psmbrcar: "NORECORDFOUND", psmrcuid: "NORECORDFOUND", psitmcno: "NORECORDFOUND" }, res)
             }
-        });
+            //return success 
+            return returnSuccessMessage(req, 200, "RECORDCREATED", res)
 
-        return returnSuccessMessage(req, 200, "CARTITEMUPDATED", res);
+        }).catch(err => {
+            console.log(err);
+            return returnError(req, 500, "UNEXPECTEDERROR", res)
+        })
+    else return returnError(req, 400, { psmrcuid: "INVALIDDATAVALUE", psprduid: "INVALIDDATAVALUE" }, res)
 
 
-    } catch (err) {
-        console.log("Cart update error: ", err);
-        return returnError(req, 500, "UNEXPECTEDERROR", res);
-    }
 }
 
-exports.deleteCartItem = async (req, res) => {
-    const { psmbrcar, psitmcno } = req.body;
+exports.delete = async (req, res) => {
+    const id = req.body.id ? req.body.id : "";
+    if (id == "") return returnError(req, 500, "RECORDIDISREQUIRED", res);
+    const t = await connection.sequelize.transaction();
 
-    if (!psmbrcar || !psitmcno) {
-        return returnError(req, 400, {
-            psmbrcar: "REQUIRED",
-            psitmcno: "REQUIRED"
-        }, res);
-    }
 
     try {
         const exist = await psmbrcrt.findOne({
             where: {
-                psmbrcar,
-                psitmcno
+                id
             },
             raw: true,
         });
 
-        if (!exist) return returnError(req, 404, "NORECORDFOUND", res);
+        if (!exist) return returnError(req, 400, "NORECORDFOUND", res);
 
         await psmbrcrt.destroy({
             where: {
-                psmbrcar,
-                psitmcno
+                id: exist.id
             },
-            raw: true,
+            transaction: t
+        }).catch(async err => {
+            console.log(err);
+            await t.rollback();
+            return returnError(req, 500, "UNEXPECTEDERROR", res)
         });
 
-        // Reorder item numbers
-        const remainingItems = await psmbrcrt.findAll({
-            where: { psmbrcar },
-            order: [["psitmcno", "asc"]],
+        //Resequence Number
+        let option = {};
+
+        option = {
+            psitmcno: { [Op.gt]: item.psitmcno },
+            psmrcuid: exist.psmrcuid,
+            psmbrcar: exist.psmbrcar,
+        }
+        let affected_record = await psmbrcrt.findAll({
+            order: [['psitmcno', 'asc']],
+            raw: true,
+            attributes: ['id'],
+            where: option,
             raw: true
         });
 
-        // Reassign item numbers starting from 1
-        for (let i = 0; i < remainingItems.length; i++) {
-            const currentNo = remainingItems[i].psitmcno;
-            if (currentNo != (i + 1)) {
-                await psmbrcrt.update(
-                    { psitmcno: i + 1 },
-                    { where: { psmbrcar, psitmcno: currentNo } }
-                );
-            }
+        let err_ind = false;
+        for (var i = 0; i < affected_record.length; i++) {
+            await psmbrcrt.update({
+                psitmcno: parseInt(affected_record[i].psitmcno) - 1
+            }, {
+                where: { id: affected_record[i].id }, transaction: t
+            }).catch(async err => {
+                console.log("Error updating sequence", err);
+                err_ind = true;
+            });
+            if (err_ind) break;
+        }
+        if (err_ind) {
+            await t.rollback();
+            return returnError(req, 500, "UNEXPECTEDERROR", res);
         }
 
-        return returnSuccessMessage(req, 200, "CARTITEMDELETED", res);
+        await t.commit();
+        return returnSuccessMessage(req, 200, "RECORDDELETED", res);
 
     } catch (err) {
         console.log("Cart delete error: ", err);
