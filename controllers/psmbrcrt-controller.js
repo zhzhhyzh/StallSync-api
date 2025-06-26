@@ -13,11 +13,13 @@ const returnError = require("../common/error");
 const returnSuccess = require("../common/success");
 const returnSuccessMessage = require("../common/successMessage");
 const common = require("../common/common");
+const connection = require("../common/db");
 
 //Input Validation
 const validatePsmbrcrtInput = require("../validation/psmbrcrt-validation");
 const { ExpressValidator } = require("express-validator");
 const { where } = require("sequelize");
+const { psitmcno } = require("../constant/fieldNames");
 
 
 exports.list = async (req, res) => {
@@ -145,7 +147,7 @@ exports.create = async (req, res) => {
                 // Having item in cart
                 //Assign new running item no
                 //**No sequence order needed
-                running = parseInt(memberCart.psitmcnm) + 1;
+                running = parseInt(memberCart.psitmcno) + 1;
             }
             //Add cart
             await psmbrcrt.create({
@@ -181,7 +183,7 @@ exports.update = async (req, res) => {
         psmbrcar,
         psmrcuid,
         psitmcno,
-
+        psprduid,
         psitmqty,
         psitmrmk
     } = req.body;
@@ -238,7 +240,7 @@ exports.update = async (req, res) => {
                     psitmrmk
                 }, {
                     where: {
-                        id: data.id
+                        id: memberCart.id
                     }
                 });
             } else {
@@ -287,20 +289,22 @@ exports.delete = async (req, res) => {
         let option = {};
 
         option = {
-            psitmcno: { [Op.gt]: item.psitmcno },
+            psitmcno: { [Op.gt]: exist.psitmcno },
             psmrcuid: exist.psmrcuid,
             psmbrcar: exist.psmbrcar,
         }
         let affected_record = await psmbrcrt.findAll({
             order: [['psitmcno', 'asc']],
             raw: true,
-            attributes: ['id'],
+            attributes: ['id','psitmcno'],
             where: option,
             raw: true
         });
-
+        console.log(affected_record);
         let err_ind = false;
         for (var i = 0; i < affected_record.length; i++) {
+            console.log("WATCHMEMEM:", i, "\nKLKLKLL:",affected_record[i]);
+
             await psmbrcrt.update({
                 psitmcno: parseInt(affected_record[i].psitmcno) - 1
             }, {
