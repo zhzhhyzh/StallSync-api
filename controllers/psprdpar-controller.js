@@ -7,6 +7,7 @@ const fs = require("fs");
 // Table File
 const psprdpar = db.psprdpar;
 const psmrcpar = db.psmrcpar;
+const psmbrcrt = db.psmbrcrt;
 
 // Common Function
 const Op = db.Sequelize.Op;
@@ -22,6 +23,7 @@ const genConfig = require("../constant/generalConfig");
 
 // Input Validation
 const validatePsprdparInput = require("../validation/psprdpar-validation");
+const { psitmsbt } = require("../constant/fieldNames");
 
 exports.list = async (req, res) => {
   let option = {
@@ -637,6 +639,29 @@ exports.update = async (req, res) => {
                   await t.rollback();
                   return returnError(req, 500, "UNEXPECTEDERROR", res);
                 });
+            }
+            if (req.body.psprdpri != parseFloat(data.psprdpri)) {
+
+              let cartItem = await psmbrcrt.findAll({
+                where: { psprduid: id }, raw: true
+              })
+
+              for (let i = 0; i < cartItem.length; i++) {
+                let obj = cartItem[i];
+                let unitPrice = parseFloat(req.body.psprdpri);
+                let subtotal = parseInt(obj.psitmqty) * unitPrice;
+                await psmbrcrt.update({ psitmunt: unitPrice, psitmsbt: subtotal },
+                  {
+                    where: {
+                      id: obj.id
+                    }
+                  }).catch(async (err) => {
+                    console.log(err);
+                    await t.rollback();
+                    return returnError(req, 500, "UNEXPECTEDERROR", res);
+                  });
+              }
+
             }
 
 
