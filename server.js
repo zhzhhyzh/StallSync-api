@@ -33,7 +33,7 @@ const pswdypar = require("./routes/pswdypar");
 const report = require("./routes/report");
 const psmbrprf = require("./routes/psmbrprf");
 const psmbrcrt = require("./routes/psmbrcrt");
-// const pstrxpar = require("./routes/pstrxpar");
+const pstrxpar = require("./routes/pstrxpar");
 const psordrvw = require("./routes/psordrvw");
 
 // MISC Routes
@@ -94,7 +94,7 @@ app.use('/api/pswdypar', pswdypar);
 app.use('/api/report', report);
 app.use('/api/psmbrprf', psmbrprf);
 app.use('/api/psmbrcrt', psmbrcrt);
-// app.use('/api/pstrxpar', pstrxpar);
+app.use('/api/pstrxpar', pstrxpar);
 app.use('/api/psordrvw', psordrvw);
 
 // MISC Routes

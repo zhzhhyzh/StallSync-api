@@ -27,39 +27,70 @@ exports.list = async (req, res) => {
   else from = parseInt(req.query.page) * limit;
 
   // filters (where clause)
-  let options = {
-    [Op.or]: [],
-    [Op.and]: [],
-  };
+  let option = {};
 
   if (req.query.search && !_.isEmpty(req.query.search)) {
-    options[Op.or] = [
-      { pstrcuid: { [Op.like]: `%${req.query.search}%` } },
+    option[Op.or] = [
+      { pstrxuid: { [Op.like]: `%${req.query.search}%` } },
       { psorduid: { [Op.like]: `%${req.query.search}%` } },
     ];
   }
 
   if (req.query.pstrxsts && !_.isEmpty(req.query.pstrxsts)) {
-    options[Op.and].push({ pstrxsts: req.query.pstrxsts });
+    option.pstrxsts = req.query.pstrxsts;
   }
 
   if (req.query.pstrxmtd && !_.isEmpty(req.query.pstrxmtd)) {
-    options[Op.and].push({ pstrxmtd: req.query.pstrxmtd });
+    option.pstrxmtd = req.query.pstrxmtd;
   }
 
-  if (req.query.pstrxdat && !_.isEmpty(req.query.pstrxdat)) {
-    options[Op.and].push({
-      pstrxdat: common.getDateFromString(req.query.pstrxdat),
-    });
+
+
+  if (req.query.from && !_.isEmpty("" + req.query.from)) {
+    let fromDate = new Date(req.query.from);
+    fromDate.setHours(0, 0, 0, 0);
+    if (!_.isNaN(fromDate.getTime())) {
+      if (req.query.to && !_.isEmpty("" + req.query.to)) {
+        let toDate = new Date(req.query.to);
+        toDate.setHours(23, 59, 59, 999);
+        if (!_.isNaN(toDate.getTime())) {
+          option.pstrxdat = {
+            [Op.and]: [{ [Op.gte]: fromDate }, { [Op.lte]: toDate }],
+          };
+        } else {
+          option.pstrxdat = {
+            [Op.gte]: fromDate,
+          };
+        }
+      } else {
+        option.pstrxdat = {
+          [Op.gte]: fromDate,
+        };
+      }
+    }
+  } else if (req.query.to && !_.isEmpty("" + req.query.to)) {
+    let toDate = new Date(req.query.to);
+    toDate.setHours(23, 59, 59, 999);
+    if (!_.isNaN(toDate.getTime())) {
+      option.pstrxdat = {
+        [Op.lte]: toDate,
+      };
+    }
   }
+
+  // if (req.query.pstrxdat && !_.isEmpty(req.query.pstrxdat)) {
+  //   options[Op.and].push({
+  //     pstrxdat: common.getDateFromString(req.query.pstrxdat),
+  //   });
+  // }
 
   const { count, rows } = await pstrxpar.findAndCountAll({
-    where: options,
+    where: option,
     limit: limit,
     offset: from,
     raw: true,
     attributes: [
-      "pstrcuid",
+      "pstrxuid",
       "psorduid",
       "pstrxdat",
       "pstrxamt",
@@ -127,7 +158,7 @@ exports.list = async (req, res) => {
       {
         total: count,
         data: newRows,
-        extra: { file: "pstrxpar", key: ["pstrcuid"] },
+        extra: { file: "pstrxpar", key: ["pstrxuid"] },
       },
       res
     );
@@ -135,13 +166,13 @@ exports.list = async (req, res) => {
 };
 
 exports.findOne = async (req, res) => {
-  const id = req.query.pstrcuid ? req.query.pstrcuid : "";
+  const id = req.query.pstrxuid ? req.query.pstrxuid : "";
   if (!id || id == "") {
     return returnError(req, 400, "RECORDIDISREQUIRED", res);
   }
   try {
     const result = await pstrxpar.findOne({
-      where: { pstrcuid: id },
+      where: { pstrxuid: id },
       raw: true,
     });
 
@@ -199,7 +230,7 @@ exports.create = async (req, res) => {
 
   try {
     const exist = await pstrxpar.findOne({
-      where: { pstrcuid: req.body.pstrcuid },
+      where: { pstrxuid: req.body.pstrxuid },
       raw: true,
     });
 
@@ -265,7 +296,7 @@ exports.create = async (req, res) => {
 
     pstrxpar
       .create({
-        pstrcuid: reference,
+        pstrxuid: reference,
         psorduid: req.body.psorduid,
         pstrxdat: new Date(),
         pstrxamt: amount,
@@ -288,11 +319,11 @@ exports.create = async (req, res) => {
           "pstrxpar",
           null,
           null,
-          created.pstrcuid,
+          created.pstrxuid,
           "A",
           req.user.psusrunm,
           "",
-          created.pstrcuid
+          created.pstrxuid
         );
 
         return returnSuccessMessage(req, 200, "RECORDCREATED", res);
@@ -304,7 +335,7 @@ exports.create = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const id = req.query.pstrcuid ? req.query.pstrcuid : "";
+  const id = req.query.pstrxuid ? req.query.pstrxuid : "";
   if (!id || id == "") {
     return returnError(req, 500, "RECORDIDISREQUIRED", res);
   }
@@ -316,7 +347,7 @@ exports.update = async (req, res) => {
 
   try {
     const exist = await pstrxpar.findOne({
-      where: { pstrcuid: id },
+      where: { pstrxuid: id },
       raw: true,
     });
 
@@ -382,7 +413,7 @@ exports.update = async (req, res) => {
           pstrxstr: req.body.pstrxstr,
           mntuser: req.user.psusrunm,
         },
-        { where: { pstrcuid: id } }
+        { where: { pstrxuid: id } }
       )
       .then(() => {
         common.writeMntLog("pstrxpar", null, null, id, "C", req.user.psusrunm);
@@ -404,7 +435,7 @@ exports.delete = async (req, res) => {
 
   try {
     const exist = await pstrxpar.findOne({
-      where: { pstrcuid: id },
+      where: { pstrxuid: id },
       raw: true,
     });
 
@@ -413,7 +444,7 @@ exports.delete = async (req, res) => {
     }
 
     await pstrxpar.destroy({
-      where: { pstrcuid: id },
+      where: { pstrxuid: id },
     });
 
     await common.writeMntLog(
@@ -452,7 +483,7 @@ exports.createStripeSession = async (req, res) => {
     if (!order) {
       return returnError(req, 400, "ORDERNOTFOUND", res);
     }
-const paymentMethodTypes = Array.isArray(paymentMethod) && paymentMethod.length > 0
+    const paymentMethodTypes = Array.isArray(paymentMethod) && paymentMethod.length > 0
       ? paymentMethod
       : ['card']; // default to card
     const lineItems = products.map((product) => ({
@@ -482,7 +513,7 @@ const paymentMethodTypes = Array.isArray(paymentMethod) && paymentMethod.length 
 
     // Insert transaction as pending
     await pstrxpar.create({
-      pstrcuid: trxId,
+      pstrxuid: trxId,
       psorduid: orderId,
       pstrxdat: new Date(),
       pstrxamt: order.psordgra,
