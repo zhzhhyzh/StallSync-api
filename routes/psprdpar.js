@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 
 // -- Load Common Authentication -- //
+const authenticateOptional = require('../common/authenticate_optional');
+
 const authenticateRoute = require('../common/authenticate');
 // -- Load Controller -- //
 const psprdpar = require("../controllers/psprdpar-controller");
@@ -9,12 +11,12 @@ const psprdpar = require("../controllers/psprdpar-controller");
 // @route   GET api/psprdpar/find-one
 // @desc    Find OTP Parameter
 // @access  Private
-router.get("/detail", authenticateRoute, psprdpar.findOne);
+router.get("/detail", authenticateOptional, psprdpar.findOne);
 
 // @route   GET api/psprdpar/list
 // @desc    List OTP Parameter
 // @access  Private
-router.get("/list", authenticateRoute, psprdpar.list);
+router.get("/list", authenticateOptional, psprdpar.list);
 
 // @route   POST api/psprdpar/create
 // @desc    Create OTP Parameter
