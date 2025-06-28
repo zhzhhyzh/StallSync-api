@@ -28,6 +28,7 @@ const { raw } = require("express");
 const { where } = require("sequelize");
 
 exports.list = async (req, res) => {
+  console.log("📥 /psmrcpar/list called");
   let mchId = "";
   if (req.user.psusrtyp == "MCH") {
     mchId = req.user.psmrcuid;

@@ -94,7 +94,7 @@ exports.list = async (req, res) => {
       "psprdtyp",
       "psprdcat",
       "psprdsts",
-
+      "psprdimg",
       "psprdpri",
       "psprdcrd",
 
@@ -152,9 +152,9 @@ exports.list = async (req, res) => {
     obj.psmrcuiddsc = result.psmrcnme
 
 
-    if (!_.isEmpty(obj.psprdpri)) {
-      obj.psprdpri = common.formatDecimal(obj.psprdpri);
-    }
+    // if (!_.isEmpty(obj.psprdpri)) {
+    //   obj.psprdpri = common.formatDecimal(obj.psprdpri);
+    // }
 
     newRows.push(obj);
   }
