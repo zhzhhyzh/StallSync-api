@@ -100,27 +100,27 @@ router.get("/availableUser", authenticateRoute, async (req, res) => {
 
     const psusrtyp = psstftyp == "A" ? "ADM" : "MCH";
     try {
-        const usedInStaff = await psstfpar.findAll({
-            raw: true,
-            attributes: ["psusrunm"]
-        });
+        // const usedInStaff = await psstfpar.findAll({
+        //     raw: true,
+        //     attributes: ["psusrunm"]
+        // });
 
-        const usedInMember = await psmbrprf.findAll({
-            raw: true,
-            attributes: ["psusrnme"]
-        });
+        // const usedInMember = await psmbrprf.findAll({
+        //     raw: true,
+        //     attributes: ["psusrnme"]
+        // });
 
-        const usedUsernames = [
-            ...usedInStaff.map(user => user.psusrunm),
-            ...usedInMember.map(user => user.psusrnme)
-        ];
+        // const usedUsernames = [
+        //     ...usedInStaff.map(user => user.psusrunm),
+        //     ...usedInMember.map(user => user.psusrnme)
+        // ];
 
         const availableUsers = await psusrprf.findAll({
             where: {
                 psusrtyp: psusrtyp,
-                psusrunm: {
-                    [Op.notIn]: usedUsernames
-                }
+                // psusrunm: {
+                //     [Op.notIn]: usedUsernames
+                // }
             },
             raw: true,
             attributes: ["psusrunm", "psusrnam"]
