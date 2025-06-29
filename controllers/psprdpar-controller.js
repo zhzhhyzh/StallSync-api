@@ -149,7 +149,7 @@ exports.list = async (req, res) => {
       }, raw: true, attributes: ["psmrcnme"]
     })
 
-    obj.psmrcuiddsc = result.psmrcnme
+    obj.psmrcuiddsc = result ? result.psmrcnme: ""
 
 
     if (!_.isEmpty(obj.psprdpri)) {
@@ -620,8 +620,8 @@ exports.update = async (req, res) => {
 
 
             if (ppiChange) {
-              if (fs.existsSync(genConfig.productImagePath + item.psprdimg)) {
-                fs.unlinkSync(genConfig.productImagePath + item.psprdimg);
+              if (fs.existsSync(genConfig.productImagePath + data.psprdimg)) {
+                fs.unlinkSync(genConfig.productImagePath + data.psprdimg);
               }
 
               await common

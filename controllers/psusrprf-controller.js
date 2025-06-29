@@ -429,26 +429,33 @@ exports.list = async (req, res) => {
     else from = parseInt(req.query.page) * parseInt(limit);
 
     let option = {};
-    if (req.query.psusrunm && !_.isEmpty(req.query.psusrunm)) {
-        option.psusrunm = req.query.psusrunm;
-    }
-
-    if (req.query.psusrnam && !_.isEmpty(req.query.psusrnam)) {
+    if (req.query.search && !_.isEmpty(req.query.search)) {
         option = {
             [Op.or]: [
-                { psusrnam: { [Op.like]: req.query.psusrnam + '%' } },
-                { psusrnam: req.query.psusrnam }
+                { psusrunm: { [Op.like]: '%' + req.query.search + '%' } },
+                { psusrunm: req.query.search},
+                { psusrnam: { [Op.like]: '%' + req.query.search + '%' } },
+                { psusrnam: req.query.search }
             ]
         }
     }
+
+    // if (req.query.search && !_.isEmpty(req.query.search)) {
+    //     option = {
+    //         [Op.or]: [
+    //             { psusrnam: { [Op.like]: req.query.psusrnam + '%' } },
+    //             { psusrnam: req.query.psusrnam }
+    //         ]
+    //     }
+    // }
 
     if (req.query.psusrsts && !_.isEmpty(req.query.psusrsts)) {
         option.psusrsts = req.query.psusrsts;
     }
 
-    // if (req.query.psusrtyp && !_.isEmpty(req.query.psusrtyp)) {
-    //     option.psusrtyp = req.query.psusrtyp;
-    // }
+    if (req.query.psusrrol && !_.isEmpty(req.query.psusrrol)) {
+        option.psusrrol = req.query.psusrrol;
+    }
     option.psusrtyp = { [Op.ne]: "MBR" };
     const { count, rows } = await psusrprf.findAndCountAll({
         limit: parseInt(limit),
@@ -576,8 +583,8 @@ exports.delete = async (req, res) => {
             psusrunm: id,
         }, raw: true
     }).then(user => {
-        if (user.psusrtyp != 'ADM')
-            return returnError(req, 500, "USERACCOUNTCANTDELETE", res);
+        // if (user.psusrtyp != 'ADM')
+        //     return returnError(req, 500, "USERACCOUNTCANTDELETE", res);
         if (user) {
             psusrprf.destroy({
                 where: {
