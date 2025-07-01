@@ -46,7 +46,7 @@ exports.list = async (req, res) => {
     where: option,
     raw: true,
     attributes: [['psannuid', 'id'], 'psannuid', 'psannttl', 'psannmsg', 'psanntyp', 'psannsts', 'psanndat', 'psannimg'],
-    order: [["id", "asc"]],
+    order: [["psanndat", "DESC"]],
   });
 
   let newRows = [];

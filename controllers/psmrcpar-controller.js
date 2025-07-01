@@ -600,8 +600,8 @@ exports.update = async (req, res) => {
             }
 
             if (ssmChange) {
-              if (fs.existsSync(genConfig.ssmImagePath + item.psmrcssc)) {
-                fs.unlinkSync(genConfig.ssmImagePath + item.psmrcssc);
+              if (fs.existsSync(genConfig.ssmImagePath + data.psmrcssc)) {
+                fs.unlinkSync(genConfig.ssmImagePath + data.psmrcssc);
               }
 
               await common
@@ -621,8 +621,8 @@ exports.update = async (req, res) => {
                 });
             }
             if (sfiChange) {
-              if (fs.existsSync(genConfig.merchantImagePath + item.psmrcsfi)) {
-                fs.unlinkSync(genConfig.merchantImagePath + item.psmrcsfi);
+              if (fs.existsSync(genConfig.merchantImagePath + data.psmrcsfi)) {
+                fs.unlinkSync(genConfig.merchantImagePath + data.psmrcsfi);
               }
 
               await common
@@ -642,8 +642,8 @@ exports.update = async (req, res) => {
                 });
             }
             if (ppiChange) {
-              if (fs.existsSync(genConfig.merchantImagePath + item.psmrcppi)) {
-                fs.unlinkSync(genConfig.merchantImagePath + item.psmrcppi);
+              if (fs.existsSync(genConfig.merchantImagePath + data.psmrcppi)) {
+                fs.unlinkSync(genConfig.merchantImagePath + data.psmrcppi);
               }
 
               await common
