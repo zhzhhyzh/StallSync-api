@@ -90,6 +90,7 @@ exports.list = async (req, res) => {
     offset: from,
     raw: true,
     attributes: [
+      ['pstrxuid','id'],
       "pstrxuid",
       "psorduid",
       "pstrxdat",
@@ -147,7 +148,7 @@ exports.list = async (req, res) => {
           : "";
     }
 
-    obj.pstrxdat = await common.formatDate(obj.pstrxdat, "/");
+    obj.pstrxdat = await common.formatDateTime(obj.pstrxdat, "/");
     obj.pstrxamt = await common.formatDecimal(obj.pstrxamt, 2);
     newRows.push(obj);
   }
@@ -166,7 +167,7 @@ exports.list = async (req, res) => {
 };
 
 exports.findOne = async (req, res) => {
-  const id = req.query.pstrxuid ? req.query.pstrxuid : "";
+  const id = req.query.id ? req.query.id : "";
   if (!id || id == "") {
     return returnError(req, 400, "RECORDIDISREQUIRED", res);
   }
@@ -215,7 +216,7 @@ exports.findOne = async (req, res) => {
           : "";
     }
 
-    return returnSuccess(200, { data: result }, res);
+    return returnSuccess(200, result, res);
   } catch (err) {
     console.log("Error in findOne:", err);
     return returnError(req, 500, "UNEXPECTEDERROR", res);

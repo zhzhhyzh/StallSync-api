@@ -220,7 +220,9 @@ exports.findOne = async (req, res) => {
               : "";
         }
 
-        return returnSuccess(200, obj, res);
+        // return returnSuccess(200, obj, res);
+            return returnSuccess(200, { data: obj }, res);
+        
       } else return returnError(req, 500, "NORECORDFOUND", res);
     })
     .catch((err) => {

@@ -29,7 +29,7 @@ exports.main = async (req, res) => {
             getNumberBoard(req),
             getSalesChart(req),
             getOrderChart(req, false),
-            getTopMerchants(req, "monthToDate")
+            getTopMerchants(req, "A")
         ]);
 
         let limit = parseInt(req.query.limit || 10);
@@ -303,15 +303,18 @@ async function getOrderChart(req) {
 }
 
 
-//Get Top 10 Merchants
 async function getTopMerchants(req, rankType) {
     let answr = [];
 
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59); // end of month at 23:59:59
+
     try {
         if (rankType === "A") {
-            // Rank by rating
+            // Rank by rating (no date filter needed)
             answr = await psmrcpar.findAll({
-                attributes: ['psmrcuid', 'psmrcnme', [col('psmrcrtg'), 'rating']],
+                attributes: ['psmrcuid', 'psmrcnme', [col('psmrcrtg'), 'value']],
                 order: [[col('psmrcrtg'), 'DESC']],
                 limit: 10,
                 raw: true
@@ -319,11 +322,17 @@ async function getTopMerchants(req, rankType) {
         }
 
         if (rankType === "B") {
-            // Rank by total sales
+            // Rank by total sales (this month)
+
+            psordpar.belongsTo(psmrcpar, {
+                foreignKey: 'psmrcuid',
+                targetKey: 'psmrcuid'
+            });
+
             answr = await psordpar.findAll({
                 attributes: [
                     'psmrcuid',
-                    [fn('SUM', col('psordgra')), 'totalsales']
+                    [fn('SUM', col('psordgra')), 'value']
                 ],
                 include: [
                     {
@@ -332,19 +341,36 @@ async function getTopMerchants(req, rankType) {
                         required: true
                     }
                 ],
+                where: {
+                    psordodt: {
+                        [Op.between]: [startOfMonth, endOfMonth]
+                    }
+                },
                 group: ['psordpar.psmrcuid', 'psmrcpar.psmrcnme'],
-                order: [[literal('totalsales'), 'DESC']],
+                order: [[literal('value'), 'DESC']],
                 limit: 10,
                 raw: true
             });
+            answr = answr.map(item => ({
+                psmrcuid: item.psmrcuid,
+                psmrcnme: item['psmrcpar.psmrcnme'],
+                value: parseFloat(item.value),
+            }));
+
         }
 
         if (rankType === "C") {
-            // Rank by order count
+
+            psordpar.belongsTo(psmrcpar, {
+  foreignKey: 'psmrcuid',
+  targetKey: 'psmrcuid'
+});
+
+            // Rank by order count (this month)
             answr = await psordpar.findAll({
                 attributes: [
                     'psmrcuid',
-                    [fn('COUNT', col('psorduid')), 'orderscount']
+                    [fn('COUNT', col('psorduid')), 'value']
                 ],
                 include: [
                     {
@@ -353,11 +379,22 @@ async function getTopMerchants(req, rankType) {
                         required: true
                     }
                 ],
+                where: {
+                    psordodt: {
+                        [Op.between]: [startOfMonth, endOfMonth]
+                    }
+                },
                 group: ['psordpar.psmrcuid', 'psmrcpar.psmrcnme'],
-                order: [[literal('orderscount'), 'DESC']],
+                order: [[literal('value'), 'DESC']],
                 limit: 10,
                 raw: true
             });
+
+              answr = answr.map(item => ({
+                psmrcuid: item.psmrcuid,
+                psmrcnme: item['psmrcpar.psmrcnme'],
+                value: parseFloat(item.value),
+            }));
         }
 
         return answr;

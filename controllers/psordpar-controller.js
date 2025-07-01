@@ -63,7 +63,9 @@ exports.list = async (req, res) => {
   }
 
   if (req.query.psordphn && !_.isEmpty(req.query.psordphn)) {
-    option.psordphn = req.query.psordphn;
+    option.psordphn = {
+      [Op.like]: `%${req.query.psordphn}%`
+    };
   }
 
 

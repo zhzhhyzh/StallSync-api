@@ -113,7 +113,7 @@ exports.list = async (req, res) => {
           ? description.prgedesc
           : "";
     }
-   obj.psstfjdt = await common.formatDate(obj.psstfjdt,"/")
+    obj.psstfjdt = await common.formatDate(obj.psstfjdt, "/")
     newRows.push(obj);
   }
 
@@ -215,6 +215,13 @@ exports.findOne = async (req, res) => {
               ? description.prgedesc
               : "";
         }
+
+        let username = await psusrprf.findOne({
+          where: {
+            psusrunm: obj.psusrunm
+          }, raw: true, attributes: ['psusrunm', 'psusrnam']
+        });
+        obj.psusrnam = username ? username.psusrnam : "";
 
         return returnSuccess(200, obj, res);
       } else return returnError(req, 500, "NORECORDFOUND", res);
@@ -363,19 +370,19 @@ exports.create = async (req, res) => {
             switch (req.body.psstftyp) {
               case 'A':
                 // Generate Code
-                code = await common.getNextRunning("ADMIN");
+                code = await common.getNextRunning("ADM");
                 initial = "A"
                 reference = initial;
                 reference += _.padStart(code, 6, '0');
                 break;
               case 'S':
-                code = await common.getNextRunning("STAFF");
+                code = await common.getNextRunning("SFF");
                 initial = "S"
                 reference = initial;
                 reference += _.padStart(code, 6, '0');
                 break;
               case 'O':
-                code = await common.getNextRunning("OWNER");
+                code = await common.getNextRunning("OWN");
                 initial = "B"
                 reference = initial;
                 reference += _.padStart(code, 6, '0');
@@ -401,11 +408,11 @@ exports.create = async (req, res) => {
               psstfcit: req.body.psstfcit,
               psstfsta: req.body.psstfsta,
               psstfsam: req.body.psstfsam ? req.body.psstfsam : "N",
-              psstfha1: req.body.psstfsam == "Y" ? req.body.psstfad1 : psstfha1,
-              psstfha2: req.body.psstfsam == "Y" ? req.body.psstfad2 : psstfha2,
-              psstfhpo: req.body.psstfsam == "Y" ? req.body.psstfpos : psstfhpo,
-              psstfhci: req.body.psstfsam == "Y" ? req.body.psstfcit : psstfhci,
-              psstfhst: req.body.psstfsam == "Y" ? req.body.psstfsta : psstfhst,
+              psstfha1: req.body.psstfsam == "Y" ? req.body.psstfad1 : req.body.psstfha1,
+              psstfha2: req.body.psstfsam == "Y" ? req.body.psstfad2 : req.body.psstfha2,
+              psstfhpo: req.body.psstfsam == "Y" ? req.body.psstfpos : req.body.psstfhpo,
+              psstfhci: req.body.psstfsam == "Y" ? req.body.psstfcit : req.body.psstfhci,
+              psstfhst: req.body.psstfsam == "Y" ? req.body.psstfsta : req.body.psstfhst,
               psstfeml: req.body.psstfeml,
               psstfbnk: req.body.psstfbnk,
               psstfacc: req.body.psstfacc,

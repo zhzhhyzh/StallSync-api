@@ -140,7 +140,8 @@ exports.list = async (req, res) => {
       attributes: ["psmrcnme"],
     });
 
-    obj.psmrcuiddsc = result.psmrcnme;
+    obj.psmrcuiddsc = result ? result.psmrcnme: ""
+
 
     // if (!_.isEmpty(obj.psprdpri)) {
     //   obj.psprdpri = common.formatDecimal(obj.psprdpri);
@@ -631,8 +632,8 @@ exports.update = async (req, res) => {
           )
           .then(async () => {
             if (ppiChange) {
-              if (fs.existsSync(genConfig.productImagePath + item.psprdimg)) {
-                fs.unlinkSync(genConfig.productImagePath + item.psprdimg);
+              if (fs.existsSync(genConfig.productImagePath + data.psprdimg)) {
+                fs.unlinkSync(genConfig.productImagePath + data.psprdimg);
               }
 
               await common
