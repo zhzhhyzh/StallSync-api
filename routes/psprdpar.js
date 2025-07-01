@@ -33,4 +33,7 @@ router.post("/delete", authenticateRoute, psprdpar.delete);
 // @access  Private
 router.post("/update", authenticateRoute, psprdpar.update);
 
+
+// @desc Filter By Type or Category or Both
+router.get("/filter", psprdpar.filter);
 module.exports = router;

@@ -51,7 +51,8 @@ const backup = require('./routes/backup');
 const app = express();
 app.use(cors({
   credentials: true,
-  origin: ['http://localhost:3001', 'http://localhost:3000']
+  //origin: true,
+  origin: ['http://localhost:3001', 'http://localhost:3000', 'http://localhost:8081']
 }));
 
 app.use(bodyParser.json());
