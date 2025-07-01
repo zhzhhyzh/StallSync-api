@@ -52,7 +52,7 @@ const app = express();
 app.use(cors({
   credentials: true,
   //origin: true,
-  origin: ['http://localhost:3001', 'http://localhost:3000', 'http://localhost:8081' ]
+  origin: ['http://localhost:3001', 'http://localhost:3000', 'http://localhost:8081']
 }));
 
 app.use(bodyParser.json());
