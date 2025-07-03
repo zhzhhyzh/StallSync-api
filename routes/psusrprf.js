@@ -72,5 +72,6 @@ router.post("/delete", authenticateRoute, psusrprf.delete);
 // @access  Private
 router.get("/home", authenticateRoute, psusrprf.home);
 
+router.post("/signup", psusrprf.signup);
 
 module.exports = router;

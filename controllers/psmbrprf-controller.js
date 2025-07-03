@@ -163,6 +163,50 @@ exports.findOne = async (req, res) => {
   }
 };
 
+// exports.get = async (req, res) => {
+//   const username = req.user.psusrunm;
+//   if (!username || username == "") {
+//     return returnError(req, 400, "RECORDIDISREQUIRED", res);
+//   }
+
+//   try {
+//     const member = await psmbrprf.findOne({
+//       where: { psusrnme: username },
+//       raw: true,
+//     });
+
+//     if (!member) return returnError(req, 400, "NORECORDFOUND", res);
+//     if (!_.isEmpty(result.psmbrtyp)) {
+//       let description = await common.retrieveSpecificGenCodes(
+//         req,
+//         "MBRTYP",
+//         member.psmbrtyp
+//       );
+//       member.psmbrtypdsc =
+//         description.prgedesc && !_.isEmpty(description.prgedesc)
+//           ? description.prgedesc
+//           : "";
+//     }
+
+//     if (!_.isEmpty(member.psmbrpre)) {
+//       let description = await common.retrieveSpecificGenCodes(
+//         req,
+//         "HPPRE",
+//         member.psmbrpre
+//       );
+//       member.psmbrpredsc =
+//         description.prgedesc && !_.isEmpty(description.prgedesc)
+//           ? description.prgedesc
+//           : "";
+//     }
+
+//     return returnSuccess(200, member, res);
+//   } catch (err) {
+//     console.log("Error in getMemberByUsername:", err);
+//     return returnError(req, 500, "UNEXPECTEDERROR", res);
+//   }
+// };
+
 exports.create = async (req, res) => {
   const { errors, isValid } = validatePsmbrprfInput(req.body, "N");
   if (!isValid) return returnError(req, 400, errors, res);
@@ -196,58 +240,59 @@ exports.create = async (req, res) => {
   if (!linkedUser)
     return returnError(req, 400, { psusrnme: "NORECORDFOUND" }, res);
 
+  // Set Expiry Date to one year from now
+  const oneYearFromNow = new Date();
+  oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
   const t = await connection.sequelize.transaction();
 
   try {
     const code = await common.getNextRunning("MBR");
-        const psmbruid = `A${_.padStart(code, 6, '0')}`;
+    const psmbruid = `A${_.padStart(code, 6, "0")}`;
 
-        psmbrprf.create({
-            psmbruid,
-            psmbrnam: req.body.psmbrnam,
-            psmbreml: req.body.psmbreml,
-            psmbrdob: req.body.psmbrdob,
-            psmbrpts: 500,
-            psmbracs: 0,
-            psmbrtyp: "B",
-            psmbrexp: oneYearFromNow,
-            psmbrjdt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-            psmbrcar: uuidv4(),
-            psusrnme: req.body.psusrnme,
-            psmbrpre: req.body.psmbrpre,
-            psmbrphn: req.body.psmbrphn,
-            crtuser: req.user.psusrunm,
-            mntuser: req.user.psusrunm,
+    psmbrprf
+      .create(
+        {
+          psmbruid,
+          psmbrnam: req.body.psmbrnam,
+          psmbreml: req.body.psmbreml,
+          psmbrdob: req.body.psmbrdob,
+          psmbrpts: 500,
+          psmbracs: 0,
+          psmbrtyp: "B",
+          psmbrexp: oneYearFromNow,
+          psmbrjdt: req.body.psmbrjdt ? req.body.psmbrjdt : new Date(),
+          psmbrcar: uuidv4(),
+          psusrnme: req.body.psusrnme,
+          psmbrpre: req.body.psmbrpre,
+          psmbrphn: req.body.psmbrphn,
+        },
+        { transaction: t }
+      )
+      .then(async (data) => {
+        let created = data.get({ plain: true });
+        t.commit();
 
-        },  { transaction: t }).then(async (data) => {
-            let created = data.get({ plain: true });
-            t.commit();
+        // common.writeMntLog(
+        //     "psmbrprf",
+        //     null,
+        //     null,
+        //     created.psmbruid,
+        //     "A",
+        //     req.user.psusrunm,
+        //     "",
+        //     created.psmbruid);
 
-            common.writeMntLog(
-                "psmbrprf",
-                null,
-                null,
-                created.psmbruid,
-                "A",
-                req.user.psusrunm,
-                "",
-                created.psmbruid);
-
-            return returnSuccessMessage(req, 200, "RECORDCREATED", res);
-
-
-        }).catch(async (err) => {
-            console.log(err);
-            await t.rollback();
-            return returnError(req, 500, "UNEXPECTEDERROR", res);
-        })
-
-
-
-    } catch (err) {
-        console.log("Error in create:", err);
+        return returnSuccessMessage(req, 200, "RECORDCREATED", res);
+      })
+      .catch(async (err) => {
+        console.log(err);
+        await t.rollback();
         return returnError(req, 500, "UNEXPECTEDERROR", res);
-    }
+      });
+  } catch (err) {
+    console.log("Error in create:", err);
+    return returnError(req, 500, "UNEXPECTEDERROR", res);
+  }
 };
 
 exports.update = async (req, res) => {
