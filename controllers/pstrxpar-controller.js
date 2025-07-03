@@ -90,7 +90,7 @@ exports.list = async (req, res) => {
     offset: from,
     raw: true,
     attributes: [
-      ['pstrxuid','id'],
+      ['pstrxuid', 'id'],
       "pstrxuid",
       "psorduid",
       "pstrxdat",
@@ -136,17 +136,18 @@ exports.list = async (req, res) => {
           : "";
     }
 
-    if (!_.isEmpty(obj.pstrxcrc)) {
-      let description = await common.retrieveSpecificGenCodes(
-        req,
-        "CRCY",
-        obj.pstrxcrc
-      );
-      obj.pstrxcrcdsc =
-        description.prgedesc && !_.isEmpty(description.prgedesc)
-          ? description.prgedesc
-          : "";
-    }
+    // if (!_.isEmpty(obj.pstrxcrc)) {
+    //   let description = await common.retrieveSpecificGenCodes(
+    //     req,
+    //     "CRCY",
+    //     obj.pstrxcrc
+    //   );
+    //   obj.pstrxcrcdsc =
+    //     description.prgedesc && !_.isEmpty(description.prgedesc)
+    //       ? description.prgedesc
+    //       : "";
+    // }
+    result.pstrxcrcdsc = "RM"
 
     obj.pstrxdat = await common.formatDateTime(obj.pstrxdat, "/");
     obj.pstrxamt = await common.formatDecimal(obj.pstrxamt, 2);
@@ -204,18 +205,18 @@ exports.findOne = async (req, res) => {
           : "";
     }
 
-    if (!_.isEmpty(result.pstrxcrc)) {
-      let description = await common.retrieveSpecificGenCodes(
-        req,
-        "CRCY",
-        result.pstrxcrc
-      );
-      result.pstrxcrcdsc =
-        description.prgedesc && !_.isEmpty(description.prgedesc)
-          ? description.prgedesc
-          : "";
-    }
-
+    // if (!_.isEmpty(result.pstrxcrc)) {
+    //   let description = await common.retrieveSpecificGenCodes(
+    //     req,
+    //     "CRCY",
+    //     result.pstrxcrc
+    //   );
+    //   result.pstrxcrcdsc =
+    //     description.prgedesc && !_.isEmpty(description.prgedesc)
+    //       ? description.prgedesc
+    //       : "";
+    // }
+    result.pstrxcrcdsc = "RM"
     return returnSuccess(200, result, res);
   } catch (err) {
     console.log("Error in findOne:", err);
@@ -223,312 +224,39 @@ exports.findOne = async (req, res) => {
   }
 };
 
-exports.create = async (req, res) => {
-  const { errors, isValid } = validatePstrxparInput(req.body, "A");
-  if (!isValid) {
-    return returnError(req, 400, errors, res);
-  }
+//   const id = req.body.id ? req.body.id : "";
+//   if (!id || id == "") {
+//     return returnError(req, 400, "RECORDIDISREQUIRED", res);
+//   }
 
-  try {
-    const exist = await pstrxpar.findOne({
-      where: { pstrxuid: req.body.pstrxuid },
-      raw: true,
-    });
+//   try {
+//     const exist = await pstrxpar.findOne({
+//       where: { pstrxuid: id },
+//       raw: true,
+//     });
 
-    if (exist) {
-      return returnError(req, 400, "RECORDEXIST", res);
-    }
+//     if (!exist) {
+//       return returnError(req, 400, "NORECORDFOUND", res);
+//     }
 
-    let ddlErrors = {};
-    let err_ind = false;
+//     await pstrxpar.destroy({
+//       where: { pstrxuid: id },
+//     });
 
-    if (!_.isEmpty(req.body.pstrxsts)) {
-      let description = await common.retrieveSpecificGenCodes(
-        req,
-        "TRXSTS",
-        req.body.pstrxsts
-      );
-      if (_.isEmpty(description)) {
-        ddlErrors.pstrxsts = "INVALIDDATAVALUE";
-        err_ind = true;
-      }
-    }
+//     await common.writeMntLog(
+//       "pstrxpar",
+//       null,
+//       null,
+//       id,
+//       "D",
+//       req.user.psusrunm,
+//       "",
+//       id
+//     );
 
-    if (!_.isEmpty(req.body.pstrxmtd)) {
-      let description = await common.retrieveSpecificGenCodes(
-        req,
-        "PYMTHD",
-        req.body.pstrxmtd
-      );
-      if (_.isEmpty(description)) {
-        ddlErrors.pstrxmtd = "INVALIDDATAVALUE";
-        err_ind = true;
-      }
-    }
-
-    if (!_.isEmpty(req.body.pstrxcrc)) {
-      let description = await common.retrieveSpecificGenCodes(
-        req,
-        "CRCY",
-        req.body.pstrxcrc
-      );
-      if (_.isEmpty(description)) {
-        ddlErrors.pstrxcrc = "INVALIDDATAVALUE";
-        err_ind = true;
-      }
-    }
-
-    if (err_ind) return returnError(req, 400, ddlErrors, res);
-
-    // Generate Code
-    let code = await common.getNextRunning("TRX");
-    let initial = "T";
-    let reference = initial;
-    reference += _.padStart(code, 6, "0");
-
-    const order = await psordpar.findOne({
-      where: { psorduid: req.body.psorduid },
-      raw: true,
-    });
-
-    if (!order) return returnError(req, 400, "ORDERNOTFOUND", res);
-
-    const amount = order.psordgra;
-
-    pstrxpar
-      .create({
-        pstrxuid: reference,
-        psorduid: req.body.psorduid,
-        pstrxdat: new Date(),
-        pstrxamt: amount,
-        pstrxsts: req.body.pstrxsts,
-        pstrxcrc: req.body.pstrxcrc,
-        pstrxmtd: req.body.pstrxmtd,
-        pstrxba1: req.body.pstrxba1,
-        pstrxba2: req.body.pstrxba2,
-        pstrxbpo: req.body.pstrxbpo,
-        pstrxbci: req.body.pstrxbci,
-        pstrxbst: req.body.pstrxbst,
-        pstrxstr: req.body.pstrxstr,
-        crtuser: req.user.psusrunm,
-        mntuser: req.user.psusrunm,
-      })
-      .then(async (data) => {
-        let created = data.get({ plain: true });
-        TRX;
-        common.writeMntLog(
-          "pstrxpar",
-          null,
-          null,
-          created.pstrxuid,
-          "A",
-          req.user.psusrunm,
-          "",
-          created.pstrxuid
-        );
-
-        return returnSuccessMessage(req, 200, "RECORDCREATED", res);
-      });
-  } catch (err) {
-    console.log("Error in create:", err);
-    return returnError(req, 500, "UNEXPECTEDERROR", res);
-  }
-};
-
-exports.update = async (req, res) => {
-  const id = req.query.pstrxuid ? req.query.pstrxuid : "";
-  if (!id || id == "") {
-    return returnError(req, 500, "RECORDIDISREQUIRED", res);
-  }
-
-  const { errors, isValid } = validatePstrxparInput(req.body, "C");
-  if (!isValid) {
-    return returnError(req, 400, errors, res);
-  }
-
-  try {
-    const exist = await pstrxpar.findOne({
-      where: { pstrxuid: id },
-      raw: true,
-    });
-
-    if (!exist) {
-      return returnError(req, 400, "NORECORDFOUND", res);
-    }
-
-    let ddlErrors = {};
-    let err_ind = false;
-
-    if (!_.isEmpty(req.body.pstrxsts)) {
-      let description = await common.retrieveSpecificGenCodes(
-        req,
-        "TRXSTS",
-        req.body.pstrxsts
-      );
-      if (_.isEmpty(description)) {
-        ddlErrors.pstrxsts = "INVALIDDATAVALUE";
-        err_ind = true;
-      }
-    }
-
-    if (!_.isEmpty(req.body.pstrxmtd)) {
-      let description = await common.retrieveSpecificGenCodes(
-        req,
-        "PYMTHD",
-        req.body.pstrxmtd
-      );
-      if (_.isEmpty(description)) {
-        ddlErrors.pstrxmtd = "INVALIDDATAVALUE";
-        err_ind = true;
-      }
-    }
-
-    if (!_.isEmpty(req.body.pstrxcrc)) {
-      let description = await common.retrieveSpecificGenCodes(
-        req,
-        "CRCY",
-        req.body.pstrxcrc
-      );
-      if (_.isEmpty(description)) {
-        ddlErrors.pstrxcrc = "INVALIDDATAVALUE";
-        err_ind = true;
-      }
-    }
-
-    if (err_ind) return returnError(req, 400, ddlErrors, res);
-
-    await pstrxpar
-      .update(
-        {
-          // psorduid: reference,
-          pstrxdat: req.body.pstrxdat ? req.body.pstrxdat : exist.pstrxdat,
-          pstrxamt: req.body.pstrxamt,
-          pstrxsts: req.body.pstrxsts,
-          pstrxcrc: req.body.pstrxcrc,
-          pstrxmtd: req.body.pstrxmtd,
-          pstrxba1: req.body.pstrxba1,
-          pstrxba2: req.body.pstrxba2,
-          pstrxbpo: req.body.pstrxbpo,
-          pstrxbci: req.body.pstrxbci,
-          pstrxbst: req.body.pstrxbst,
-          pstrxstr: req.body.pstrxstr,
-          mntuser: req.user.psusrunm,
-        },
-        { where: { pstrxuid: id } }
-      )
-      .then(() => {
-        common.writeMntLog("pstrxpar", null, null, id, "C", req.user.psusrunm);
-
-        return returnSuccessMessage(req, 200, "UPDATESUCCESSFUL", res);
-      });
-  } catch (err) {
-    console.log("Error in update:", err);
-    return returnError(req, 500, "UNEXPECTEDERROR", res);
-  }
-};
-
-
-exports.delete = async (req, res) => {
-  const id = req.body.id ? req.body.id : "";
-  if (!id || id == "") {
-    return returnError(req, 400, "RECORDIDISREQUIRED", res);
-  }
-
-  try {
-    const exist = await pstrxpar.findOne({
-      where: { pstrxuid: id },
-      raw: true,
-    });
-
-    if (!exist) {
-      return returnError(req, 400, "NORECORDFOUND", res);
-    }
-
-    await pstrxpar.destroy({
-      where: { pstrxuid: id },
-    });
-
-    await common.writeMntLog(
-      "pstrxpar",
-      null,
-      null,
-      id,
-      "D",
-      req.user.psusrunm,
-      "",
-      id
-    );
-
-    return returnSuccessMessage(req, 200, "RECORDDELETED", res);
-  } catch (err) {
-    console.log("Error in delete:", err);
-    return returnError(req, 500, "UNEXPECTEDERROR", res);
-  }
-};
-
-exports.createStripeSession = async (req, res) => {
-  const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-  const { orderId, products, paymentMethod } = req.body;
-
-  try {
-    if (!orderId || !Array.isArray(products) || products.length === 0) {
-      return returnError(req, 400, "NORECORDFOUND", res);
-    }
-
-    // Get order info from DB
-    const order = await psordpar.findOne({
-      where: { psorduid: orderId },
-      raw: true,
-    });
-
-    if (!order) {
-      return returnError(req, 400, "ORDERNOTFOUND", res);
-    }
-    const paymentMethodTypes = Array.isArray(paymentMethod) && paymentMethod.length > 0
-      ? paymentMethod
-      : ['card']; // default to card
-    const lineItems = products.map((product) => ({
-      price_data: {
-        currency: "myr",
-        product_data: {
-          name: product.psprdnme,
-          images: [product.psprdimg],
-        },
-        unit_amount: Math.round(Number(product.psprdpri) * 100),
-      },
-      quantity: product.quantity,
-    }));
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: paymentMethodTypes,
-      line_items: lineItems,
-      mode: "payment",
-      success_url: `https://yourdomain.com/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `https://yourdomain.com/cancel`,
-      metadata: { psorduid: orderId },
-    });
-
-    // Generate transaction ID (TRX000001)
-    const code = await common.getNextRunning("TRX");
-    const trxId = "T" + _.padStart(code, 6, "0");
-
-    // Insert transaction as pending
-    await pstrxpar.create({
-      pstrxuid: trxId,
-      psorduid: orderId,
-      pstrxdat: new Date(),
-      pstrxamt: order.psordgra,
-      pstrxsts: "PENDING",
-      pstrxcrc: "MYR",
-      pstrxmtd: paymentMethodTypes[0].toUpperCase(),
-      pstrxstr: session.id,
-      crtuser: req.user.psusrunm,
-      mntuser: req.user.psusrunm,
-    });
-
-    return res.json({ sessionId: session.id, url: session.url });
-  } catch (err) {
-    console.error("Stripe session error:", err);
-    return res.status(500).json({ error: "Failed to create checkout session" });
-  }
-};
+//     return returnSuccessMessage(req, 200, "RECORDDELETED", res);
+//   } catch (err) {
+//     console.log("Error in delete:", err);
+//     return returnError(req, 500, "UNEXPECTEDERROR", res);
+//   }
+// };
