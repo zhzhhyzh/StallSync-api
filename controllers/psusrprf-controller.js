@@ -358,6 +358,7 @@ exports.change_password = async (req, res) => {
 }
 
 exports.create = async (req, res) => {
+    console.log("Incoming user payload:", req.body);
     //Validation
     const { errors, isValid } = userCreationValidation(req.body, 'N');
     if (!isValid) return returnError(req, 400, errors, res);
@@ -407,7 +408,7 @@ exports.create = async (req, res) => {
             new_psusrprf.psusrpwd = hash;
             psusrprf.create(new_psusrprf).then(data => {
                 let created = data.get({ plain: true });
-                common.writeMntLog('psusrprf', null, null, created.psusrunm, 'A', req.user.psusrunm);
+                common.writeMntLog('psusrprf', null, null, created.psusrunm, 'A', req.user.psusrunm?req.body.psusrunm : "");
                 return returnSuccessMessage(req, 200, "RECORDCREATED", res);
             }).catch(err => {
                 console.log(err);
