@@ -11,6 +11,7 @@ const psmbrprf = require("../controllers/psmbrprf-controller");
 // @access  Private
 router.get("/detail", authenticateRoute, psmbrprf.findOne);
 
+
 // @route   GET api/psmbrprf/list
 // @desc    List OTP Parameter
 // @access  Private
@@ -19,7 +20,7 @@ router.get("/list", authenticateRoute, psmbrprf.list);
 // @route   POST api/psmbrprf/create
 // @desc    Create OTP Parameter
 // @access  Private
-router.post("/create", authenticateRoute, psmbrprf.create);
+router.post("/create", psmbrprf.create);
 
 // @route   POST api/psmbrprf/delete
 // @desc    Delete OTP Parameter

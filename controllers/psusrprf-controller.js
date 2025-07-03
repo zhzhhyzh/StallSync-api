@@ -358,6 +358,7 @@ exports.change_password = async (req, res) => {
 }
 
 exports.create = async (req, res) => {
+    console.log("Incoming user payload:", req.body);
     //Validation
     const { errors, isValid } = userCreationValidation(req.body, 'N');
     if (!isValid) return returnError(req, 400, errors, res);
@@ -407,7 +408,69 @@ exports.create = async (req, res) => {
             new_psusrprf.psusrpwd = hash;
             psusrprf.create(new_psusrprf).then(data => {
                 let created = data.get({ plain: true });
-                common.writeMntLog('psusrprf', null, null, created.psusrunm, 'A', req.user.psusrunm);
+                common.writeMntLog('psusrprf', null, null, created.psusrunm, 'A', req.user.psusrunm?req.body.psusrunm : "");
+                return returnSuccessMessage(req, 200, "RECORDCREATED", res);
+            }).catch(err => {
+                console.log(err);
+                return returnError(req, 500, "UNEXPECTEDERROR", res);
+            });
+        })
+    });
+}
+
+
+exports.signup = async (req, res) => {
+    console.log("Incoming user payload:", req.body);
+    //Validation
+    const { errors, isValid } = userCreationValidation(req.body, 'N');
+    if (!isValid) return returnError(req, 400, errors, res);
+
+    let flag = await validatePassword(req.body.psusrpwd);
+    if (!flag.flag) {
+        let messages = '';
+        for (var i = 0; i < flag.error.length; i++) {
+            let obj = flag.error[i];
+            messages += '<p>' + obj + '</p>';
+        }
+        return res.status(400).json({ message: { 'psusrpwd': messages } });
+    }
+
+    // Validate Code
+    let description = await common.retrieveSpecificGenCodes(req, 'USRROLE', req.body.psusrrol);
+    if (!description || _.isEmpty(description.prgedesc)) return returnError(req, 400, { psusrrol: 'INVALIDDATAVALUE' }, res);
+
+    // Validate Code
+    let description2 = await common.retrieveSpecificGenCodes(req, 'HPPRE', req.body.psusrpre);
+    if (!description2 || _.isEmpty(description2.prgedesc)) return returnError(req, 400, { psusrpre: 'INVALIDDATAVALUE' }, res);
+
+    // Check Duplicate
+    let user = await psusrprf.findOne({
+        where: {
+            psusrunm: req.body.psusrunm
+        }, raw: true
+    });
+    if (user) return returnError(req, 400, { psusrunm: 'USERALREADYEXIST' }, res);
+
+    const new_psusrprf = {
+        psusrunm: req.body.psusrunm,
+        psusrnam: req.body.psusrnam,
+        psusreml: req.body.psusreml,
+        psusrpre: req.body.psusrpre,
+        psusrsts: 'A',
+        psusrtyp: "MBR",
+        psusrrol: "MBR",
+        psstsdt8: new Date(),
+        psusrphn: req.body.psusrphn
+    }
+
+    bcrypt.genSalt(10, (err, salt) => {
+        if (err) throw err;
+        bcrypt.hash(req.body.psusrpwd, salt, (err, hash) => {
+            if (err) throw err;
+            new_psusrprf.psusrpwd = hash;
+            psusrprf.create(new_psusrprf).then(data => {
+                let created = data.get({ plain: true });
+                // common.writeMntLog('psusrprf', null, null, created.psusrunm, 'A', req.user.psusrunm?req.body.psusrunm : "");
                 return returnSuccessMessage(req, 200, "RECORDCREATED", res);
             }).catch(err => {
                 console.log(err);

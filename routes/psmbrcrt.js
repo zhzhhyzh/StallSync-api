@@ -31,4 +31,6 @@ router.post("/delete", authenticateRoute, psmbrcrt.delete);
 // @access  Private
 router.post("/update", authenticateRoute, psmbrcrt.update);
 
+router.get("/listMerchant", authenticateRoute, psmbrcrt.listMerchant);
+
 module.exports = router;

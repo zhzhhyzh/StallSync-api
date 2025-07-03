@@ -35,7 +35,7 @@ router.post('/change_password', authenticateRoute, psusrprf.change_password);
 // @route   POST api/psusrprf/create
 // @desc    create System Parameter
 // @access  Private
-router.post("/create", authenticateRoute, psusrprf.create);
+router.post("/create", psusrprf.create);
 
 // // @route   POST api/psusrprf/update-profile
 // // @desc    Update user Profile
@@ -72,5 +72,6 @@ router.post("/delete", authenticateRoute, psusrprf.delete);
 // @access  Private
 router.get("/home", authenticateRoute, psusrprf.home);
 
+router.post("/signup", psusrprf.signup);
 
 module.exports = router;
