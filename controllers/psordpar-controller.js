@@ -12,6 +12,7 @@ const psmbrcrt = db.psmbrcrt;
 const psmrcpar = db.psmrcpar;
 const psstfpar = db.psstfpar;
 const psprdpar = db.psprdpar;
+const pstrxpar = db.pstrxpar;
 // Common Function
 const Op = db.Sequelize.Op;
 const returnError = require("../common/error");
@@ -624,6 +625,21 @@ exports.create = async (req, res) => {
 exports.update_paid = async (req, res) => {
   const id = req.body.id ? req.body.id : "";
   if (id == "") return returnError(req, 500, "RECORDIDISREQUIRED", res);
+  //Check if order is chosen paid by cash
+  const cashCheck = await pstrxpar.findOne({
+    where: {
+      psorduid: id,
+      pstrxsts: 'N',
+      pstrxmtd: 'C'
+    }, raw: true
+  })
+  console.log("FINDME", cashCheck)
+  if (!cashCheck) {
+    return returnError(req, 400, "Order is paid through online", res);
+  }
+
+  const t = await connection.sequelize.transaction();
+
 
   await psordpar
     .findOne({
@@ -633,13 +649,14 @@ exports.update_paid = async (req, res) => {
       raw: true,
       attributes: {
         exclude: ["createdAt", "crtuser", "mntuser"],
-      },
+      }
     })
     .then(async (data) => {
       if (data) {
         if (isNaN(new Date(req.body.updatedAt)) || (new Date(data.updatedAt).getTime() !== new Date(req.body.updatedAt).getTime())) return returnError(req, 500, "RECORDOUTOFSYNC", res)
-        if (data.psordsts != 'G') {
-          ("WJWJWJ")
+
+        console.log("LOOK ME 2: ", data);
+        if (data.psordsts == 'G') {
           psordpar
             .update(
               {
@@ -649,9 +666,22 @@ exports.update_paid = async (req, res) => {
                 where: {
                   id: data.id,
                 },
-              }
+              }, { transaction: t }
             )
             .then(async () => {
+
+              await pstrxpar.update({
+                pstrxsts: 'C'
+              }, {
+                where: {
+                  pstrxuid: cashCheck.pstrxuid
+                }
+              }).catch(async (err) => {
+                console.log(err);
+                await t.rollback();
+                return returnError(req, 500, "UNEXPECTEDERROR", res);
+              });
+
               common.writeMntLog(
                 "psordpar",
                 data,
@@ -659,12 +689,19 @@ exports.update_paid = async (req, res) => {
                 data.psorduid,
                 "C",
                 req.user.psusrunm
-              );
+              )
+
+
+              await t.commit();
               return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
+            }).catch(async (err) => {
+              console.log(err);
+              await t.rollback();
+              return returnError(req, 500, "UNEXPECTEDERROR", res);
             });
         }
         else {
-          console.log("Pre status must be G - Pending")
+          console.log("Pre status must be G - Pending");
           return returnError(req, 500, "UNEXPECTEDERROR", res);
         }
       } else return returnError(req, 500, "NORECORDFOUND", res);
