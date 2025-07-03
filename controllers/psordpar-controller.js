@@ -633,7 +633,6 @@ exports.update_paid = async (req, res) => {
       pstrxmtd: 'C'
     }, raw: true
   })
-  console.log("FINDME", cashCheck)
   if (!cashCheck) {
     return returnError(req, 400, "Order is paid through online", res);
   }
@@ -655,7 +654,6 @@ exports.update_paid = async (req, res) => {
       if (data) {
         if (isNaN(new Date(req.body.updatedAt)) || (new Date(data.updatedAt).getTime() !== new Date(req.body.updatedAt).getTime())) return returnError(req, 500, "RECORDOUTOFSYNC", res)
 
-        console.log("LOOK ME 2: ", data);
         if (data.psordsts == 'G') {
           psordpar
             .update(
