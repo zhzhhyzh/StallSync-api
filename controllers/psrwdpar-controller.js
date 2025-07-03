@@ -220,9 +220,9 @@ exports.findOne = async (req, res) => {
               : "";
         }
 
-        // return returnSuccess(200, obj, res);
-            return returnSuccess(200, { data: obj }, res);
-        
+        return returnSuccess(200, obj, res);
+        // return returnSuccess(200, { data: obj }, res);
+
       } else return returnError(req, 500, "NORECORDFOUND", res);
     })
     .catch((err) => {
@@ -774,7 +774,7 @@ exports.listRdmp = async (req, res) => {
     ],
     order: [["id", "asc"]],
   });
-
+  console.log(rows)
   let newRows = [];
   for (var i = 0; i < rows.length; i++) {
     let obj = rows[i];
@@ -785,9 +785,9 @@ exports.listRdmp = async (req, res) => {
       }, raw: true, attributes: ["psmbrnam"]
     })
 
-    obj.psmrbnam = result.psmbrnam;
+    obj.psmbrnam = result.psmbrnam;
 
-    obj.psordodt = await common.formatDate(obj.psordodt);
+    obj.psordodt = await common.formatDate(obj.psordodt, '/');
 
     newRows.push(obj);
   }

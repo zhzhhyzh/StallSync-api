@@ -390,32 +390,34 @@ exports.bulk_upload = async (req, res) => {
             //     fileSize: 50000000
             // },
             fileFilter: (req, file, cb) => {
-                let fileType = file.mimetype;
-                let isJpeg = fileType == "image/jpg"
-                    || fileType == "image/jpeg" || fileType == "image/png"
-                    || fileType == "video/mp4" || fileType == "video/quicktime"
-                    || fileType == "application/vnd.ms-excel" || fileType == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    || fileType == "text/csv" || fileType == "text/comma-separated-values" || fileType == "application/pdf" || fileType == "application/vnd.ms-powerpoint"
-                    || fileType == "application/vnd.ms-powerpoint" || fileType == "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-                    || fileType == "text/plain" || fileType == "audio/wav" || fileType == "application/msword" || fileType == "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                const allowedTypes = [
+                    "image/jpg", "image/jpeg", "image/png", "video/mp4", "video/quicktime",
+                    "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "text/csv", "text/comma-separated-values", "application/pdf",
+                    "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                    "text/plain", "audio/wav", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                ];
 
-                if (!isJpeg) {
-                    cb(null, false);
-                    console.log('Only .png, .jpg .jpeg .pdf .csv .xls .xlsx and .mp4 format allowed!');
-                    return returnError(req, 500, "INVALIDFILETYPE", res);
-                } else cb(null, true);
+                if (!allowedTypes.includes(file.mimetype)) {
+                    return cb(new Error("INVALIDFILETYPE"));
+                }
+                cb(null, true);
             }
+
         }).array('document');
 
         upload_temp(req, res, async (err) => {
             if (err) {
-                console.log(err)
+                console.log(err.message || err);
+                if (err.message === "INVALIDFILETYPE") {
+                    return returnError(req, 500, "INVALIDFILETYPE", res);
+                }
                 return returnError(req, 500, "UNEXPECTEDERROR", res);
             }
 
-            console.log("Req.Files", req.files);
-            if (req.files.length < 1) return returnError(req, 500, "DOCUMENTISREQUIRED", res);
-
+            if (!req.files || req.files.length < 1) {
+                return returnError(req, 500, "DOCUMENTISREQUIRED", res);
+            }
             let documents = req.files;
             let inputpath = "";
             let errors = {};
