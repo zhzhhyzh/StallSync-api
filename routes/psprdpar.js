@@ -30,6 +30,12 @@ router.get("/listLatest", authenticateOptional, psprdpar.listLatest);
 // @access  Private
 router.get("/listTrending", authenticateOptional, psprdpar.listTrending);
 
+
+// @route   GET api/psprdpar/list
+// @desc    List OTP Parameter
+// @access  Private
+router.get("/listPersonalized", authenticateOptional, psprdpar.listPersonalized);
+
 // @route   POST api/psprdpar/create
 // @desc    Create OTP Parameter
 // @access  Private
