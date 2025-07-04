@@ -8,6 +8,8 @@ const Sequelize = db.Sequelize;
 const psprdpar = db.psprdpar;
 const psmrcpar = db.psmrcpar;
 const psmbrcrt = db.psmbrcrt;
+const psorditm = db.psorditm;
+const psordpar = db.psordpar;
 
 // Common Function
 const Op = db.Sequelize.Op;
@@ -18,7 +20,8 @@ const common = require("../common/common");
 const general = require("../common/general");
 const connection = require("../common/db");
 const genConfig = require("../constant/generalConfig");
-
+const { literal } = require("sequelize");
+const sequelize = db.sequelize;
 // Input Validation
 const validatePsprdparInput = require("../validation/psprdpar-validation");
 const { psitmsbt } = require("../constant/fieldNames");
@@ -140,7 +143,7 @@ exports.list = async (req, res) => {
       attributes: ["psmrcnme"],
     });
 
-    obj.psmrcuiddsc = result ? result.psmrcnme: ""
+    obj.psmrcuiddsc = result ? result.psmrcnme : ""
 
 
     // if (!_.isEmpty(obj.psprdpri)) {
@@ -412,7 +415,7 @@ exports.create = async (req, res) => {
                 psprdlsr: req.body.psprdlsr,
                 psprdstk: req.body.psprdstk,
                 psprdsts: req.body.psprdsts ? req.body.psprdsts : "A",
-
+                psprdrtc: 0,
                 psprdrtg: 0,
 
                 crtuser: req.user.psusrunm,
@@ -589,7 +592,7 @@ exports.update = async (req, res) => {
         if (
           isNaN(new Date(req.body.updatedAt)) ||
           new Date(data.updatedAt).getTime() !==
-            new Date(req.body.updatedAt).getTime()
+          new Date(req.body.updatedAt).getTime()
         )
           return returnError(req, 500, "RECORDOUTOFSYNC", res);
 
@@ -817,5 +820,389 @@ exports.filter = async (req, res) => {
     );
   } catch (err) {
     return returnError(req, 500, err.message || "UNKNOWN_ERROR", res);
+  }
+};
+
+exports.listPersonalized = async (req, res) => {
+  let limit = 10;
+  if (req.query.limit) limit = req.query.limit;
+
+  let from = 0;
+  if (!req.query.page) from = 0;
+  else from = parseInt(req.query.page) * parseInt(limit);
+
+  let option = {};
+
+  if (req.query.search && !_.isEmpty(req.query.search)) {
+    option = {
+      [Op.or]: [
+        { psprduid: { [Op.eq]: req.query.search } },
+        { psprduid: { [Op.like]: "%" + req.query.search + "%" } },
+        { psprdnme: { [Op.eq]: req.query.search } },
+        { psprdnme: { [Op.like]: "%" + req.query.search + "%" } },
+        { psprd: { [Op.eq]: req.query.search } },
+        { psprd: { [Op.like]: "%" + req.query.search + "%" } },
+      ],
+    };
+  }
+
+  if (req.query.psrwdsts && !_.isEmpty(req.query.psrwdsts)) {
+    option.psrwdsts = req.query.psrwdsts;
+  }
+
+  if (req.query.psrwdtyp && !_.isEmpty(req.query.psrwdtyp)) {
+    option.psrwdtyp = req.query.psrwdtyp;
+  }
+
+
+  const { count, rows } = await psprdpar.findAndCountAll({
+    limit: parseInt(limit),
+    offset: from,
+    where: option,
+    raw: true,
+    attributes: [
+      ["psprduid", "id"],
+      "psprduid",
+      "psprdnme",
+      "psprddsc",
+      "psmrcuid",
+      "psprdtyp",
+      "psprdcat",
+      "psprdsts",
+      "psprdimg",
+      "psprdpri",
+      "psprdcrd",
+    ],
+    order: [["id", "asc"]],
+  });
+
+  let newRows = [];
+  for (var i = 0; i < rows.length; i++) {
+    let obj = rows[i];
+
+    if (!_.isEmpty(obj.psrwdtyp)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "DISTYPE",
+        obj.psrwdtyp
+      );
+      obj.psrwdtypdsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
+    }
+    if (!_.isEmpty(obj.psrwdsts)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "RWDSTS",
+        obj.psrwdsts
+      );
+      obj.psrwdstsdsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
+    }
+
+    if (!_.isEmpty(obj.psrwdism)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "YESORNO",
+        obj.psrwdism
+      );
+      obj.psrwdismdsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
+    }
+    if (!_.isEmpty(obj.psrwdica)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "YESORNO",
+        obj.psrwdica
+      );
+      obj.psrwdicadsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
+    }
+    if (!_.isEmpty(obj.psrwdaam)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "YESORNO",
+        obj.psrwdaam
+      );
+      obj.psrwdaamdsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
+    }
+    newRows.push(obj);
+  }
+
+  if (count > 0)
+    return returnSuccess(
+      200,
+      {
+        total: count,
+        data: newRows,
+        extra: { file: "psprdpar", key: ["psprduid"] },
+      },
+      res
+    );
+  else return returnSuccess(200, { total: 0, data: [] }, res);
+};
+
+exports.listLatest = async (req, res) => {
+  let limit = 10;
+  if (req.query.limit) limit = req.query.limit;
+
+  let from = 0;
+  if (!req.query.page) from = 0;
+  else from = parseInt(req.query.page) * parseInt(limit);
+
+  const { count, rows } = await psprdpar.findAndCountAll({
+    limit: parseInt(limit),
+    offset: from,
+    raw: true,
+
+    attributes: [
+      ["psprduid", "id"],
+      "psprduid",
+      "psprdnme",
+      "psprddsc",
+      "psmrcuid",
+      "psprdtyp",
+      "psprdcat",
+      "psprdsts",
+      "psprdimg",
+      "psprdpri",
+      "psprdcrd",
+      "createdAt",
+    ],
+    order: [["createdAt", "desc"]],
+  });
+
+  let newRows = [];
+  for (var i = 0; i < rows.length; i++) {
+    let obj = rows[i];
+
+    if (!_.isEmpty(obj.psrwdtyp)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "DISTYPE",
+        obj.psrwdtyp
+      );
+      obj.psrwdtypdsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
+    }
+    if (!_.isEmpty(obj.psrwdsts)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "RWDSTS",
+        obj.psrwdsts
+      );
+      obj.psrwdstsdsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
+    }
+
+    if (!_.isEmpty(obj.psrwdism)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "YESORNO",
+        obj.psrwdism
+      );
+      obj.psrwdismdsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
+    }
+    if (!_.isEmpty(obj.psrwdica)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "YESORNO",
+        obj.psrwdica
+      );
+      obj.psrwdicadsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
+    }
+    if (!_.isEmpty(obj.psrwdaam)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "YESORNO",
+        obj.psrwdaam
+      );
+      obj.psrwdaamdsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
+    }
+    newRows.push(obj);
+  }
+
+  if (count > 0)
+    return returnSuccess(
+      200,
+      {
+        total: count,
+        data: newRows,
+        extra: { file: "psprdpar", key: ["psprduid"] },
+      },
+      res
+    );
+  else return returnSuccess(200, { total: 0, data: [] }, res);
+};
+
+exports.listTrending = async (req, res) => {
+  let limit = 10;
+  if (req.query.limit) limit = req.query.limit;
+
+  let from = 0;
+  if (!req.query.page) from = 0;
+  else from = parseInt(req.query.page) * parseInt(limit);
+
+  try {
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    // JOIN psorditm with psordpar by psorduid
+    psorditm.belongsTo(psordpar, {
+      foreignKey: 'psorduid',
+      targetKey: 'psorduid'
+    });
+
+    const results = await psorditm.findAll({
+      attributes: [
+        'psprduid',
+        [sequelize.fn('SUM', sequelize.col('psitmqty')), 'totalQty']
+      ],
+      include: [
+        {
+          model: psordpar,
+          attributes: [],
+          where: {
+            psordodt: { [Op.gte]: threeMonthsAgo }
+          }
+        }
+      ],
+      group: ['psprduid'],
+      order: [[literal('totalQty'), 'DESC']],
+      limit: 10,
+      raw: true
+    });
+
+
+    const productIds = results.map(r => r.psprduid);
+
+    const { count, rows } = await psprdpar.findAndCountAll({
+      limit: parseInt(limit),
+      offset: from,
+      where: {
+        psprduid: { [Op.in]: productIds },
+      },
+      raw: true,
+      attributes: [
+        ["psprduid", "id"],
+        "psprduid",
+        "psprdnme",
+        "psprddsc",
+        "psmrcuid",
+        "psprdtyp",
+        "psprdcat",
+        "psprdsts",
+        "psprdimg",
+        "psprdpri",
+        "psprdcrd",
+      ],
+      order: [["psprduid", "asc"]],
+    });
+
+    let newRows = [];
+    for (var i = 0; i < rows.length; i++) {
+      let obj = rows[i];
+
+      if (!_.isEmpty(obj.psprdsts)) {
+        let description = await common.retrieveSpecificGenCodes(
+          req,
+          "YESORNO",
+          obj.psprdsts
+        );
+        obj.psprdstsdsc =
+          description.prgedesc && !_.isEmpty(description.prgedesc)
+            ? description.prgedesc
+            : "";
+      }
+
+      if (!_.isEmpty(obj.psprdcat)) {
+        let description = await common.retrieveSpecificGenCodes(
+          req,
+          "PRODCAT",
+          obj.psprdcat
+        );
+        obj.psprdcatdsc =
+          description.prgedesc && !_.isEmpty(description.prgedesc)
+            ? description.prgedesc
+            : "";
+      }
+
+      if (!_.isEmpty(obj.psprdtyp)) {
+        let description = await common.retrieveSpecificGenCodes(
+          req,
+          "PRODTYP",
+          obj.psprdtyp
+        );
+        obj.psprdtypdsc =
+          description.prgedesc && !_.isEmpty(description.prgedesc)
+            ? description.prgedesc
+            : "";
+      }
+
+      let result = await psmrcpar.findOne({
+        where: {
+          psmrcuid: obj.psmrcuid,
+        },
+        raw: true,
+        attributes: ["psmrcnme"],
+      });
+
+      obj.psmrcuiddsc = result ? result.psmrcnme : ""
+
+
+      // if (!_.isEmpty(obj.psprdpri)) {
+      //   obj.psprdpri = common.formatDecimal(obj.psprdpri);
+      // }
+
+      newRows.push(obj);
+    }
+
+    if (count > 0)
+      return returnSuccess(
+        200,
+        {
+          total: count,
+          data: newRows,
+          extra: { file: "psprdpar", key: ["psprduid"] },
+        },
+        res
+      );
+    else
+      return returnSuccess(
+        200,
+        { total: 0, data: [] },
+        res
+      );
+
+    // return returnSuccess(200, {
+    //   total: results.length,
+    //   data: results
+    // }, res);
+  } catch (err) {
+    console.error("Trending Error:", err);
+    return returnError(req, 500, "UNEXPECTEDERROR", res);
   }
 };

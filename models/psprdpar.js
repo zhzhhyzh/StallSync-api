@@ -118,6 +118,12 @@ module.exports = (sequelize, Sequelize) => {
       defaultValue: 0.0,
       comment: "Rating"
     },
+    psprdrtc: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      default: 0,
+      comment: 'Rating Counts'
+    },
     crtuser: {
       type: Sequelize.STRING(255),
       allowNull: true,

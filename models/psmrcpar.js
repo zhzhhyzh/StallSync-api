@@ -5,7 +5,7 @@ module.exports = (sequelize, Sequelize) => {
     psmrcuid: {
       type: Sequelize.STRING(25),
       allowNull: false,
-      primaryKey: true, 
+      primaryKey: true,
       comment: "Merchant ID"
     },
     psmrcnme: {
@@ -90,7 +90,12 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: true,
       comment: "Remarks"
     },
- 
+    psmrcrtc: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      default: 0,
+      comment: "Rating Counts"
+    },
     crtuser: {
       type: Sequelize.STRING(255)
       // Creation User

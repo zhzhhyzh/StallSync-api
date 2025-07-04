@@ -9,6 +9,9 @@ const connection = require("../common/db");
 //Table
 const psordrvw = db.psordrvw;
 const psordpar = db.psordpar;
+const psmrcpar = db.psmrcpar;
+const psprdpar = db.psprdpar;
+const psorditm = db.psorditm;
 
 
 // Common Functions
@@ -137,7 +140,7 @@ exports.create = async (req, res) => {
 
     try {
         // Check if order exists
-        const order = await psordpar.findOne({ where: { psorduid } });
+        const order = await psordpar.findOne({ where: { psorduid }, raw: true });
 
         if (!order) {
             return returnError(req, 400, { psorduid: "NORECORDFOUND" }, res);
@@ -185,7 +188,70 @@ exports.create = async (req, res) => {
 
         }, { transaction: t }).then(async (data) => {
             let created = data.get({ plain: true });
+            //Get merchant to be updated rating
+            const merchant = await psmrcpar.findOne({
+                where: {
+                    psmrcuid: order.psmrcuid
+                }, raw: true
+            })
+            if (merchant) {
+                let count = merchant.psmrcrtc;
+                let rating = merchant.psmrcrtg;
+                let accumulate = count * rating;
+                count += 1;
+                let newRating = (accumulate + req.body.psrvwrtg) / count;
 
+                await psmrcpar.update({
+                    psmrcrtg: newRating,
+                    psmrcrtc: count
+                }, {
+                    where: {
+                        psmrcuid: order.psmrcuid
+                    }
+                }).catch(async (err) => {
+                    console.log(err);
+                    await t.rollback();
+                    return returnError(req, 500, "UNEXPECTEDERROR", res);
+                })
+            }
+
+            //Get product to be updated rating (for loop to update one by one)
+            const product = await psorditm.findAll({
+                where: { psorduid }, raw: true, attributes: ['psitmcno', 'psprduid']
+            });
+
+            console.log("LOOLL: ", product)
+            if (product) {
+                for (let i = 0; i < product.length; i++) {
+                    prd = product[i];
+                    let productId = prd.psprduid;
+                    console.log("IN LOOP: ", productId)
+                    const thisProduct = await psprdpar.findOne({
+                        where: {
+                            psprduid: productId
+                        }, raw: true
+                    });
+
+                    let count = thisProduct.psprdrtc;
+                    let rating = thisProduct.psprdrtg;
+                    let accumulate = count * rating;
+                    count += 1;
+                    let newRating = (accumulate + req.body.psrvwrtg) / count;
+
+                    await psprdpar.update({
+                        psprdrtg: newRating,
+                        psprdrtc: count
+                    }, {
+                        where: {
+                            psprduid: productId
+                        }
+                    }).catch(async (err) => {
+                        console.log(err);
+                        await t.rollback();
+                        return returnError(req, 500, "UNEXPECTEDERROR", res);
+                    })
+                }
+            }
             if (image) {
                 await common
                     .writeImage(
@@ -234,7 +300,7 @@ exports.create = async (req, res) => {
                 [created.psorduid, created.crtuser]
             );
 
-            return returnSuccessMessage(200, "RECORDCREATED", res);
+            return returnSuccessMessage(req, 200, "RECORDCREATED", res);
 
         });
     } catch (err) {
