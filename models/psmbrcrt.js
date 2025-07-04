@@ -1,6 +1,7 @@
 //Cart Table
 
 module.exports = (sequelize, Sequelize) => {
+    
     const psmbrcrt = sequelize.define('psmbrcrt', {
         psmbrcar: {
             type: Sequelize.STRING(50),
@@ -56,6 +57,13 @@ module.exports = (sequelize, Sequelize) => {
                 }
             ]
         });
+
+        psmbrcrt.associate = (models) => {
+  psmbrcrt.belongsTo(models.psprdpar, {
+    foreignKey: "psprduid",
+    as: "product",
+  });
+};
 
     return psmbrcrt;
 };  

@@ -33,4 +33,6 @@ router.post("/update", authenticateRoute, psmbrcrt.update);
 
 router.get("/listMerchant", authenticateRoute, psmbrcrt.listMerchant);
 
+router.get("/cartItems", authenticateRoute, psmbrcrt.cartItems);
+
 module.exports = router;

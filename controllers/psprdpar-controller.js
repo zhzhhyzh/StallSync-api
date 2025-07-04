@@ -241,6 +241,15 @@ exports.findOne = async (req, res) => {
       obj.psprdtakdsc = description?.prgedesc || "";
     }
 
+   const merchant = await psmrcpar.findOne({
+      where: { psmrcuid: obj.psmrcuid },
+      raw: true,
+      attributes: ["psmrcnme"],
+    });
+
+    obj.psmrcuiddsc = merchant ? merchant.psmrcnme : "";
+
+
     return returnSuccess(200, obj, res);
   } catch (err) {
     console.error(err);

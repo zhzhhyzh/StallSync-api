@@ -103,92 +103,90 @@ exports.list = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  let psmbrcar = req.user.psmbrcar ? req.user.psmbrcar : "";
-  if (!psmbrcar || psmbrcar == "") {
+  const psmbrcar = req.user?.psmbrcar || "";
+
+  if (!psmbrcar) {
     return returnError(req, 500, "RECORDIDISREQUIRED", res);
   }
+
   const { errors, isValid } = validatePsmbrcrtInput(req.body, "A");
   if (!isValid) {
     return returnError(req, 400, errors, res);
   }
-  const {
-    // psmbrcar,
-    // psitmcno,
-    psmrcuid,
-    psprduid,
-    psitmqty,
-    // psitmdsc,
-    // psitmunt,
-    // psitmsbt,
-    psitmrmk,
-  } = req.body;
-  //Find Merchant (check existance only)
-  const merchant = await psmrcpar.findOne({
-    where: {
-      psmrcuid: psmrcuid,
-    },
-    raw: true,
-  });
 
-  //Find Product (check exist, get unit price)
-  const product = await psprdpar.findOne({
-    where: {
-      psprduid: psprduid,
-    },
-    raw: true,
-    attributes: ["psprdpri"],
-  });
-  //Calculate subtotal (qty * unit)
-  const psitmunt = product.psprdpri;
-  const psitmsbt = parseFloat(product.psprdpri) * psitmqty;
+  const { psmrcuid, psprduid, psitmqty, psitmrmk } = req.body;
 
-  if (merchant && product)
-    //Find member cart (check existance get current running itmcno)
-    await psmbrcrt
-      .findOne({
-        where: {
-          psmbrcar: psmbrcar,
-          psmrcuid: psmrcuid,
-        },
+  try {
+    // 🔍 Check Merchant and Product validity
+    const [merchant, product] = await Promise.all([
+      psmrcpar.findOne({ where: { psmrcuid }, raw: true }),
+      psprdpar.findOne({
+        where: { psprduid },
+        attributes: ["psprdpri"],
         raw: true,
-        attributes: ["psmbrcar", "psmrcuid", "psitmcno"],
-        order: [["psitmcno", "DESC"]],
-      })
-      .then(async (memberCart) => {
-        let running = 1;
-        if (memberCart) {
-          // Having item in cart
-          //Assign new running item no
-          //**No sequence order needed
-          running = parseInt(memberCart.psitmcno) + 1;
-        }
-        //Add cart
-        await psmbrcrt.create({
-          psmbrcar,
-          psmrcuid,
-          psprduid,
-          psitmcno: running,
-          psitmqty,
-          psitmunt,
-          psitmsbt,
-          psitmrmk,
-        });
-        //return success
+      }),
+    ]);
 
-        return returnSuccessMessage(req, 200, "RECORDCREATED", res);
-      })
-      .catch((err) => {
-        console.log(err);
-        return returnError(req, 500, "UNEXPECTEDERROR", res);
-      });
-  else
-    return returnError(
-      req,
-      400,
-      { psmrcuid: "INVALIDDATAVALUE", psprduid: "INVALIDDATAVALUE" },
-      res
-    );
+    if (!merchant || !product) {
+      return returnError(req, 400, {
+        psmrcuid: "INVALIDDATAVALUE",
+        psprduid: "INVALIDDATAVALUE",
+      }, res);
+    }
+
+    const psitmunt = product.psprdpri;
+    const psitmsbt = parseFloat(psitmunt) * psitmqty;
+
+    // ✅ Check for existing cart item with same product and remark
+    const existingItem = await psmbrcrt.findOne({
+      where: { psmbrcar, psmrcuid, psprduid, psitmrmk },
+    });
+
+    if (existingItem) {
+      const updatedQty = existingItem.psitmqty + psitmqty;
+      const updatedSubtotal = parseFloat(psitmunt) * updatedQty;
+
+      await psmbrcrt.update(
+        {
+          psitmqty: updatedQty,
+          psitmsbt: updatedSubtotal,
+        },
+        {
+          where: { psmbrcar, psmrcuid, psprduid, psitmrmk },
+        }
+      );
+
+      return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
+    }
+
+    // 🔢 Get latest `psitmcno` to assign new running number
+    const latestItem = await psmbrcrt.findOne({
+      where: { psmbrcar, psmrcuid },
+      order: [["psitmcno", "DESC"]],
+      attributes: ["psitmcno"],
+      raw: true,
+    });
+
+    const nextItmNo = latestItem ? latestItem.psitmcno + 1 : 1;
+
+    await psmbrcrt.create({
+      psmbrcar,
+      psmrcuid,
+      psprduid,
+      psitmcno: nextItmNo,
+      psitmqty,
+      psitmunt,
+      psitmsbt,
+      psitmrmk,
+    });
+
+    return returnSuccessMessage(req, 200, "RECORDCREATED", res);
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return returnError(req, 500, "UNEXPECTEDERROR", res);
+  }
 };
+
 
 exports.update = async (req, res) => {
   const { errors, isValid } = validatePsmbrcrtInput(req.body, "C");
@@ -370,17 +368,6 @@ exports.delete = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
 exports.listMerchant = async (req, res) => {
   console.log("📥 /psmrcpar/listMerchant called");
 
@@ -392,7 +379,9 @@ exports.listMerchant = async (req, res) => {
   try {
     // Get distinct merchant IDs from member's cart items
     const merchantIds = await psmbrcrt.findAll({
-      attributes: [[Sequelize.fn("DISTINCT", Sequelize.col("psmrcuid")), "psmrcuid"]],
+      attributes: [
+        [Sequelize.fn("DISTINCT", Sequelize.col("psmrcuid")), "psmrcuid"],
+      ],
       where: { psmbrcar: cartId },
       raw: true,
     });
@@ -432,7 +421,11 @@ exports.listMerchant = async (req, res) => {
       rows.map(async (obj) => {
         // Description for status
         if (!_.isEmpty(obj.psmrcsts)) {
-          const desc = await common.retrieveSpecificGenCodes(req, "YESORNO", obj.psmrcsts);
+          const desc = await common.retrieveSpecificGenCodes(
+            req,
+            "YESORNO",
+            obj.psmrcsts
+          );
           obj.psmrcstsdsc = desc?.prgedesc ?? "";
         }
 
@@ -452,14 +445,48 @@ exports.listMerchant = async (req, res) => {
       })
     );
 
-    return returnSuccess(200, {
-      total: count,
-      data: newRows,
-      extra: { file: "psmrcpar", key: ["psmrcuid"] },
-    }, res);
-
+    return returnSuccess(
+      200,
+      {
+        total: count,
+        data: newRows,
+        extra: { file: "psmrcpar", key: ["psmrcuid"] },
+      },
+      res
+    );
   } catch (err) {
     console.error("❌ Error in listMerchant:", err);
-    return returnError(req, 500, err.message || "UNKNOWN_ERROR", res);
+    return returnError(req, 500, err.message || "UNEXPECTEDERROR", res);
+  }
+};
+
+exports.cartItems = async (req, res) => {
+  const merchantid = req.query.psmrcuid;
+  const cartid = req.user?.psmbrcar;
+
+  if (!merchantid || !cartid) {
+    return returnError(req, 400, "RECORDISREQUIRED", res);
+  }
+
+  try {
+    const items = await psmbrcrt.findAll({
+      where: {
+        psmbrcar: cartid,
+        psmrcuid: merchantid,
+      },
+      include: [
+        {
+          model: psprdpar,
+          as: "product",
+          attributes: ["psprdnme", "psprdimg"],
+        },
+      ],
+      attributes: ["psitmcno", "psitmqty", "psitmunt", "psitmrmk"],
+    });
+
+    return returnSuccess(200, items, res);
+  } catch (error) {
+    console.error("Failed to retrieve cart items with product details:", error);
+    return returnError(req, 500, "SERVERERROR", res);
   }
 };
