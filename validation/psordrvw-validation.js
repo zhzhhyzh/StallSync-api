@@ -3,17 +3,17 @@ const isEmpty = require("./is-empty");
 
 module.exports = function validatePsordrvwInput(data, type) {
     let errors = {};
-    data.psodruid = !isEmpty(data.psodruid) ? data.psodruid : "";
+    data.psorduid = !isEmpty(data.psorduid) ? data.psorduid : "";
     data.psrvwimg = !isEmpty(data.psrvwimg) ? data.psrvwimg : "";
     data.psrvwvid = !isEmpty(data.psrvwvid) ? data.psrvwvid : "";
     data.psrvwrtg = !isEmpty(data.psrvwrtg) ? data.psrvwrtg : 5;
     data.psrvwdsc = !isEmpty(data.psrvwdsc) ? data.psrvwdsc : "";
 
-    if (Validator.isEmpty(data.psodruid)) {
-        errors.psodruid = "FIELDISREQUIRED";
+    if (Validator.isEmpty(data.psorduid)) {
+        errors.psorduid = "FIELDISREQUIRED";
     }
-    else if (!Validator.isEmpty(data.psodruid) && data.psodruid.length > 25) {
-        errors.psodruid = "INVALIDVALUELENGTH&25";
+    else if (!Validator.isEmpty(data.psorduid) && data.psorduid.length > 25) {
+        errors.psorduid = "INVALIDVALUELENGTH&25";
     }
 
     if (Validator.isEmpty(data.psrvwdsc)) {
