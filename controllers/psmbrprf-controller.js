@@ -260,7 +260,7 @@ exports.create = async (req, res) => {
           psmbracs: 0,
           psmbrtyp: "B",
           psmbrexp: oneYearFromNow,
-          psmbrjdt: req.body.psmbrjdt ? req.body.psmbrjdt : new Date(),
+          psmbrjdt: new Date(),
           psmbrcar: uuidv4(),
           psusrnme: req.body.psusrnme,
           psmbrpre: req.body.psmbrpre,

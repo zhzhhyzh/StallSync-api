@@ -148,6 +148,8 @@ const backupJob = require("./cron/backup-job");
 // -- Cron Execution -- //
 dailyJob.voucher_expiry();
 dailyJob.voucher_activate();
+dailyJob.recommendationGet();
+dailyJob.member_expiry();
 backupJob.backupDB();
 backupJob.cleanFS();
 backupJob.cleanDB();
