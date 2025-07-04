@@ -865,9 +865,7 @@ exports.listPersonalized = async (req, res) => {
     try {
       const parsed = JSON.parse(data);
 
-      console.log("NIHAO IM PARSED: ", parsed)
       const productId = parsed.map(exist => exist.Product_ID);
-      console.log("NIHAO IM productId: ", productId)
 
       let limit = 10;
       if (req.query.limit) limit = req.query.limit;
