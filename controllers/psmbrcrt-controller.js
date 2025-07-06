@@ -128,10 +128,15 @@ exports.create = async (req, res) => {
     ]);
 
     if (!merchant || !product) {
-      return returnError(req, 400, {
-        psmrcuid: "INVALIDDATAVALUE",
-        psprduid: "INVALIDDATAVALUE",
-      }, res);
+      return returnError(
+        req,
+        400,
+        {
+          psmrcuid: "INVALIDDATAVALUE",
+          psprduid: "INVALIDDATAVALUE",
+        },
+        res
+      );
     }
 
     const psitmunt = product.psprdpri;
@@ -186,7 +191,6 @@ exports.create = async (req, res) => {
     return returnError(req, 500, "UNEXPECTEDERROR", res);
   }
 };
-
 
 exports.update = async (req, res) => {
   const { errors, isValid } = validatePsmbrcrtInput(req.body, "C");
@@ -419,6 +423,14 @@ exports.listMerchant = async (req, res) => {
 
     const newRows = await Promise.all(
       rows.map(async (obj) => {
+        const itemCount = await psmbrcrt.count({
+          where: {
+            psmbrcar: cartId,
+            psmrcuid: obj.psmrcuid,
+          },
+        });
+        obj.cartItemCount = itemCount;
+
         // Description for status
         if (!_.isEmpty(obj.psmrcsts)) {
           const desc = await common.retrieveSpecificGenCodes(
@@ -481,8 +493,12 @@ exports.cartItems = async (req, res) => {
           attributes: ["psprdnme", "psprdimg"],
         },
       ],
-      attributes: ["psitmcno", "psitmqty", "psitmunt", "psitmrmk"],
+      attributes: ["psitmcno", "psitmqty", "psitmunt", "psitmrmk","psitmsbt"],
+      raw: true,
+      nest: true,
     });
+
+    
 
     return returnSuccess(200, items, res);
   } catch (error) {
