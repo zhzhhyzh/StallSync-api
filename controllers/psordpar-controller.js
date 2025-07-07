@@ -26,146 +26,152 @@ const connection = require("../common/db");
 const validatePsordparInput = require("../validation/psordpar-validation.js");
 const { where } = require("sequelize");
 
-exports.list = async (req, res) => {
+  exports.list = async (req, res) => {
 
 
-  let limit = 10;
-  if (req.query.limit) limit = req.query.limit;
+    let limit = 10;
+    if (req.query.limit) limit = req.query.limit;
 
-  let from = 0;
-  if (!req.query.page) from = 0;
-  else from = parseInt(req.query.page) * parseInt(limit);
-
-
+    let from = 0;
+    if (!req.query.page) from = 0;
+    else from = parseInt(req.query.page) * parseInt(limit);
 
 
-  let option = {
-
-  };
-  let userId = "";
-
-  if (req.user.psusrtyp == "MCH") {
-    option.psmrcuid = req.user.psmrcuid
-    userId = req.user.psmrcuid;
-
-  }
-
-  if (req.user.psusrtyp == "MBR") {
-    option.psordpre = req.user.psusrpre;
-    option.psordphn = req.user.psusrphn;
-    userId = req.user.psmbruid;
 
 
-  }
+    let option = {
 
-  //For admin use only
-  if (req.query.psmrcuid && !_.isEmpty(req.query.psmrcuid)) {
-    option.psmrcuid = req.query.psmrcuid;
-  }
-
-  if (req.query.psordphn && !_.isEmpty(req.query.psordphn)) {
-    option.psordphn = {
-      [Op.like]: `%${req.query.psordphn}%`
     };
-  }
+    let userId = "";
+
+    if (req.user.psusrtyp == "MCH") {
+      option.psmrcuid = req.user.psmrcuid
+      userId = req.user.psmrcuid;
+
+    }
+
+    if (req.user.psusrtyp == "MBR") {
+      option.psordpre = req.user.psusrpre;
+      option.psordphn = req.user.psusrphn;
+      userId = req.user.psmbruid;
+
+
+    }
+
+    //For admin use only
+    if (req.query.psmrcuid && !_.isEmpty(req.query.psmrcuid)) {
+      option.psmrcuid = req.query.psmrcuid;
+    }
+
+    if (req.query.psordphn && !_.isEmpty(req.query.psordphn)) {
+      option.psordphn = {
+        [Op.like]: `%${req.query.psordphn}%`
+      };
+    }
 
 
 
-  if (req.query.from && !_.isEmpty('' + req.query.from)) {
-    let fromDate = new Date(req.query.from);
-    fromDate.setHours(0, 0, 0, 0);
-    if (!_.isNaN(fromDate.getTime())) {
-      if (req.query.to && !_.isEmpty('' + req.query.to)) {
-        let toDate = new Date(req.query.to);
-        toDate.setHours(23, 59, 59, 999);
-        if (!_.isNaN(toDate.getTime())) {
-          option.psordodt = {
-            [Op.and]: [
-              { [Op.gte]: fromDate },
-              { [Op.lte]: toDate }
-            ]
+    if (req.query.from && !_.isEmpty('' + req.query.from)) {
+      let fromDate = new Date(req.query.from);
+      fromDate.setHours(0, 0, 0, 0);
+      if (!_.isNaN(fromDate.getTime())) {
+        if (req.query.to && !_.isEmpty('' + req.query.to)) {
+          let toDate = new Date(req.query.to);
+          toDate.setHours(23, 59, 59, 999);
+          if (!_.isNaN(toDate.getTime())) {
+            option.psordodt = {
+              [Op.and]: [
+                { [Op.gte]: fromDate },
+                { [Op.lte]: toDate }
+              ]
+            }
+          } else {
+            option.psordodt = {
+              [Op.gte]: fromDate
+            }
           }
         } else {
           option.psordodt = {
             [Op.gte]: fromDate
           }
         }
-      } else {
+      }
+    } else if (req.query.to && !_.isEmpty('' + req.query.to)) {
+      let toDate = new Date(req.query.to);
+      toDate.setHours(23, 59, 59, 999);
+      if (!_.isNaN(toDate.getTime())) {
         option.psordodt = {
-          [Op.gte]: fromDate
+          [Op.lte]: toDate
         }
       }
     }
-  } else if (req.query.to && !_.isEmpty('' + req.query.to)) {
-    let toDate = new Date(req.query.to);
-    toDate.setHours(23, 59, 59, 999);
-    if (!_.isNaN(toDate.getTime())) {
-      option.psordodt = {
-        [Op.lte]: toDate
+
+    const { count, rows } = await psordpar.findAndCountAll({
+      limit: parseInt(limit),
+      offset: from,
+      where: option,
+      raw: true,
+      attributes: [
+        ["psorduid", "id"],
+        "psorduid",
+        "psordodt",
+        "psordamt",
+        "psordphn",
+        "psordpre",
+        "psordsts",
+        "psordgra",
+        "psmrcuid"
+      ],
+      order: [["psorduid", "asc"]],
+    });
+
+    let newRows = [];
+    for (var i = 0; i < rows.length; i++) {
+      let obj = rows[i];
+
+
+      if (!_.isEmpty(obj.psordsts)) {
+        let description = await common.retrieveSpecificGenCodes(
+          req,
+          "ODRSTS",
+          obj.psordsts
+        );
+        obj.psordstsdsc =
+          description.prgedesc && !_.isEmpty(description.prgedesc)
+            ? description.prgedesc
+            : "";
       }
-    }
-  }
 
-  const { count, rows } = await psordpar.findAndCountAll({
-    limit: parseInt(limit),
-    offset: from,
-    where: option,
-    raw: true,
-    attributes: [
-      ["psorduid", "id"],
-      "psorduid",
-      "psordodt",
-      "psordamt",
-      "psordphn",
-      "psordpre",
-      "psordsts",
-      "psordgra",
-      "psmrcuid"
-    ],
-    order: [["psorduid", "asc"]],
-  });
+      if (!_.isEmpty(obj.psordpre)) {
+        let description = await common.retrieveSpecificGenCodes(
+          req,
+          "HPPRE",
+          obj.psordpre
+        );
+        obj.psordpredsc =
+          description.prgedesc && !_.isEmpty(description.prgedesc)
+            ? description.prgedesc
+            : "";
+      }
 
-  let newRows = [];
-  for (var i = 0; i < rows.length; i++) {
-    let obj = rows[i];
+      if (!_.isEmpty(obj.psmrcuid)) {
+        await psmrcpar.findOne({
+          where: {
+            psmrcuid: obj.psmrcuid
+          }, raw: true, attributes: ["psmrcuid", "psmrcnme", "psmrcppi", "psmrcsfi"]
+        }).then(async result => {
+          obj.psmrcuiddsc = result.psmrcnme && !_.isEmpty(result.psmrcnme)
+            ? result.psmrcnme
+            : "";
+            obj.sfi = result.psmrcsfi && !_.isEmpty(result.psmrcsfi)
+            ? result.psmrcsfi
+            : "";
+            obj.ppi = result.psmrcppi && !_.isEmpty(result.psmrcppi)
+            ? result.psmrcppi
+            : "";
+        })
 
-
-    if (!_.isEmpty(obj.psordsts)) {
-      let description = await common.retrieveSpecificGenCodes(
-        req,
-        "ODRSTS",
-        obj.psordsts
-      );
-      obj.psordstsdsc =
-        description.prgedesc && !_.isEmpty(description.prgedesc)
-          ? description.prgedesc
-          : "";
-    }
-
-    if (!_.isEmpty(obj.psordpre)) {
-      let description = await common.retrieveSpecificGenCodes(
-        req,
-        "HPPRE",
-        obj.psordpre
-      );
-      obj.psordpredsc =
-        description.prgedesc && !_.isEmpty(description.prgedesc)
-          ? description.prgedesc
-          : "";
-    }
-
-    if (!_.isEmpty(obj.psmrcuid)) {
-      await psmrcpar.findOne({
-        where: {
-          psmrcuid: obj.psmrcuid
-        }, raw: true, attributes: ["psmrcuid", "psmrcnme"]
-      }).then(async result => {
-        obj.psmrcuiddsc = result.psmrcnme && !_.isEmpty(result.psmrcnme)
-          ? result.psmrcnme
-          : "";
-      })
-
-    }
+      }
 
 
     obj.psordodt = await common.formatDateTime(obj.psordodt)
@@ -606,7 +612,9 @@ exports.create = async (req, res) => {
               "A",
               req.user.psusrunm,
               "", created.psorduid);
-            return returnSuccessMessage(req, 200, "RECORDCREATED", res);
+
+        
+            return returnSuccess( 200, {message:"RECORDCREATED",ordId:created.psorduid}, res);
           })
       } else if ((req.body.psordpap == 'Y' || req.body.psordpap == 'Y') && !memberId) {
         return returnError(req, 400, 'NOTAMEMBER', res);
