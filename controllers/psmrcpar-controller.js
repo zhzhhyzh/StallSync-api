@@ -311,6 +311,8 @@ exports.create = async (req, res) => {
               psmrcsfi: req.body.psmrcsfi,
               psmrcppi: req.body.psmrcppi,
               psmrcrtg: 0,
+              psmrcrtc: 0,
+
               psmrcrmk: req.body.psmrcrmk,
               psmrcbnm: req.body.psmrcbnm,
               // psmrctyp: req.body.psmrctyp,

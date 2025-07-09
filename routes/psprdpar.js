@@ -18,6 +18,24 @@ router.get("/detail", authenticateOptional, psprdpar.findOne);
 // @access  Private
 router.get("/list", authenticateOptional, psprdpar.list);
 
+
+// @route   GET api/psprdpar/list
+// @desc    List OTP Parameter
+// @access  Private
+router.get("/listLatest", authenticateOptional, psprdpar.listLatest);
+
+
+// @route   GET api/psprdpar/list
+// @desc    List OTP Parameter
+// @access  Private
+router.get("/listTrending", authenticateOptional, psprdpar.listTrending);
+
+
+// @route   GET api/psprdpar/list
+// @desc    List OTP Parameter
+// @access  Private
+router.get("/listPersonalized", authenticateOptional, psprdpar.listPersonalized);
+
 // @route   POST api/psprdpar/create
 // @desc    Create OTP Parameter
 // @access  Private

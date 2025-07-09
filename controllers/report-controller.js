@@ -391,8 +391,6 @@ exports.findForecast = async (req, res) => {
         return returnError(req, 500, "UNEXPECTEDERROR", res);
     }
 
-    console.log("HJHJHHH")
-
     prrpthis.findOne({
         where: {
             prrptnme: prrptnme

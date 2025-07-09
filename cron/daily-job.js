@@ -172,11 +172,9 @@ async function voucher_activate() {
                 raw: true
 
             });
-            console.log("WATCH me: ", vouchers)
 
             for (var i = 0; i < vouchers.length; i++) {
                 let vch = vouchers[i];
-                console.log("foor loop: ", vch)
                 // Set Voucher to Expired
                 await psrwdpar.update({
                     psrwdsts: "A"
@@ -220,7 +218,7 @@ async function recommendationGet() {
             let today = new Date(start);
 
             today.setHours(0, 0, 0, 0);
-            // Generate food csv (name, food_id,price, merchant, image, rating)
+            // Generate food csv (name, Product_ID,price, merchant, image, rating)
             let product = await psprdpar.findAll({
                 raw: true
             });
@@ -229,7 +227,7 @@ async function recommendationGet() {
 
             const productFilename = "foods.csv";
             const productHeader = [
-                { id: 'psprduid', title: 'Food_ID' },
+                { id: 'psprduid', title: 'Product_ID' },
                 { id: 'psprdnme', title: 'Name' },
                 { id: 'psprdimg', title: 'Image' },
                 { id: 'psmrcuid', title: 'Merchant_ID' },
@@ -282,7 +280,7 @@ async function recommendationGet() {
             const ratingFilename = "ratings.csv";
             const ratingHeader = [
                 { id: 'psordpar.psmbruid', title: 'User_ID' },
-                { id: 'psordpar.psorditms.psprduid', title: 'Food_ID' },
+                { id: 'psordpar.psorditms.psprduid', title: 'Product_ID' },
                 { id: 'psrvwrtg', title: 'Rating' },
             ]
             const ratingPath = thePath + ratingFilename;

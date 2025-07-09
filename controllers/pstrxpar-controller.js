@@ -96,13 +96,13 @@ exports.list = async (req, res) => {
       "pstrxdat",
       "pstrxamt",
       "pstrxsts",
-      "pstrxcrc",
+      // "pstrxcrc",
       "pstrxmtd",
-      "pstrxba1",
-      "pstrxba2",
-      "pstrxbpo",
-      "pstrxbci",
-      "pstrxbst",
+      // "pstrxba1",
+      // "pstrxba2",
+      // "pstrxbpo",
+      // "pstrxbci",
+      // "pstrxbst",
       "pstrxstr",
     ],
     order: [["pstrxdat", "DESC"]],
@@ -147,7 +147,7 @@ exports.list = async (req, res) => {
     //       ? description.prgedesc
     //       : "";
     // }
-    result.pstrxcrcdsc = "RM"
+    obj.pstrxcrcdsc = "RM"
 
     obj.pstrxdat = await common.formatDateTime(obj.pstrxdat, "/");
     obj.pstrxamt = await common.formatDecimal(obj.pstrxamt, 2);
