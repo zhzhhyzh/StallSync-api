@@ -252,7 +252,7 @@ exports.findOne = async (req, res) => {
           await psmrcpar.findOne({
             where: {
               psmrcuid: obj.psmrcuid
-            }, raw: true, attributes: ["psmrcuid", "psmrcnme", "psmrcown"]
+            }, raw: true, attributes: ["psmrcuid", "psmrcnme", "psmrcown", "psmrcsfi"]
           }).then(async result => {
 
             obj.psmrcuiddsc = result.psmrcnme && !_.isEmpty(result.psmrcnme)
@@ -320,7 +320,7 @@ exports.findOne = async (req, res) => {
           let product = await psprdpar.findOne({
             where: {
               psprduid: item.psprduid
-            }, raw: true, attributes: ["psprduid", "psprdnme"]
+            }, raw: true, attributes: ["psprduid", "psprdnme", "psprdimg"]
           })
 
           if (product) {
