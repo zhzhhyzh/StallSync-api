@@ -7,6 +7,7 @@ const fs = require("fs");
 // Table File
 const psstfpar = db.psstfpar;
 const psusrprf = db.psusrprf;
+const psmrcpar = db.psmrcpar;
 
 // Common Function
 const Op = db.Sequelize.Op;
@@ -34,6 +35,15 @@ exports.list = async (req, res) => {
   let option = {
     [Op.and]: []
   };
+
+  let mchId = "";
+  if (req.user.psusrtyp == "MCH") {
+    mchId = req.user.psmrcuid;
+  }
+
+  if (mchId != "") {
+    option[Op.and].push({ psmrcuid: mchId })
+  }
 
   if (req.query.psstftyp && !_.isEmpty(req.query.psstftyp)) {
     option[Op.and].push({ psstftyp: req.query.psstftyp });
@@ -70,6 +80,7 @@ exports.list = async (req, res) => {
       "psstfnat",
       "psstfjdt",
       "psstfsts",
+      "psmrcuid"
     ],
     order: [["psstfuid", "asc"]],
   });
@@ -275,6 +286,14 @@ exports.create = async (req, res) => {
       }, res);
     }
   }
+  const merchant = await psmrcpar.findOne({
+    where: {
+      psmrcuid: req.body.psmrcuid,
+    }, raw: true
+  })
+  if (!merchant) {
+    return returnError(req, 500, "INVALIDDATAVALUE", res);
+  }
   // Duplicate Check
   psstfpar
     .findOne({
@@ -478,6 +497,15 @@ exports.update = async (req, res) => {
   const { errors, isValid } = validatePsstfparInput(req.body, "C");
   if (!isValid) return returnError(req, 400, errors, res);
 
+  const merchant = await psmrcpar.findOne({
+    where: {
+      psmrcuid: req.body.psmrcuid,
+    }, raw: true
+  })
+  if (!merchant) {
+    return returnError(req, 500, "INVALIDDATAVALUE", res);
+  }
+
   //Check format number
   if (req.body.psstfidt === 'IC') {
     const icRegex = /^\d{6}-\d{2}-\d{4}$/;
@@ -613,11 +641,11 @@ exports.update = async (req, res) => {
               psstfcit: req.body.psstfcit,
               psstfsta: req.body.psstfsta,
               psstfsam: req.body.psstfsam,
-              psstfha1: req.body.psstfsam == "Y" ? req.body.psstfad1 : psstfha1,
-              psstfha2: req.body.psstfsam == "Y" ? req.body.psstfad2 : psstfha2,
-              psstfhpo: req.body.psstfsam == "Y" ? req.body.psstfpos : psstfhpo,
-              psstfhci: req.body.psstfsam == "Y" ? req.body.psstfcit : psstfhci,
-              psstfhst: req.body.psstfsam == "Y" ? req.body.psstfsta : psstfhst,
+              psstfha1: req.body.psstfsam == "Y" ? req.body.psstfad1 :  req.body.psstfha1,
+              psstfha2: req.body.psstfsam == "Y" ? req.body.psstfad2 :  req.body.psstfha2,
+              psstfhpo: req.body.psstfsam == "Y" ? req.body.psstfpos :  req.body.psstfhpo,
+              psstfhci: req.body.psstfsam == "Y" ? req.body.psstfcit :  req.body.psstfhci,
+              psstfhst: req.body.psstfsam == "Y" ? req.body.psstfsta :  req.body.psstfhst,
               psstfeml: req.body.psstfeml,
               psstfbnk: req.body.psstfbnk,
               psstfacc: req.body.psstfacc,

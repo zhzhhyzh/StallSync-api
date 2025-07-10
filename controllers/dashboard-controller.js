@@ -197,7 +197,7 @@ async function getSalesChart(req) {
 
         // Set base filter: only completed orders within date range
         const whereClause = {
-            psordocd: {
+            psordodt: {
                 [Op.between]: [pastYearStart, endOfThisMonth]
             }
         };
@@ -207,91 +207,87 @@ async function getSalesChart(req) {
             whereClause.psmrcuid = req.user.psmrcuid;
         }
 
-        // Query sales grouped by month
+        console.log("WHERE ClAUSE: " , whereClause)
+
         const results = await psordpar.findAll({
             attributes: [
-                [fn('DATE_FORMAT', col('psordocd'), '%b'), 'month'], // e.g., 'Jan', 'Feb'
-                [fn('SUM', col('psordgra')), 'totalSales']
+                [fn('DATE_FORMAT', col('psordodt'), '%Y-%m'), 'monthKey'],
+                [fn('SUM', col('psordamt')), 'totalSales']
             ],
             where: whereClause,
-            group: [fn('DATE_FORMAT', col('psordocd'), '%Y-%m')], // group by year+month
-            order: [literal("MIN(psordocd)")], // ensure ascending order
+            group: [literal('DATE_FORMAT(psordodt, "%Y-%m")')],
+            order: [literal('DATE_FORMAT(psordodt, "%Y-%m") ASC')],
             raw: true
         });
-
-        // Fill in missing months with zero
-        const months = [];
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        console.log("DFGHJKJHGFDFGHJK: ", results)
+        // Create result map
         const resultMap = {};
-        results.forEach(row => resultMap[row.month] = parseFloat(row.totalSales));
+        results.forEach(row => {
+            resultMap[row.monthKey] = parseFloat(row.totalSales);
+        });
 
+        // Generate the last 12 months with formatted month names
+        const months = [];
         for (let i = 0; i < 12; i++) {
             const date = new Date(pastYearStart.getFullYear(), pastYearStart.getMonth() + i, 1);
-            const month = monthNames[date.getMonth()];
+            const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+            const label = date.toLocaleString('default', { month: 'short', year: 'numeric' }); // e.g., "Jul 2025"
             months.push({
-                month,
-                totalSales: resultMap[month] || 0
+                month: label,
+                totalSales: resultMap[key] || 0
             });
         }
 
         return months;
+
     } catch (error) {
         console.error("Error in getSalesChart:", error);
         return [];
     }
 }
-
-//Get order chart
 async function getOrderChart(req) {
     try {
-
         const today = new Date();
-
-        // Start from 1st of the month, 11 months ago
         const pastYearStart = new Date(today.getFullYear(), today.getMonth() - 11, 1);
-
-        // End on the last day of the current month
         const endOfThisMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-        // Build base where clause
         const whereClause = {
-            psordocd: {
+            psordodt: {
                 [Op.between]: [pastYearStart, endOfThisMonth]
             }
         };
 
-        // If user is merchant, filter by merchant ID
         if (req.user.psusrtyp === "MCH") {
             whereClause.psmrcuid = req.user.psmrcuid;
         }
 
-        // Query total orders per month
+        // Query total orders per month using consistent '%Y-%m' key
         const results = await psordpar.findAll({
             attributes: [
-                [fn('DATE_FORMAT', col('psordocd'), '%b'), 'month'], // e.g., 'Jul'
+                [fn('DATE_FORMAT', col('psordodt'), '%Y-%m'), 'monthKey'],
                 [fn('COUNT', col('psorduid')), 'totalOrders']
             ],
             where: whereClause,
-            group: [fn('DATE_FORMAT', col('psordocd'), '%Y-%m')],
-            order: [literal('MIN(psordocd)')],
+            group: [literal('DATE_FORMAT(psordodt, "%Y-%m")')],
+            order: [literal('DATE_FORMAT(psordodt, "%Y-%m")')],
             raw: true
         });
 
-        // Fill missing months with zero
+        // Map results using consistent key
         const resultMap = {};
         results.forEach(row => {
-            resultMap[row.month] = parseInt(row.totalOrders);
+            resultMap[row.monthKey] = parseInt(row.totalOrders);
         });
 
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const output = [];
-
         for (let i = 0; i < 12; i++) {
             const date = new Date(pastYearStart.getFullYear(), pastYearStart.getMonth() + i, 1);
-            const month = monthNames[date.getMonth()];
+            const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+            const label = date.toLocaleString('default', { month: 'short', year: 'numeric' }); // e.g. "Jul 2025"
+
             output.push({
-                month,
-                totalOrders: resultMap[month] || 0
+                month: label,
+                totalOrders: resultMap[key] || 0
             });
         }
 
@@ -301,6 +297,7 @@ async function getOrderChart(req) {
         return [];
     }
 }
+
 
 
 async function getTopMerchants(req, rankType) {
@@ -362,9 +359,9 @@ async function getTopMerchants(req, rankType) {
         if (rankType === "C") {
 
             psordpar.belongsTo(psmrcpar, {
-  foreignKey: 'psmrcuid',
-  targetKey: 'psmrcuid'
-});
+                foreignKey: 'psmrcuid',
+                targetKey: 'psmrcuid'
+            });
 
             // Rank by order count (this month)
             answr = await psordpar.findAll({
@@ -390,7 +387,7 @@ async function getTopMerchants(req, rankType) {
                 raw: true
             });
 
-              answr = answr.map(item => ({
+            answr = answr.map(item => ({
                 psmrcuid: item.psmrcuid,
                 psmrcnme: item['psmrcpar.psmrcnme'],
                 value: parseFloat(item.value),

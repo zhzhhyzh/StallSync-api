@@ -30,7 +30,7 @@ module.exports = passport => {
           }
 
           if (user.psusrtyp == "MBR") {
-            let mbr = await psmbrprf.findOne({ where: { psusrnme: user.psusrunm }, raw: true, attributes: ['psmbruid','psmbrpts','psmbrcar'] })
+            let mbr = await psmbrprf.findOne({ where: { psusrnme: user.psusrunm }, raw: true, attributes: ['psmbruid', 'psmbrpts', 'psmbrcar'] })
 
             if (mbr) {
               user.psmbruid = mbr.psmbruid
@@ -43,7 +43,14 @@ module.exports = passport => {
             }
           } else if (user.psusrtyp == "MCH") {
             let merchant = await psmrcpar.findOne({ where: { psmrcown: user.psusrunm }, raw: true, attributes: ['psmrcuid'] })
+            if (!merchant) {
+              merchant = await psstfpar.findOne({
+                where: {
+                  psusrunm: user.psusrunm
+                }, raw: true, attributes: ['psmrcuid']
+              })
 
+            }
             if (merchant) {
               user.psmrcuid = merchant.psmrcuid
             } else {

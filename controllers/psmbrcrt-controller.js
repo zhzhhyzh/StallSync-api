@@ -121,7 +121,7 @@ exports.create = async (req, res) => {
     const [merchant, product] = await Promise.all([
       psmrcpar.findOne({ where: { psmrcuid }, raw: true }),
       psprdpar.findOne({
-        where: { psprduid },
+        where: { psprduid , psmrcuid},
         attributes: ["psprdpri"],
         raw: true,
       }),

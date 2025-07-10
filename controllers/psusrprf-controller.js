@@ -408,7 +408,7 @@ exports.create = async (req, res) => {
             new_psusrprf.psusrpwd = hash;
             psusrprf.create(new_psusrprf).then(data => {
                 let created = data.get({ plain: true });
-                common.writeMntLog('psusrprf', null, null, created.psusrunm, 'A', req.user.psusrunm?req.body.psusrunm : "");
+                common.writeMntLog('psusrprf', null, null, created.psusrunm, 'A', req.body.psusrunm);
                 return returnSuccessMessage(req, 200, "RECORDCREATED", res);
             }).catch(err => {
                 console.log(err);
@@ -850,7 +850,7 @@ async function validatePassword(password) {
 
 exports.profile = async (req, res) => {
 
-    if (req.user.psusrtyp === 'ADM') {
+    // if (req.user.psusrtyp === 'ADM') {
         //CHECK PROFILE
         psusrprf.findOne({
             where: {
@@ -880,7 +880,7 @@ exports.profile = async (req, res) => {
             console.log(err);
             return returnError(req, 400, 'UNEXPECTEDERROR', res);
         });
-    }
+    // }
     // else if (req.user.psusrtyp === 'MBR') {
     //     //CHECK PROFILE
     //     psusrprf.findOne({
@@ -936,9 +936,9 @@ exports.profile = async (req, res) => {
     //     });
     // }
 
-    else {
-        return returnError(req, 500, 'INVALIDAUTHORITY', res);
-    }
+    // else {
+    //     return returnError(req, 500, 'INVALIDAUTHORITY', res);
+    // }
 }
 
 exports.update_profile = async (req, res) => {

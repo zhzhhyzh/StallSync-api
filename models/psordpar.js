@@ -34,6 +34,11 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING(10),
             comment: "Reward ID"
         },
+        psordrdv: {
+            type: Sequelize.DECIMAL(10, 2),
+            allowNull: true,
+            comment: "Reward Discounted Value"
+        },
         psordpap: {
             type: Sequelize.STRING(10),
             allowNull: false,

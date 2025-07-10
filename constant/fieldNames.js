@@ -140,6 +140,7 @@ const psordodt = "Order Date";
 const psordamt = "Total Amount";
 const psordrap = "Reward Applied";
 const psrwduid = "Reward ID";
+const psordrdv = "Reward Discounted Value";
 const psordpap = "Point Applied";
 const psordpdv = "Point Discounted Value";
 const psordgra = "Grand Total";
@@ -309,9 +310,9 @@ const status = "Generation status";                // e.g., "CMP", "FAL", or "DO
 
 
 //pstrxpar
-const pstrxuid = "Transaction ID";        
-const pstrxdat = "Transaction Date";                       
-const pstrxamt = "Transaction Amount";                              
+const pstrxuid = "Transaction ID";
+const pstrxdat = "Transaction Date";
+const pstrxamt = "Transaction Amount";
 const pstrxsts = "Transaction Status";                          // Transaction status (e.g., SUCCESS, FAILED)
 const pstrxcrc = "Transaction Currency";                              // Transaction currency (e.g., MYR, USD)
 const pstrxmtd = "Transaction Method";                      // Transaction method (e.g., CREDIT_CARD, PAYPAL)
@@ -463,6 +464,7 @@ module.exports = {
     psrwduid,
     psordpap,
     psordpdv,
+    psordrdv,
     psordgra,
     psordpre,
     psordphn,
