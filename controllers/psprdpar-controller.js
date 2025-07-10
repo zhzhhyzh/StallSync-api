@@ -145,8 +145,7 @@ exports.list = async (req, res) => {
       attributes: ["psmrcnme"],
     });
 
-    obj.psmrcuiddsc = result ? result.psmrcnme : ""
-
+    obj.psmrcuiddsc = result ? result.psmrcnme : "";
 
     // if (!_.isEmpty(obj.psprdpri)) {
     //   obj.psprdpri = common.formatDecimal(obj.psprdpri);
@@ -246,14 +245,13 @@ exports.findOne = async (req, res) => {
       obj.psprdtakdsc = description?.prgedesc || "";
     }
 
-   const merchant = await psmrcpar.findOne({
+    const merchant = await psmrcpar.findOne({
       where: { psmrcuid: obj.psmrcuid },
       raw: true,
       attributes: ["psmrcnme"],
     });
 
     obj.psmrcuiddsc = merchant ? merchant.psmrcnme : "";
-
 
     return returnSuccess(200, obj, res);
   } catch (err) {
@@ -603,7 +601,7 @@ exports.update = async (req, res) => {
         if (
           isNaN(new Date(req.body.updatedAt)) ||
           new Date(data.updatedAt).getTime() !==
-          new Date(req.body.updatedAt).getTime()
+            new Date(req.body.updatedAt).getTime()
         )
           return returnError(req, 500, "RECORDOUTOFSYNC", res);
 
@@ -835,38 +833,35 @@ exports.filter = async (req, res) => {
 };
 
 exports.listPersonalized = async (req, res) => {
-
-  const userId = req.body.psusrunm;
-  if (!userId) {
-    return res.status(400).json({ message: "Missing user_id (psusrunm)" });
-  }
-
-
-  // let userId = "";
-  // if (req.user.psusrtyp == "MBR") {
-  //   userId = req.user.psmbruid;
-  // } else {
-  //   return returnError(req, 500, "RECORDIDISREQUIRED", res)
+  // const userId = req.body.psusrunm;
+  // if (!userId) {
+  //   return res.status(400).json({ message: "Missing user_id (psusrunm)" });
   // }
 
+  let userId = "";
+  if (req.user.psusrtyp == "MBR") {
+    userId = req.user.psmbruid;
+  } else {
+    return returnError(req, 500, "RECORDIDISREQUIRED", res);
+  }
+
   const python = spawn("python", ["app.py", userId], {
-    cwd: path.resolve(__dirname, "../Recommendation")  // <-- adjust this to match your actual folder
+    cwd: path.resolve(__dirname, "../Recommendation"), // <-- adjust this to match your actual folder
   });
   let data = "";
   let error = "";
   python.stdout.on("data", (chunk) => {
     const output = chunk.toString();
-    console.log("[PYTHON stdout]", output);   // Log every chunk
+    console.log("[PYTHON stdout]", output); // Log every chunk
     data += output;
   });
 
   python.stderr.on("data", (chunk) => {
     const err = chunk.toString();
-    console.error("[PYTHON stderr]", err);    // Log Python errors
+    console.error("[PYTHON stderr]", err); // Log Python errors
     error += err;
   });
   python.on("close", async (code) => {
-
     if (code !== 0 || error) {
       return res.status(500).json({ message: "Python error", error });
     }
@@ -874,7 +869,7 @@ exports.listPersonalized = async (req, res) => {
     try {
       const parsed = JSON.parse(data);
 
-      const productId = parsed.map(exist => exist.Product_ID);
+      const productId = parsed.map((exist) => exist.Product_ID);
 
       let limit = 10;
       if (req.query.limit) limit = req.query.limit;
@@ -889,8 +884,8 @@ exports.listPersonalized = async (req, res) => {
         raw: true,
         where: {
           psprduid: {
-            [Op.in]: productId
-          }
+            [Op.in]: productId,
+          },
         },
         attributes: [
           ["psprduid", "id"],
@@ -969,6 +964,17 @@ exports.listPersonalized = async (req, res) => {
               ? description.prgedesc
               : "";
         }
+
+        let result = await psmrcpar.findOne({
+          where: {
+            psmrcuid: obj.psmrcuid,
+          },
+          raw: true,
+          attributes: ["psmrcnme"],
+        });
+
+        obj.psmrcuiddsc = result ? result.psmrcnme : "";
+
         newRows.push(obj);
       }
 
@@ -984,7 +990,7 @@ exports.listPersonalized = async (req, res) => {
         );
       else return returnSuccess(200, { total: 0, data: [] }, res);
     } catch (e) {
-      console.log(e)
+      console.log(e);
       return returnError(req, 500, "UNEXPECTEDERROR", res);
     }
   });
@@ -1080,6 +1086,16 @@ exports.listLatest = async (req, res) => {
           ? description.prgedesc
           : "";
     }
+
+    let result = await psmrcpar.findOne({
+      where: {
+        psmrcuid: obj.psmrcuid,
+      },
+      raw: true,
+      attributes: ["psmrcnme"],
+    });
+
+    obj.psmrcuiddsc = result ? result.psmrcnme : "";
     newRows.push(obj);
   }
 
@@ -1110,32 +1126,31 @@ exports.listTrending = async (req, res) => {
 
     // JOIN psorditm with psordpar by psorduid
     psorditm.belongsTo(psordpar, {
-      foreignKey: 'psorduid',
-      targetKey: 'psorduid'
+      foreignKey: "psorduid",
+      targetKey: "psorduid",
     });
 
     const results = await psorditm.findAll({
       attributes: [
-        'psprduid',
-        [sequelize.fn('SUM', sequelize.col('psitmqty')), 'totalQty']
+        "psprduid",
+        [sequelize.fn("SUM", sequelize.col("psitmqty")), "totalQty"],
       ],
       include: [
         {
           model: psordpar,
           attributes: [],
           where: {
-            psordodt: { [Op.gte]: threeMonthsAgo }
-          }
-        }
+            psordodt: { [Op.gte]: threeMonthsAgo },
+          },
+        },
       ],
-      group: ['psprduid'],
-      order: [[literal('totalQty'), 'DESC']],
+      group: ["psprduid"],
+      order: [[literal("totalQty"), "DESC"]],
       limit: 10,
-      raw: true
+      raw: true,
     });
 
-
-    const productIds = results.map(r => r.psprduid);
+    const productIds = results.map((r) => r.psprduid);
 
     const { count, rows } = await psprdpar.findAndCountAll({
       limit: parseInt(limit),
@@ -1208,8 +1223,7 @@ exports.listTrending = async (req, res) => {
         attributes: ["psmrcnme"],
       });
 
-      obj.psmrcuiddsc = result ? result.psmrcnme : ""
-
+      obj.psmrcuiddsc = result ? result.psmrcnme : "";
 
       // if (!_.isEmpty(obj.psprdpri)) {
       //   obj.psprdpri = common.formatDecimal(obj.psprdpri);
@@ -1228,12 +1242,7 @@ exports.listTrending = async (req, res) => {
         },
         res
       );
-    else
-      return returnSuccess(
-        200,
-        { total: 0, data: [] },
-        res
-      );
+    else return returnSuccess(200, { total: 0, data: [] }, res);
 
     // return returnSuccess(200, {
     //   total: results.length,

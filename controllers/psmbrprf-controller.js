@@ -443,3 +443,47 @@ exports.delete = async (req, res) => {
     return returnError(req, 500, "UNEXPECTEDERROR", res);
   }
 };
+
+
+exports.findOneMember = async (req, res) => {
+  const id = req.user.psmbruid ? req.user.psmbruid  : "";
+  if (!id || id == "") {
+    return returnError(500, "RECORDIDISREQUIRED", res);
+  }
+  try {
+    const result = await psmbrprf.findOne({
+      where: { psmbruid: id },
+      raw: true,
+    });
+
+    if (!result) return returnError(req, 400, "NORECORDFOUND", res);
+    if (!_.isEmpty(result.psmbrtyp)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "MBRTYP",
+        result.psmbrtyp
+      );
+      result.psmbrtypdsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
+    }
+
+    if (!_.isEmpty(result.psmbrpre)) {
+      let description = await common.retrieveSpecificGenCodes(
+        req,
+        "HPPRE",
+        result.psmbrpre
+      );
+      result.psmbrpredsc =
+        description.prgedesc && !_.isEmpty(description.prgedesc)
+          ? description.prgedesc
+          : "";
+    }
+
+    return returnSuccess(200, result, res);
+  } catch (err) {
+    console.log("Error in findOne:", err);
+    return returnError(req, 500, "UNEXPECTEDERROR", res);
+  }
+};

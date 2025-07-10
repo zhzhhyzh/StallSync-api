@@ -32,4 +32,5 @@ router.post("/delete", authenticateRoute, psmbrprf.delete);
 // @access  Private
 router.post("/update", authenticateRoute, psmbrprf.update);
 
+router.get("/detailMember", authenticateRoute, psmbrprf.findOneMember);
 module.exports = router;

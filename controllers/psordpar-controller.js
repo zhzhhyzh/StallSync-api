@@ -122,7 +122,7 @@ const { where } = require("sequelize");
         "psordgra",
         "psmrcuid"
       ],
-      order: [["psorduid", "asc"]],
+      order: [["psordodt", "desc"]],
     });
 
     let newRows = [];
