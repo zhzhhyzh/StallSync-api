@@ -139,7 +139,7 @@ router.post("/createOnline", async (req, res) => {
   }
 });
 
-router.get("/success", async (req, res) => {
+router.post("/success", async (req, res) => {
   const session_id = req.query.session_id;
 
   try {
@@ -147,6 +147,8 @@ router.get("/success", async (req, res) => {
     console.log("LOOK here for session: \n", session);
     const transactionId = session.metadata.transactionId;
     const psorduid = session.metadata.psorduid;
+
+
     // Update your transaction record to 'C' (complete)
     await pstrxparDB.update(
       {
@@ -182,6 +184,7 @@ router.get("/cancel", async (req, res) => {
     const session = await stripe.checkout.sessions.retrieve(session_id);
 
     const transactionId = session.metadata.transactionId;
+    const psorduid = session.metadata.psorduid;
 
     // Update your transaction record to 'C' (complete)
     await pstrxparDB.update(
