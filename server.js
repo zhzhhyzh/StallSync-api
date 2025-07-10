@@ -141,6 +141,14 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
+app.use((err, req, res, next) => {
+    console.error("[UNCAUGHT ERROR]", err);
+    if (!res.headersSent) {
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+
 // -- Cron Definition -- //
 const dailyJob = require("./cron/daily-job");
 const backupJob = require("./cron/backup-job");

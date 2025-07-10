@@ -40,6 +40,10 @@ exports.list = async (req, res) => {
     option.pstrxsts = req.query.pstrxsts;
   }
 
+   if (req.query.psorduid && !_.isEmpty(req.query.psorduid)) {
+    option.psorduid = req.query.psorduid;
+  }
+
   if (req.query.pstrxmtd && !_.isEmpty(req.query.pstrxmtd)) {
     option.pstrxmtd = req.query.pstrxmtd;
   }

@@ -35,7 +35,7 @@ module.exports = function validatePsordparInput(data, type) {
         if (data.psordphn.length > 25) errors.psordphn = "INVALIDVALUELENGTH&25";
     }
 
-    if (data.psordpap == 'Y' && data.psrwduid == '') {
+    if (data.psordrap == 'Y' && data.psrwduid == '') {
         errors.psrwduid = "FIELDISREQUIRED";
 
     } else {

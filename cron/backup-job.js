@@ -7,6 +7,7 @@ const db = require("../models");
 const pssysjob = db.pssysjob;
 const backup = db.backup;
 const pslogpar = db.pslogpar;
+const common = require("../common/common.js");
 
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];

@@ -1,10 +1,15 @@
 {
-  
   "local": {
     "username": "root",
     "password": "",
     "database": "stallsync",
     "host": "127.0.0.1",
-    "dialect": "mysql"
-  }  
+    "dialect": "mysql",
+    "pool": {
+      "max": 200,
+      "min": 20,
+      "acquire": 60000,
+      "idle": 10000
+    }
+  }
 }

@@ -64,6 +64,11 @@ exports.list = async (req, res) => {
     option.psmrcuid = req.query.psmrcuid;
   }
 
+   if (req.query.psordsts && !_.isEmpty(req.query.psordsts)) {
+    option.psordsts = req.query.psordsts;
+  }
+  // option.psordsts = 'G';
+
   if (req.query.psordphn && !_.isEmpty(req.query.psordphn)) {
     option.psordphn = {
       [Op.like]: `%${req.query.psordphn}%`
@@ -526,8 +531,10 @@ exports.create = async (req, res) => {
             }
           })
         }
+        let mPoint = parseInt(req.user.psmbrpts);         // Example: 500 points
 
-        let pointValue = 0.00;
+        let pointValue = mPoint;
+
         let discountedValue = 0;
         //SST Add on
         let sst = 0;
@@ -535,7 +542,6 @@ exports.create = async (req, res) => {
 
         //Points Using and updates
         if (req.body.psordpap == 'Y' && memberId) {
-          let mPoint = parseInt(req.user.psmbrpts);         // Example: 500 points
           let availableDiscount = mPoint / 100;             // RM 5.00
 
           if (availableDiscount > grandTotal) {
@@ -570,7 +576,12 @@ exports.create = async (req, res) => {
           await t.rollback();
           return returnError(req, 500, "UNEXPECTEDERROR", res);
         }
-
+function getRandomDateInPast12Months() {
+    const now = new Date();
+    const pastYear = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    const randomTime = pastYear.getTime() + Math.random() * (now.getTime() - pastYear.getTime());
+    return new Date(randomTime);
+}
         await psordpar
           .create({
             psorduid: ref,
@@ -579,7 +590,8 @@ exports.create = async (req, res) => {
             psordpdv: discountedValue,
             psordrdv: rewardDv,
             // psordodt: new Date(),
-            psordodt: new Date(new Date().setMonth(new Date().getMonth() - 9)),
+            // psordodt: new Date(new Date().setMonth(new Date().getMonth() - 10)),
+            psordodt: getRandomDateInPast12Months(),
             psordamt: orderAmount,
             psrwduid: req.body.psordrap == "Y" ? req.body.psrwduid : "",
             psordgra: grandTotal,
@@ -631,7 +643,7 @@ exports.create = async (req, res) => {
               "", created.psorduid);
 
 
-            return returnSuccess(200, { message: "RECORDCREATED", ordId: created.psorduid }, res);
+            return returnSuccess(200, { message: "RECORDCREATED", ordId: created.psorduid,amt: created.psordgra }, res);
           })
       } else if ((req.body.psordpap == 'Y' || req.body.psordpap == 'Y') && !memberId) {
         return returnError(req, 400, 'NOTAMEMBER', res);
@@ -763,7 +775,7 @@ exports.update_completed = async (req, res) => {
               let member = await psmbrprf.findOne({
                 where: {
                   psmbruid: data.psmbruid
-                }, raw: true, attributes: ['psmbruid', 'psmbrtyp', 'psmbrexp', 'psmbracs']
+                }, raw: true, attributes: ['psmbruid', 'psmbrtyp', 'psmbrexp', 'psmbracs', 'psmbrpts']
               })
               let memberType = 'B';
 
@@ -778,9 +790,12 @@ exports.update_completed = async (req, res) => {
 
                 }
 
+                let totalPoints = parseInt(data.psordgra) + parseInt(member.psmbrpts)
+
                 // Update the expiry date
                 await psmbrprf.update(
                   {
+                    psmbrpts: totalPoints,
                     psmbrexp: newExpiry,
                     psmbrtyp: memberType
                   },

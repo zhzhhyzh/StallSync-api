@@ -150,6 +150,9 @@ const getNumberBoard = async (req) => {
 
     if (req.user.psusrtyp === "ADM") {
         const { count: ordCount } = await psordpar.findAndCountAll({
+            where: {
+                psordsts: 'D'
+            },
             raw: true,
             attributes: ["psorduid"]
         });
@@ -199,7 +202,9 @@ async function getSalesChart(req) {
         const whereClause = {
             psordodt: {
                 [Op.between]: [pastYearStart, endOfThisMonth]
-            }
+            },
+            psordsts: 'D'
+
         };
 
         // If merchant user, limit by merchant ID
@@ -207,7 +212,7 @@ async function getSalesChart(req) {
             whereClause.psmrcuid = req.user.psmrcuid;
         }
 
-        console.log("WHERE ClAUSE: " , whereClause)
+        console.log("WHERE ClAUSE: ", whereClause)
 
         const results = await psordpar.findAll({
             attributes: [
@@ -219,7 +224,6 @@ async function getSalesChart(req) {
             order: [literal('DATE_FORMAT(psordodt, "%Y-%m") ASC')],
             raw: true
         });
-        console.log("DFGHJKJHGFDFGHJK: ", results)
         // Create result map
         const resultMap = {};
         results.forEach(row => {
@@ -254,7 +258,8 @@ async function getOrderChart(req) {
         const whereClause = {
             psordodt: {
                 [Op.between]: [pastYearStart, endOfThisMonth]
-            }
+            },
+            psordsts: 'D'
         };
 
         if (req.user.psusrtyp === "MCH") {

@@ -27,179 +27,184 @@ const psmrcpar = db.psmrcpar;
 const RPTPath = config.reportPath;
 
 exports.generate = async (req, res) => {
-    let type = req.body.type;
-    let user = req.query.psmrcuid ? req.query.psmrcuid : "";
+    try {
+        let type = req.body.type;
+        let user = req.query.psmrcuid ? req.query.psmrcuid : "";
 
-    if (_.isEmpty(type) || type == "") return returnError(req, 500, "REPORTTYPEISREQUIRED", res);
+        if (_.isEmpty(type) || type == "") return returnError(req, 500, "REPORTTYPEISREQUIRED", res);
 
-    let rows = [];
-    let start_date = new Date();
-    let end_date = new Date();
-    end_date.setHours(23, 59, 59, 999); // end of today
+        let rows = [];
+        let start_date = new Date();
+        let end_date = new Date();
+        end_date.setHours(23, 59, 59, 999); // end of today
 
-    if (type === "M") {
-        // One month range from today
-        start_date = new Date();
-        start_date.setMonth(start_date.getMonth() - 1);
-        start_date.setHours(0, 0, 0, 0);
+        if (type === "M") {
+            // One month range from today
+            start_date = new Date();
+            start_date.setMonth(start_date.getMonth() - 1);
+            start_date.setHours(0, 0, 0, 0);
 
-    } else if (type === "T") {
-        // Three months range from today
-        start_date = new Date();
-        start_date.setMonth(start_date.getMonth() - 3);
-        start_date.setHours(0, 0, 0, 0);
+        } else if (type === "T") {
+            // Three months range from today
+            start_date = new Date();
+            start_date.setMonth(start_date.getMonth() - 3);
+            start_date.setHours(0, 0, 0, 0);
 
-    } else if (type === "Y") {
-        // One year range from today
-        start_date = new Date();
-        start_date.setFullYear(start_date.getFullYear() - 1);
-        start_date.setHours(0, 0, 0, 0);
-    }
+        } else if (type === "Y") {
+            // One year range from today
+            start_date = new Date();
+            start_date.setFullYear(start_date.getFullYear() - 1);
+            start_date.setHours(0, 0, 0, 0);
+        }
 
 
 
-    let option = {}
-    option.psordsts = "D"
-    if (user) {
-        option.psmrcuid = user;
-    }
+        let option = {}
+        option.psordsts = "D"
+        if (user) {
+            option.psmrcuid = user;
+        }
 
-    if (start_date && !_.isNaN(start_date.getTime())) {
-        if (end_date && !_.isNaN(end_date.getTime())) {
-            option.createdAt = {
-                [Op.and]: [
-                    { [Op.gte]: start_date },
-                    { [Op.lte]: end_date }
-                ]
+        if (start_date && !_.isNaN(start_date.getTime())) {
+            if (end_date && !_.isNaN(end_date.getTime())) {
+                option.createdAt = {
+                    [Op.and]: [
+                        { [Op.gte]: start_date },
+                        { [Op.lte]: end_date }
+                    ]
+                }
+            } else {
+                option.createdAt = { [Op.gte]: start_date }
             }
         } else {
-            option.createdAt = { [Op.gte]: start_date }
-        }
-    } else {
-        if (end_date && !_.isNaN(end_date.getTime())) {
-            option.createdAt = {
-                [Op.lte]: end_date
+            if (end_date && !_.isNaN(end_date.getTime())) {
+                option.createdAt = {
+                    [Op.lte]: end_date
+                }
+            } else {
+                let today = new Date();
+                today.setHours(23, 59, 59, 999);
+                option.createdAt = {
+                    [Op.lte]: today
+                }
             }
+        }
+
+        rows = await psordpar.findAll({
+            where: option, raw: true, order: [['createdAt', 'asc']], attributes: ["psorduid", "psordgra", "psmbruid", "psmrcuid", "psordsts", "psordodt"]
+        });
+
+
+        let newRows = [];
+        for (var i = 0; i < rows.length; i++) {
+            let obj = rows[i];
+
+            let result = await psmbrprf.findOne({ where: { psmbruid: obj.psmbruid }, raw: true, attributes: ["psmbrnam"] })
+            obj.psmbrnam = result.psmbrnam || "";
+
+            let merchant = await psmrcpar.findOne({ where: { psmrcuid: obj.psmrcuid }, raw: true, attributes: ["psmrcnme"] })
+            obj.psmrcnme = merchant.psmrcnme || "";
+
+            // Get Order Status
+            let status = await common.retrieveSpecificGenCodes(req, "ODRSTS", obj.psordsts);
+            if (status && !_.isEmpty(status.prgedesc)) obj.psordstsdsc = status.prgedesc;
+
+            obj.psordodt = await common.formatDateTime(obj.psordodt, "12");
+            // obj.psordgra = await common.format_number(obj.psordgra);
+
+            newRows.push(obj);
+        }
+
+        // Write to Excel
+        let header = [
+        ];
+
+        header = [
+            { id: 'psorduid', title: 'Order_ID' },
+            { id: 'psmbrnam', title: 'Member_Name' },
+            { id: 'psordodt', title: 'Transaction_Date' },
+            { id: 'psordgra', title: 'Transaction_Amount' },
+            { id: 'psmrcnme', title: 'Merchant_Name' },
+            { id: 'psordsts', title: 'Order_Status' },
+
+
+        ]
+
+
+
+        // let report_type = await common.retrieveSpecificGenCodes(null, 'RPTTYPE', rpt_type);
+        let report_type = "OrderAndSalesReport";
+        if (!start_date || _.isNaN(start_date.getTime())) start_date = new Date();
+        if (!end_date || _.isNaN(end_date.getTime())) end_date = new Date();
+
+
+
+        let dd_start = start_date.getDate();
+        let mm_start = start_date.getMonth() + 1;
+        let yy_start = start_date.getFullYear().toString().substring(2); // last 2 digits
+        let dd_end = end_date.getDate();
+        let mm_end = end_date.getMonth() + 1;
+        let yy_end = end_date.getFullYear().toString().substring(2);
+
+        let filename = "";
+
+        if (type === "M") {
+            filename = `${report_type}-${yy_start}${_.padStart(mm_start, 2, '0')}${_.padStart(dd_start, 2, '0')}-${yy_end}${_.padStart(mm_end, 2, '0')}${_.padStart(dd_end, 2, '0')}`;
+        } else if (type === "T") {
+            filename = `${report_type}-${yy_start}${_.padStart(mm_start, 2, '0')}${_.padStart(dd_start, 2, '0')}-${yy_end}${_.padStart(mm_end, 2, '0')}${_.padStart(dd_end, 2, '0')}`;
+        } else if (type === "Y") {
+            filename = `${report_type}-${yy_start}${_.padStart(mm_start, 2, '0')}${_.padStart(dd_start, 2, '0')}-${yy_end}${_.padStart(mm_end, 2, '0')}${_.padStart(dd_end, 2, '0')}`;
         } else {
-            let today = new Date();
-            today.setHours(23, 59, 59, 999);
-            option.createdAt = {
-                [Op.lte]: today
-            }
+            filename = `${report_type}`;
         }
-    }
 
-    rows = await psordpar.findAll({
-        where: option, raw: true, order: [['createdAt', 'asc']], attributes: ["psorduid", "psordgra", "psmbruid", "psmrcuid", "psordsts", "psordocd"]
-    });
-
-
-    let newRows = [];
-    for (var i = 0; i < rows.length; i++) {
-        let obj = rows[i];
-
-        let result = await psmbrprf.findOne({ where: { psmbruid: obj.psmbruid }, raw: true, attributes: ["psmbrnam"] })
-        obj.psmbrnam = result.psmbrnam || "";
-
-        let merchant = await psmrcpar.findOne({ where: { psmrcuid: obj.psmrcuid }, raw: true, attributes: ["psmrcnme"] })
-        obj.psmrcnme = merchant.psmrcnme || "";
-
-        // Get Order Status
-        let status = await common.retrieveSpecificGenCodes(null, "ODRSTS", obj.psodrsts);
-        if (status && !_.isEmpty(status.prgedesc)) obj.psodrstsdsc = status.prgedesc;
-
-        obj.psordocd = await common.formatDateTime(obj.psordocd, "12");
-        obj.psordgra = await common.format_number(obj.psordgra);
-
-        newRows.push(obj);
-    }
-
-    // Write to Excel
-    let header = [
-    ];
-
-    header = [
-        { id: 'psorduid', title: 'Order_ID' },
-        { id: 'psmbrnam', title: 'Member_Name' },
-        { id: 'psordocd', title: 'Transaction_Date' },
-        { id: 'psordgra', title: 'Transaction_Amount' },
-        { id: 'psmrcnme', title: 'Merchant_Name' },
-        { id: 'psordsts', title: 'Order_Status' },
-
-
-    ]
-
-
-
-    // let report_type = await common.retrieveSpecificGenCodes(null, 'RPTTYPE', rpt_type);
-    let report_type = "OrderAndSalesReport";
-    if (!start_date || _.isNaN(start_date.getTime())) start_date = new Date();
-    if (!end_date || _.isNaN(end_date.getTime())) end_date = new Date();
-
-
-
-    let dd_start = start_date.getDate();
-    let mm_start = start_date.getMonth() + 1;
-    let yy_start = start_date.getFullYear().toString().substring(2); // last 2 digits
-    let dd_end = end_date.getDate();
-    let mm_end = end_date.getMonth() + 1;
-    let yy_end = end_date.getFullYear().toString().substring(2);
-
-    let filename = "";
-
-    if (type === "M") {
-        filename = `${report_type}-${yy_start}${_.padStart(mm_start, 2, '0')}${_.padStart(dd_start, 2, '0')}-${yy_end}${_.padStart(mm_end, 2, '0')}${_.padStart(dd_end, 2, '0')}`;
-    } else if (type === "T") {
-        filename = `${report_type}-${yy_start}${_.padStart(mm_start, 2, '0')}${_.padStart(dd_start, 2, '0')}-${yy_end}${_.padStart(mm_end, 2, '0')}${_.padStart(dd_end, 2, '0')}`;
-    } else if (type === "Y") {
-        filename = `${report_type}-${yy_start}${_.padStart(mm_start, 2, '0')}${_.padStart(dd_start, 2, '0')}-${yy_end}${_.padStart(mm_end, 2, '0')}${_.padStart(dd_end, 2, '0')}`;
-    } else {
-        filename = `${report_type}`;
-    }
-
-    let running_number = 1;
-    let dup_check = await prrpthis.findOne({
-        where: {
-            prrptnme: filename + "-" + running_number + ".csv"
-        }, raw: true
-    });
-    while (dup_check) {
-        running_number++;
-        dup_check = await prrpthis.findOne({
+        let running_number = 1;
+        let dup_check = await prrpthis.findOne({
             where: {
                 prrptnme: filename + "-" + running_number + ".csv"
             }, raw: true
         });
+        while (dup_check) {
+            running_number++;
+            dup_check = await prrpthis.findOne({
+                where: {
+                    prrptnme: filename + "-" + running_number + ".csv"
+                }, raw: true
+            });
+        }
+        filename = filename + "-" + running_number + ".csv";
+
+        let rpthis = '';
+        // // Write to Report Table
+        await prrpthis.create({
+            prrptnme: filename,
+            prrptgdt: new Date(),
+            prrptsts: 'P',
+            prrptusr: req.user.psusrunm,
+            prrptmch: user
+        }).then(data => {
+            rpthis = data.get({ plain: true });
+        });
+
+        let date = "";
+        const formattedStart = `${_.padStart(dd_start, 2, '0')}/${_.padStart(mm_start, 2, '0')}/${start_date.getFullYear()}`;
+        const formattedEnd = `${_.padStart(dd_end, 2, '0')}/${_.padStart(mm_end, 2, '0')}/${end_date.getFullYear()}`;
+
+        if (type === "M" || type === "T" || type === "Y") {
+            date = `${formattedStart} - ${formattedEnd}`;
+        }
+
+        await common.writeReport(req, header, newRows, rpthis, filename, type, date).catch(err => {
+            console.log(err);
+        });
+
+
+        return returnSuccessMessage(req, 200, "REQUESTSUBMITTED", res);
+        // } return returnSuccessMessage(req, 200, "REQUESTSUBMITTED", res);
+    } catch (e) {
+        console.log(e);
+        return returnError(req, 500, "UNEXPECTEDERROR", res);
     }
-    filename = filename + "-" + running_number + ".csv";
-
-    let rpthis = '';
-    // // Write to Report Table
-    await prrpthis.create({
-        prrptnme: filename,
-        prrptgdt: new Date(),
-        prrptsts: 'P',
-        prrptusr: req.user.psusrunm,
-        prrptmch: user
-    }).then(data => {
-        rpthis = data.get({ plain: true });
-    });
-
-    let date = "";
-    const formattedStart = `${_.padStart(dd_start, 2, '0')}/${_.padStart(mm_start, 2, '0')}/${start_date.getFullYear()}`;
-    const formattedEnd = `${_.padStart(dd_end, 2, '0')}/${_.padStart(mm_end, 2, '0')}/${end_date.getFullYear()}`;
-
-    if (type === "M" || type === "T" || type === "Y") {
-        date = `${formattedStart} - ${formattedEnd}`;
-    }
-
-    await common.writeReport(req, header, newRows, rpthis, filename, type, date).catch(err => {
-        console.log(err);
-    });
-
-
-    return returnSuccessMessage(req, 200, "REQUESTSUBMITTED", res);
-    // } return returnSuccessMessage(req, 200, "REQUESTSUBMITTED", res);
 }
 
 exports.list = async (req, res) => {
@@ -299,9 +304,9 @@ exports.download = async (req, res) => {
 }
 
 exports.forecast = async (req, res) => {
-    const forecast_type = req.body.forecast_type ? req.body.forecast_type : "";
-    const id = req.body.prrptnme ? req.body.prrptnme : "";
-    if (id == "") return returnError(req, 500, { id: "RECORDIDISREQUIRED" }, res);
+    const forecast_type = req.query.forecast_type ? req.query.forecast_type : "";
+    const id = req.query.prrptnme ? req.query.prrptnme : "";
+    if (id == "") return returnError(req, 500, "RECORDIDISREQUIRED", res);
     if (forecast_type == "") return returnError(req, 500, { forecast_type: "RECORDIDISREQUIRED" }, res);
     try {
 
