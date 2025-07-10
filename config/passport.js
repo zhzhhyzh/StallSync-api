@@ -4,6 +4,7 @@ const db = require("../models");
 const psusrprf = db.psusrprf;
 const psmrcpar = db.psmrcpar;
 const psmbrprf = db.psmbrprf;
+const psstfpar = db.psstfpar;
 const opts = {};
 
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
