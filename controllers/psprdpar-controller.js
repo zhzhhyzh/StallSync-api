@@ -61,9 +61,9 @@ exports.list = async (req, res) => {
     option[Op.and].push({ psprdcat: req.query.psprdcat });
   }
 
-  // if (req.query.psmrcuid && !_.isEmpty(req.query.psmrcuid) && req.user.psusrtyp != "MCH") {
-  //   option[Op.and].push({ psmrcuid: req.query.psmrcuid });
-  // }
+  if (req.query.psmrcuid && !_.isEmpty(req.query.psmrcuid) && req.user.psusrtyp != "MCH") {
+    option[Op.and].push({ psmrcuid: req.query.psmrcuid });
+  }
 
   if (req.query.search && !_.isEmpty(req.query.search)) {
     option[Op.and].push({
