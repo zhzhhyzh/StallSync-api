@@ -576,12 +576,12 @@ exports.create = async (req, res) => {
           await t.rollback();
           return returnError(req, 500, "UNEXPECTEDERROR", res);
         }
-function getRandomDateInPast12Months() {
-    const now = new Date();
-    const pastYear = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-    const randomTime = pastYear.getTime() + Math.random() * (now.getTime() - pastYear.getTime());
-    return new Date(randomTime);
-}
+// function getRandomDateInPast12Months() {
+//     const now = new Date();
+//     const pastYear = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+//     const randomTime = pastYear.getTime() + Math.random() * (now.getTime() - pastYear.getTime());
+//     return new Date(randomTime);
+// }
         await psordpar
           .create({
             psorduid: ref,
@@ -589,9 +589,9 @@ function getRandomDateInPast12Months() {
             psordpap: req.body.psordpap,
             psordpdv: discountedValue,
             psordrdv: rewardDv,
-            // psordodt: new Date(),
+            psordodt: new Date(),
             // psordodt: new Date(new Date().setMonth(new Date().getMonth() - 10)),
-            psordodt: getRandomDateInPast12Months(),
+            // psordodt: getRandomDateInPast12Months(),
             psordamt: orderAmount,
             psrwduid: req.body.psordrap == "Y" ? req.body.psrwduid : "",
             psordgra: grandTotal,
