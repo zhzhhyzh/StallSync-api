@@ -68,65 +68,75 @@ router.post("/createOffline", async (req, res) => {
 });
 
 router.post("/createOnline", async (req, res) => {
+
   const { psorduid, pstrxamt, returnUrl } = req.body;
 
-  if (!psorduid) {
-    return returnError(req, 500, { psorduid: "RECORDIDISREQUIRED" }, res);
+  if (!psorduid || !pstrxamt || !returnUrl) {
+    return returnError(req, 500, "RECORDIDISREQUIRED", res);
   }
 
-  if (!pstrxamt) {
-    return returnError(req, 500, { pstrxamt: "RECORDIDISREQUIRED" }, res);
+  // Normalize returnUrl to ensure it includes a valid scheme
+  let formattedReturnUrl = returnUrl;
+  if (!/^https?:\/\//i.test(returnUrl)) {
+    formattedReturnUrl = `https://${returnUrl}`; // fallback to https if not present
   }
+  console.log(returnUrl, " LLKK")
+  console.log(formattedReturnUrl, " LLKK")
 
-  const transactionId = uuidv4();
+  try {
+    const transactionId = uuidv4();
 
-  // Create a new transaction in DB with status "N"
-  await pstrxparDB.create({
-    pstrxuid: transactionId,
-    psorduid,
-    pstrxdat: new Date(),
-    pstrxamt: pstrxamt,
-    pstrxsts: "N",
-    pstrxmtd: "O",
-  });
-
-  await psordpar.update(
-    {
-      psordsts: "G",
-    },
-    {
-      where: { psorduid: psorduid },
-    }
-  );
-
-  // Create Stripe session
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    line_items: [
-      {
-        price_data: {
-          currency: "myr",
-          product_data: {
-            name: `Order ${psorduid}`,
-          },
-          unit_amount: Math.round(pstrxamt * 100),
-        },
-        quantity: 1,
-      },
-    ],
-    mode: "payment",
-    // success_url: `http://localhost:${process.env.PORT}/api/pstrxpar/success?session_id={CHECKOUT_SESSION_ID}`,
-    // cancel_url: `http://localhost:${process.env.PORT}/api/pstrxpar/cancel`,
-    success_url: `${returnUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${returnUrl}/checkout/cancel`,
-    metadata: {
-      transactionId,
+    // Create a new transaction in DB with status "N"
+    await pstrxparDB.create({
+      pstrxuid: transactionId,
       psorduid,
-    },
-  });
+      pstrxdat: new Date(),
+      pstrxamt: pstrxamt,
+      pstrxsts: "N",
+      pstrxmtd: "O",
+    });
 
-  // Return the session URL to frontend
-  res.json({ url: session.url });
+    await psordpar.update(
+      {
+        psordsts: "G",
+      },
+      {
+        where: { psorduid: psorduid },
+      }
+    );
+
+    // Create Stripe session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "myr",
+            product_data: {
+              name: `Order ${psorduid}`,
+            },
+            unit_amount: Math.round(pstrxamt * 100),
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      // success_url: `http://localhost:${process.env.PORT}/api/pstrxpar/success?session_id={CHECKOUT_SESSION_ID}`,
+      // cancel_url: `http://localhost:${process.env.PORT}/api/pstrxpar/cancel`,
+      success_url: `${returnUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${returnUrl}/checkout/cancel`,
+      metadata: {
+        transactionId,
+        psorduid,
+      },
+    });
+
+    // Return the session URL to frontend
+    res.json({ url: session.url });
+  } catch (e) {
+    console.log(e);
+    return returnError(req, 500, "UNEXPECTEDERROR", res);
+  }
 });
 
 router.get("/success", async (req, res) => {
@@ -157,14 +167,11 @@ router.get("/success", async (req, res) => {
       }
     );
 
-    return res
-      .status(200)
-      .send(
-        "Payment successful and transaction updated. \n Get back to merchant for further operations!"
-      );
+    return returnSuccessMessage(req, 200, "RECORDCREATED", res)
+
   } catch (err) {
     console.error("Stripe success error:", err);
-    return res.status(500).send("Error verifying payment.");
+    return returnError(req, 500, "Error in handling payment to success", res);
   }
 });
 
@@ -196,12 +203,11 @@ router.get("/cancel", async (req, res) => {
       }
     );
 
-    return res
-      .status(200)
-      .send("Payment failed. Get back to merchant for futher information");
+    return returnSuccessMessage(req, 200, "RECORDCREATED", res)
   } catch (err) {
     console.error("Stripe success error:", err);
-    return res.status(500).send("Error verifying payment.");
+    return returnError(req, 500, "Error in verifying payment to cancel", res);
+
   }
 });
 

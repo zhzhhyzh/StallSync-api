@@ -117,7 +117,6 @@ exports.list = async (req, res) => {
       raw: true,
       attributes: ["psusrnam"]
     });
-    console.log("KKLKLL: ", result)
     obj.psmrcowndsc = result?.psusrnam ?? "-";
 
     // }

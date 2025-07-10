@@ -519,7 +519,7 @@ exports.list = async (req, res) => {
     if (req.query.psusrrol && !_.isEmpty(req.query.psusrrol)) {
         option.psusrrol = req.query.psusrrol;
     }
-    option.psusrtyp = { [Op.ne]: "MBR" };
+    // option.psusrtyp = { [Op.ne]: "MBR" };
     const { count, rows } = await psusrprf.findAndCountAll({
         limit: parseInt(limit),
         offset: from,
