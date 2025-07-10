@@ -8,7 +8,7 @@ module.exports = (sequelize, Sequelize) => {
             // Transaction ID
         },
         psorduid: {
-            type: Sequelize.STRING(25),
+            type: Sequelize.STRING(50),
             allowNull: false,
             // Order ID
         },

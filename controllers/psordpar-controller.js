@@ -13,6 +13,7 @@ const psmrcpar = db.psmrcpar;
 const psstfpar = db.psstfpar;
 const psprdpar = db.psprdpar;
 const pstrxpar = db.pstrxpar;
+const psrwddtl = db.psrwddtl;
 // Common Function
 const Op = db.Sequelize.Op;
 const returnError = require("../common/error");
@@ -27,6 +28,8 @@ const validatePsordparInput = require("../validation/psordpar-validation.js");
 const { where } = require("sequelize");
 
 exports.list = async (req, res) => {
+
+
   let limit = 10;
   if (req.query.limit) limit = req.query.limit;
 
@@ -34,85 +37,99 @@ exports.list = async (req, res) => {
   if (!req.query.page) from = 0;
   else from = parseInt(req.query.page) * parseInt(limit);
 
-  let option = {};
-  let userId = "";
 
-  if (req.user.psusrtyp == "MCH") {
-    option.psmrcuid = req.user.psmrcuid;
-    userId = req.user.psmrcuid;
-  }
 
-  if (req.user.psusrtyp == "MBR") {
-    option.psordpre = req.user.psusrpre;
-    option.psordphn = req.user.psusrphn;
-    userId = req.user.psmbruid;
-  }
+
+    let option = {
+
+    };
+    let userId = "";
+
+    if (req.user.psusrtyp == "MCH") {
+      option.psmrcuid = req.user.psmrcuid
+      userId = req.user.psmrcuid;
+
+    }
+
+    if (req.user.psusrtyp == "MBR") {
+      option.psordpre = req.user.psusrpre;
+      option.psordphn = req.user.psusrphn;
+      userId = req.user.psmbruid;
+
+
+    }
 
   //For admin use only
   if (req.query.psmrcuid && !_.isEmpty(req.query.psmrcuid)) {
     option.psmrcuid = req.query.psmrcuid;
   }
 
-  if (req.query.psordphn && !_.isEmpty(req.query.psordphn)) {
-    option.psordphn = {
-      [Op.like]: `%${req.query.psordphn}%`,
-    };
-  }
-
-  if (req.query.from && !_.isEmpty("" + req.query.from)) {
-    let fromDate = new Date(req.query.from);
-    fromDate.setHours(0, 0, 0, 0);
-    if (!_.isNaN(fromDate.getTime())) {
-      if (req.query.to && !_.isEmpty("" + req.query.to)) {
-        let toDate = new Date(req.query.to);
-        toDate.setHours(23, 59, 59, 999);
-        if (!_.isNaN(toDate.getTime())) {
-          option.psordodt = {
-            [Op.and]: [{ [Op.gte]: fromDate }, { [Op.lte]: toDate }],
-          };
-        } else {
-          option.psordodt = {
-            [Op.gte]: fromDate,
-          };
-        }
-      } else {
-        option.psordodt = {
-          [Op.gte]: fromDate,
-        };
-      }
-    }
-  } else if (req.query.to && !_.isEmpty("" + req.query.to)) {
-    let toDate = new Date(req.query.to);
-    toDate.setHours(23, 59, 59, 999);
-    if (!_.isNaN(toDate.getTime())) {
-      option.psordodt = {
-        [Op.lte]: toDate,
+    if (req.query.psordphn && !_.isEmpty(req.query.psordphn)) {
+      option.psordphn = {
+        [Op.like]: `%${req.query.psordphn}%`
       };
     }
-  }
 
-  const { count, rows } = await psordpar.findAndCountAll({
-    limit: parseInt(limit),
-    offset: from,
-    where: option,
-    raw: true,
-    attributes: [
-      ["psorduid", "id"],
-      "psorduid",
-      "psordodt",
-      "psordamt",
-      "psordphn",
-      "psordpre",
-      "psordsts",
-      "psordgra",
-      "psmrcuid",
-    ],
-    order: [["psordodt", "desc"]],
-  });
 
-  let newRows = [];
-  for (var i = 0; i < rows.length; i++) {
-    let obj = rows[i];
+
+    if (req.query.from && !_.isEmpty('' + req.query.from)) {
+      let fromDate = new Date(req.query.from);
+      fromDate.setHours(0, 0, 0, 0);
+      if (!_.isNaN(fromDate.getTime())) {
+        if (req.query.to && !_.isEmpty('' + req.query.to)) {
+          let toDate = new Date(req.query.to);
+          toDate.setHours(23, 59, 59, 999);
+          if (!_.isNaN(toDate.getTime())) {
+            option.psordodt = {
+              [Op.and]: [
+                { [Op.gte]: fromDate },
+                { [Op.lte]: toDate }
+              ]
+            }
+          } else {
+            option.psordodt = {
+              [Op.gte]: fromDate
+            }
+          }
+        } else {
+          option.psordodt = {
+            [Op.gte]: fromDate
+          }
+        }
+      }
+    } else if (req.query.to && !_.isEmpty('' + req.query.to)) {
+      let toDate = new Date(req.query.to);
+      toDate.setHours(23, 59, 59, 999);
+      if (!_.isNaN(toDate.getTime())) {
+        option.psordodt = {
+          [Op.lte]: toDate
+        }
+      }
+    }
+
+    const { count, rows } = await psordpar.findAndCountAll({
+      limit: parseInt(limit),
+      offset: from,
+      where: option,
+      raw: true,
+      attributes: [
+        ["psorduid", "id"],
+        "psorduid",
+        "psordodt",
+        "psordamt",
+        "psordphn",
+        "psordpre",
+        "psordsts",
+        "psordgra",
+        "psmrcuid"
+      ],
+      order: [["psordodt", "desc"]],
+    });
+
+    let newRows = [];
+    for (var i = 0; i < rows.length; i++) {
+      let obj = rows[i];
+
 
     if (!_.isEmpty(obj.psordsts)) {
       let description = await common.retrieveSpecificGenCodes(
@@ -138,30 +155,24 @@ exports.list = async (req, res) => {
           : "";
     }
 
-    if (!_.isEmpty(obj.psmrcuid)) {
-      await psmrcpar
-        .findOne({
+      if (!_.isEmpty(obj.psmrcuid)) {
+        await psmrcpar.findOne({
           where: {
-            psmrcuid: obj.psmrcuid,
-          },
-          raw: true,
-          attributes: ["psmrcuid", "psmrcnme", "psmrcppi", "psmrcsfi"],
+            psmrcuid: obj.psmrcuid
+          }, raw: true, attributes: ["psmrcuid", "psmrcnme", "psmrcppi", "psmrcsfi"]
+        }).then(async result => {
+          obj.psmrcuiddsc = result.psmrcnme && !_.isEmpty(result.psmrcnme)
+            ? result.psmrcnme
+            : "";
+            obj.sfi = result.psmrcsfi && !_.isEmpty(result.psmrcsfi)
+            ? result.psmrcsfi
+            : "";
+            obj.ppi = result.psmrcppi && !_.isEmpty(result.psmrcppi)
+            ? result.psmrcppi
+            : "";
         })
-        .then(async (result) => {
-          obj.psmrcuiddsc =
-            result.psmrcnme && !_.isEmpty(result.psmrcnme)
-              ? result.psmrcnme
-              : "";
-          obj.sfi =
-            result.psmrcsfi && !_.isEmpty(result.psmrcsfi)
-              ? result.psmrcsfi
-              : "";
-          obj.ppi =
-            result.psmrcppi && !_.isEmpty(result.psmrcppi)
-              ? result.psmrcppi
-              : "";
-        });
-    }
+
+      }
 
     obj.psordodt = await common.formatDateTime(obj.psordodt);
     // obj.psordamt = common.formatDecimal(obj.psordamt);
@@ -438,13 +449,12 @@ exports.create = async (req, res) => {
         const orderItem = await psmbrcrt.findAll({
           where: {
             psmrcuid: req.body.psmrcuid,
-            psmbrcar: member.psmbrcar,
-          },
-          raw: true,
-          attributes: {
-            exclude: ["createdAt", "updatedAt"],
-          },
-        });
+            psmbrcar: member.psmbrcar
+          }, raw: true, attributes: {
+            exclude: ['createdAt', 'updatedAt']
+          }
+
+        })
         // let psorditmT = req.body.psorditm;
         if (!orderItem) {
           return returnError(req, 400, "Order is empty", res);
@@ -455,27 +465,16 @@ exports.create = async (req, res) => {
           orderAmount += parseFloat(orderItem[i].psitmsbt);
         }
         grandTotal = orderAmount;
+        let rewardDv = 0;
 
         //Rewards Using and Updates
         if (req.body.psordrap == "Y") {
           let reward = await psrwdpar.findOne({
             where: {
               psrwduid: req.body.psrwduid,
-              psrwduid: "A",
-            },
-            raw: true,
-            attributes: [
-              "psrwduid",
-              "psrwdtyp",
-              "psrwddva",
-              "psrwdism",
-              "psrwdmin",
-              "psrwdcap",
-              "psrwdaam",
-              "psrwdqty",
-            ],
+              psrwduid: "A"
+            }, raw: true, attributes: ["psrwduid", "psrwdtyp", "psrwddva", "psrwdism", "psrwdmin", "psrwdcap", "psrwdaam", "psrwdqty"]
           });
-
           if (!reward || _.isEmpty(reward.psrwduid)) {
             return returnError(req, 400, "INVALIDVOUCHER", res);
           }
@@ -489,7 +488,7 @@ exports.create = async (req, res) => {
             raw: true,
             attributes: ["psorduid"],
           });
-          if (claim || _.isEmpty(claim.psorduid)) {
+          if (claim) {
             return returnError(req, 400, "VOUCHERPREVCLAIMED", res);
           }
           if (reward.psrwdaam == "N") {
@@ -512,7 +511,6 @@ exports.create = async (req, res) => {
               return returnError(req, 400, "CONDITIONNOTMET", res);
             }
           }
-
           switch (reward.psrwdtyp) {
             case "P":
               let discountValue = grandTotal * reward.psrwddva;
@@ -522,6 +520,7 @@ exports.create = async (req, res) => {
                 }
               }
               grandTotal -= discountValue;
+              rewardDv = discountValue;
               break;
             case "V":
               let discount = reward.psrwddva;
@@ -531,6 +530,8 @@ exports.create = async (req, res) => {
                 }
               }
               grandTotal -= discount;
+              rewardDv = discount;
+
               break;
           }
 
@@ -552,57 +553,66 @@ exports.create = async (req, res) => {
           );
         }
 
-        let pointValue = 0.0;
+        let pointValue = 0.00;
         let balancePoint = 0;
 
         //Points Using and updates
-        if (req.body.psordpap == "Y" && memberId) {
+        if (req.body.psordpap == 'Y' && memberId) {
           let mPoint = parseInt(req.user.psmbrpts);
           pointValue = mPoint / 100;
           if (pointValue > grandTotal) {
             balancePoint = (pointValue - grandTotal) * 100;
             grandTotal = 0;
           } else {
-            grandTotal -= pointValue;
+            discountedValue = availableDiscount;            // Use all discount
+            pointValue = 0;
+            grandTotal -= availableDiscount;
           }
 
-          await psmbrprf.update(
-            { psmbrpts: pointValue, psmbracs: member.psmbracs + grandTotal },
-            {
-              where: {
-                psmbruid: memberId,
-              },
+          await psmbrprf.update({ psmbrpts: pointValue, psmbracs: member.psmbracs + grandTotal }, {
+            where: {
+              psmbruid: memberId
             }
-          );
+          });
+
         }
 
         //SST Add on
         let sst = 0;
         sst = grandTotal * 0.06;
         grandTotal += sst;
-        const t = await connection.sequelize.transaction();
+
+        try {
+          await psmbrprf.update({
+            psmbrpts: pointValue,
+            psmbracs: member.psmbracs + grandTotal
+          }, {
+            where: { psmbruid: memberId }
+          }, { transaction: t });
+        } catch (e) {
+          console.log(e);
+          await t.rollback();
+          return returnError(req, 500, "UNEXPECTEDERROR", res);
+        }
 
         await psordpar
-          .create(
-            {
-              psorduid: ref,
-              psordrap: req.body.psordrap,
-              psordpap: req.body.psordpap,
-              psordpdv: balancePoint,
-              psordodt: new Date(),
-              psordamt: orderAmount,
-              psrwduid: req.body.psordrap == "Y" ? req.body.psrwduid : "",
-              psordgra: grandTotal,
-              psmbruid: memberId,
-              psordpre: memberId ? member.psmbrpre : req.body.psordpre,
-              psordphn: memberId ? member.psmbrphn : req.body.psordphn,
-              psmrcuid: req.body.psmrcuid,
-              psordsts: "N",
-              psordocd: "",
-              psordsst: sst,
-            },
-            { transaction: t }
-          )
+          .create({
+            psorduid: ref,
+            psordrap: req.body.psordrap,
+            psordpap: req.body.psordpap,
+            psordpdv: balancePoint,
+            psordodt: new Date(),
+            psordamt: orderAmount,
+            psrwduid: req.body.psordrap == "Y" ? req.body.psrwduid : "",
+            psordgra: grandTotal,
+            psmbruid: memberId,
+            psordpre: memberId ? member.psmbrpre : req.body.psordpre,
+            psordphn: memberId ? member.psmbrphn : req.body.psordphn,
+            psmrcuid: req.body.psmrcuid,
+            psordsts: 'N',
+            psordocd: '',
+            psordsst: sst
+          }, { transaction: t })
           .then(async (data) => {
             let created = data.get({ plain: true });
             // for (let i = 0; i < orderItem.length; i++) {
@@ -659,21 +669,13 @@ exports.create = async (req, res) => {
               created.psorduid,
               "A",
               req.user.psusrunm,
-              "",
-              created.psorduid
-            );
+              "", created.psorduid);
 
-            return returnSuccess(
-              200,
-              { message: "RECORDCREATED", ordId: created.psorduid },
-              res
-            );
-          });
-      } else if (
-        (req.body.psordpap == "Y" || req.body.psordpap == "Y") &&
-        !memberId
-      ) {
-        return returnError(req, 400, "NOTAMEMBER", res);
+        
+            return returnSuccess( 200, {message:"RECORDCREATED",ordId:created.psorduid}, res);
+          })
+      } else if ((req.body.psordpap == 'Y' || req.body.psordpap == 'Y') && !memberId) {
+        return returnError(req, 400, 'NOTAMEMBER', res);
       }
     } catch (err) {
       console.log(err);
@@ -690,11 +692,10 @@ exports.update_paid = async (req, res) => {
   const cashCheck = await pstrxpar.findOne({
     where: {
       psorduid: id,
-      pstrxsts: "N",
-      pstrxmtd: "C",
-    },
-    raw: true,
-  });
+      pstrxsts: 'N',
+      pstrxmtd: 'C'
+    }, raw: true
+  })
   if (!cashCheck) {
     return returnError(req, 400, "Order is paid through online", res);
   }

@@ -4,7 +4,7 @@ module.exports = (sequelize, Sequelize) => {
 
     const psordrvw = sequelize.define('psordrvw', {
         psorduid: {
-            type: Sequelize.STRING(25),
+            type: Sequelize.STRING(50),
             allowNull: false,
             // Order ID
         },
