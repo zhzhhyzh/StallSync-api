@@ -45,6 +45,8 @@ router.post("/createOffline", async (req, res) => {
 
   const transactionId = uuidv4();
 
+  
+
   // Create a new transaction in DB with status "N"
   await pstrxparDB.create({
     pstrxuid: transactionId,
@@ -60,7 +62,7 @@ router.post("/createOffline", async (req, res) => {
       psordsts: "G",
     },
     {
-      where: { psorduid: psorduid },
+      where: { psorduid },
     }
   );
 

@@ -9,7 +9,7 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false,
         },
         psorduid: {
-            type: Sequelize.STRING(25),
+            type: Sequelize.STRING(50),
             allowNull: false,
             primaryKey: true,
             comment: "Order ID"
