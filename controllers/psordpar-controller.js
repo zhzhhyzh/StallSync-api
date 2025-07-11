@@ -50,13 +50,9 @@ exports.list = async (req, res) => {
     userId = req.user.psmrcuid;
 
   }
-
   if (req.user.psusrtyp == "MBR") {
-    option.psordpre = req.user.psusrpre;
-    option.psordphn = req.user.psusrphn;
     userId = req.user.psmbruid;
-
-
+    option.psmbruid = userId;
   }
 
   //For admin use only
@@ -64,7 +60,7 @@ exports.list = async (req, res) => {
     option.psmrcuid = req.query.psmrcuid;
   }
 
-   if (req.query.psordsts && !_.isEmpty(req.query.psordsts)) {
+  if (req.query.psordsts && !_.isEmpty(req.query.psordsts)) {
     option.psordsts = req.query.psordsts;
   }
   // option.psordsts = 'G';
@@ -576,12 +572,12 @@ exports.create = async (req, res) => {
           await t.rollback();
           return returnError(req, 500, "UNEXPECTEDERROR", res);
         }
-// function getRandomDateInPast12Months() {
-//     const now = new Date();
-//     const pastYear = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-//     const randomTime = pastYear.getTime() + Math.random() * (now.getTime() - pastYear.getTime());
-//     return new Date(randomTime);
-// }
+        // function getRandomDateInPast12Months() {
+        //     const now = new Date();
+        //     const pastYear = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+        //     const randomTime = pastYear.getTime() + Math.random() * (now.getTime() - pastYear.getTime());
+        //     return new Date(randomTime);
+        // }
         await psordpar
           .create({
             psorduid: ref,
@@ -643,7 +639,7 @@ exports.create = async (req, res) => {
               "", created.psorduid);
 
 
-            return returnSuccess(200, { message: "RECORDCREATED", ordId: created.psorduid,amt: created.psordgra }, res);
+            return returnSuccess(200, { message: "RECORDCREATED", ordId: created.psorduid, amt: created.psordgra }, res);
           })
       } else if ((req.body.psordpap == 'Y' || req.body.psordpap == 'Y') && !memberId) {
         return returnError(req, 400, 'NOTAMEMBER', res);
