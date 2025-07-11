@@ -358,7 +358,6 @@ exports.change_password = async (req, res) => {
 }
 
 exports.create = async (req, res) => {
-    console.log("Incoming user payload:", req.body);
     //Validation
     const { errors, isValid } = userCreationValidation(req.body, 'N');
     if (!isValid) return returnError(req, 400, errors, res);

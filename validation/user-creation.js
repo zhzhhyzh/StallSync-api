@@ -71,6 +71,7 @@ module.exports = function memberCreationValidation(data, flag) {
   data.psusrpwd = !isEmpty(data.psusrpwd) ? data.psusrpwd : '';
   data.psusrphn = !isEmpty(data.psusrphn) ? data.psusrphn : '';
   data.psusrrol = !isEmpty(data.psusrrol) ? data.psusrrol : '';
+  data.psusrpre = !isEmpty(data.psusrpre) ? data.psusrpre : '';
 
   if (Validator.isEmpty(data.psusrpwd)) {
     errors.psusrpwd = "FIELDISREQUIRED";
@@ -106,6 +107,11 @@ module.exports = function memberCreationValidation(data, flag) {
     errors.psusrrol = "FIELDISREQUIRED";
   }
 
+    if (Validator.isEmpty(data.psusrpre)) {
+    errors.psusrpre = "FIELDISREQUIRED";
+  } else {
+    if (data.psusrpre.length > 20) errors.psusrpre = 'INVALIDVALUELENGTH&20';
+  }
   return {
     errors,
     isValid: isEmpty(errors)
