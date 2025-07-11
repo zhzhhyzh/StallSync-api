@@ -12,6 +12,8 @@ module.exports = function userCreationValidation(data, flag) {
   data.psusrpwd = !isEmpty(data.psusrpwd) ? data.psusrpwd : '';
   data.psusrphn = !isEmpty(data.psusrphn) ? data.psusrphn : '';
   data.psusrpre = !isEmpty(data.psusrpre) ? data.psusrpre : '';
+  data.psusrrol = !isEmpty(data.psusrrol) ? data.psusrrol : '';
+
 
   if (Validator.isEmpty(data.psusrunm)) {
     errors.psusrunm = "FIELDISREQUIRED";
@@ -49,11 +51,15 @@ module.exports = function userCreationValidation(data, flag) {
     if (data.psusrphn.length > 20) errors.psusrphn = 'INVALIDVALUELENGTH&20';
   }
 
-    if (Validator.isEmpty(data.psusrpre)) {
+  if (Validator.isEmpty(data.psusrpre)) {
     errors.psusrpre = "FIELDISREQUIRED";
   } else {
     if (data.psusrpre.length > 20) errors.psusrpre = 'INVALIDVALUELENGTH&20';
   }
+ if (Validator.isEmpty(data.psusrrol)) {
+    errors.psusrrol = "FIELDISREQUIRED";
+  }
+
 
   return {
     errors,
@@ -91,7 +97,7 @@ module.exports = function memberCreationValidation(data, flag) {
     if (data.psusreml.length > 100) errors.psusreml = 'INVALIDVALUELENGTH&100';
   }
 
-  if (Validator.isEmpty(data.psusrtyp) && flag == 'Y') {
+  if (Validator.isEmpty(data.psusrtyp)) {
     errors.psusrtyp = "FIELDISREQUIRED";
   } else {
     if (data.psusrtyp.length > 10) errors.psusrtyp = 'INVALIDVALUELENGTH&10';
@@ -107,7 +113,7 @@ module.exports = function memberCreationValidation(data, flag) {
     errors.psusrrol = "FIELDISREQUIRED";
   }
 
-    if (Validator.isEmpty(data.psusrpre)) {
+  if (Validator.isEmpty(data.psusrpre)) {
     errors.psusrpre = "FIELDISREQUIRED";
   } else {
     if (data.psusrpre.length > 20) errors.psusrpre = 'INVALIDVALUELENGTH&20';

@@ -50,7 +50,6 @@ exports.list = async (req, res) => {
     userId = req.user.psmrcuid;
 
   }
-  console.log(req.user, " klkl")
   if (req.user.psusrtyp == "MBR") {
     userId = req.user.psmbruid;
     option.psmbruid = userId;
