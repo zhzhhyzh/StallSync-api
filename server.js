@@ -119,24 +119,29 @@ app.use(async function (req, res, next) {
 process.on('uncaughtException', async error => {
   common.logging("ERROR", "[" + moment().format("DD-MM-YYYY, h:mm:ss a") + "]" + error ? error.original ? JSON.stringify(error.original) : JSON.stringify(error) : "" + "\n");
   console.log(error);
-  process.exit(1)
+  // process.exit(1)
 })
 
 //Logging for 400
 process.on('unhandledRejection', async error => {
   common.logging("ERROR", "[" + moment().format("DD-MM-YYYY, h:mm:ss a") + "]" + error ? error.original ? JSON.stringify(error.original) : JSON.stringify(error) : "" + "\n");
   console.log(error);
-  process.exit(1)
+  // process.exit(1)
 })
 
 app.disable('etag');
 const db = require("./models");
 
 
-// SECURITY //
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 429,
+    message: "Too many requests, please try again later."
+  }
 });
 
 app.use(limiter);
@@ -148,6 +153,12 @@ app.use((err, req, res, next) => {
     }
 });
 
+app.use((req, res, next) => {
+  if (req.socket.server.connections > 1000) {
+    return res.status(503).send("Server too busy. Try again later.");
+  }
+  next();
+});
 
 // -- Cron Definition -- //
 const dailyJob = require("./cron/daily-job");
