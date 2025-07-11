@@ -67,31 +67,31 @@ exports.generate = async (req, res) => {
 
         if (start_date && !_.isNaN(start_date.getTime())) {
             if (end_date && !_.isNaN(end_date.getTime())) {
-                option.createdAt = {
+                option.psordodt = {
                     [Op.and]: [
                         { [Op.gte]: start_date },
                         { [Op.lte]: end_date }
                     ]
                 }
             } else {
-                option.createdAt = { [Op.gte]: start_date }
+                option.psordodt = { [Op.gte]: start_date }
             }
         } else {
             if (end_date && !_.isNaN(end_date.getTime())) {
-                option.createdAt = {
+                option.psordodt = {
                     [Op.lte]: end_date
                 }
             } else {
                 let today = new Date();
                 today.setHours(23, 59, 59, 999);
-                option.createdAt = {
+                option.psordodt = {
                     [Op.lte]: today
                 }
             }
         }
 
         rows = await psordpar.findAll({
-            where: option, raw: true, order: [['createdAt', 'asc']], attributes: ["psorduid", "psordgra", "psmbruid", "psmrcuid", "psordsts", "psordodt"]
+            where: option, raw: true, order: [['psordodt', 'asc']], attributes: ["psorduid", "psordgra", "psmbruid", "psmrcuid", "psordsts", "psordodt"]
         });
 
 

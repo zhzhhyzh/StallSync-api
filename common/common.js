@@ -14,6 +14,7 @@ const { degrees, PDFDocument, rgb, StandardFonts } = require("pdf-lib");
 const path = require("path");
 
 const mntlogpf = db.mntlogpf;
+const pslogpar = db.pslogpar;
 const prgentyp = db.prgentyp;
 const prgencde = db.prgencde;
 const pssyspar = db.pssyspar;
@@ -79,6 +80,27 @@ async function logging(type, message) {
   });
 }
 
+async function getLogPar(type) {
+  return new Promise(async (resolve, reject) => {
+    if (!type) return resolve(false);
+    else {
+      let logpar = await pslogpar.findOne({
+        where: {
+          pslogcde: type,
+        },
+        raw: true,
+      });
+      if (logpar) {
+        return resolve({
+          path: "./" + logpar.pslogpth,
+          name: logpar.pslogfnm,
+          size: logpar.pslogmax,
+          copy: logpar.pslogcpy,
+        });
+      } else return resolve(false);
+    }
+  });
+}
 async function retrieveSpecificGenCodes(req, gentype, gencode) {
   return new Promise((resolve, reject) => {
     prgentyp.findOne({
@@ -821,4 +843,5 @@ module.exports = {
   writeReport,
   convertDate,
   appendStart,
+  getLogPar,
 }
