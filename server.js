@@ -169,6 +169,8 @@ dailyJob.voucher_expiry();
 dailyJob.voucher_activate();
 dailyJob.recommendationGet();
 dailyJob.member_expiry();
+dailyJob.transaction_expiry();
+dailyJob.order_expiry();
 backupJob.backupDB();
 backupJob.cleanFS();
 backupJob.cleanDB();
