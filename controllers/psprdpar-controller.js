@@ -93,6 +93,7 @@ exports.list = async (req, res) => {
       "psprdimg",
       "psprdpri",
       "psprdcrd",
+      "psprdrtg"
     ],
     order: [["psprduid", "asc"]],
   });
