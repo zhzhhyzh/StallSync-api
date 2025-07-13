@@ -286,13 +286,15 @@ exports.create = async (req, res) => {
       }, res);
     }
   }
-  const merchant = await psmrcpar.findOne({
-    where: {
-      psmrcuid: req.body.psmrcuid,
-    }, raw: true
-  })
-  if (!merchant) {
-    return returnError(req, 500, "INVALIDDATAVALUE", res);
+  if (req.body.psmrcuid != "") {
+    const merchant = await psmrcpar.findOne({
+      where: {
+        psmrcuid: req.body.psmrcuid,
+      }, raw: true
+    })
+    if (!merchant) {
+      return returnError(req, 400, "INVALIDDATAVALUE", res);
+    }
   }
   // Duplicate Check
   psstfpar
@@ -641,11 +643,11 @@ exports.update = async (req, res) => {
               psstfcit: req.body.psstfcit,
               psstfsta: req.body.psstfsta,
               psstfsam: req.body.psstfsam,
-              psstfha1: req.body.psstfsam == "Y" ? req.body.psstfad1 :  req.body.psstfha1,
-              psstfha2: req.body.psstfsam == "Y" ? req.body.psstfad2 :  req.body.psstfha2,
-              psstfhpo: req.body.psstfsam == "Y" ? req.body.psstfpos :  req.body.psstfhpo,
-              psstfhci: req.body.psstfsam == "Y" ? req.body.psstfcit :  req.body.psstfhci,
-              psstfhst: req.body.psstfsam == "Y" ? req.body.psstfsta :  req.body.psstfhst,
+              psstfha1: req.body.psstfsam == "Y" ? req.body.psstfad1 : req.body.psstfha1,
+              psstfha2: req.body.psstfsam == "Y" ? req.body.psstfad2 : req.body.psstfha2,
+              psstfhpo: req.body.psstfsam == "Y" ? req.body.psstfpos : req.body.psstfhpo,
+              psstfhci: req.body.psstfsam == "Y" ? req.body.psstfcit : req.body.psstfhci,
+              psstfhst: req.body.psstfsam == "Y" ? req.body.psstfsta : req.body.psstfhst,
               psstfeml: req.body.psstfeml,
               psstfbnk: req.body.psstfbnk,
               psstfacc: req.body.psstfacc,
