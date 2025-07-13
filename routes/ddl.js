@@ -9,6 +9,9 @@ const psusrprf = db.psusrprf;
 const psmbrprf = db.psmbrprf;
 const psstfpar = db.psstfpar;
 const psmrcpar = db.psmrcpar;
+const psrwdpar = db.psrwdpar;
+const psrwddtl = db.psrwddtl;
+const psordpar = db.psordpar;
 
 
 const Op = db.Sequelize.Op;
@@ -172,6 +175,88 @@ router.get("/fieldNames", authenticateRoute, async (req, res) => {
 
   return returnSuccess(200, newData, res);
 });
+
+
+router.get("/reward", authenticateRoute, async (req, res) => {
+  if (!req.query.psmrcuid) return returnError(req, 500, "RECORDIDISREQUIRED", res);
+
+  let userId = "";
+  if (req.user.psusrtyp === "MBR") {
+    userId = req.user.psmbruid;
+  }
+
+  try {
+    // 🔹 1. Find used reward IDs
+    const usedRewards = await psordpar.findAll({
+      where: {
+        psmbruid: userId,
+        psordsts: { [Op.ne]: "C" },   // ignore cancelled orders
+      },
+      attributes: ["psrwduid"],
+      raw: true,
+    });
+
+    const usedRewardIds = usedRewards.map((r) => r.psrwduid);
+
+    // 🔹 2. Find merchant-specific reward IDs
+    const merchantRewardIds = await psrwddtl.findAll({
+      where: {
+        psmrcuid: req.query.psmrcuid,
+      },
+      attributes: ["psrwduid"],
+      raw: true,
+    });
+
+    const applicableRewardIds = merchantRewardIds.map((r) => r.psrwduid);
+
+    // 🔹 3. Get available rewards:
+    // - (merchant-specific AND in applicableRewardIds) OR (global psrwdaam = 'Y')
+    // - exclude rewards in usedRewardIds
+    const { count, rows } = await psrwdpar.findAndCountAll({
+      where: {
+        psrwdsts: "A",
+        [Op.and]: [
+          {
+            [Op.or]: [
+              { psrwduid: { [Op.in]: applicableRewardIds } },
+              { psrwdaam: "Y" }, // all-merchant reward
+            ],
+          },
+          {
+            psrwduid: { [Op.notIn]: usedRewardIds.length ? usedRewardIds : [null] },
+          },
+        ],
+      },
+      attributes: ["psrwduid", "psrwdnme", "psrwddsc", "psrwdtyp"],
+      order: [["psrwduid", "asc"]],
+      raw: true,
+    });
+
+    const newRows = [];
+
+    for (let obj of rows) {
+      if (!_.isEmpty(obj.psrwdtyp)) {
+        const desc = await common.retrieveSpecificGenCodes(req, "DISTYPE", obj.psrwdtyp);
+        obj.psrwdtypdsc = desc?.prgedesc || "";
+      }
+      newRows.push(obj);
+    }
+
+    return returnSuccess(
+      200,
+      {
+        total: count,
+        data: newRows,
+        extra: { file: "psrwdpar", key: ["psrwduid"] },
+      },
+      res
+    );
+  } catch (err) {
+    console.error("Error in /reward:", err);
+    return returnError(req, 500, "INTERNAL_SERVER_ERROR", res);
+  }
+});
+
 
 
 module.exports = router;

@@ -12,8 +12,8 @@ module.exports = function validatePsordrvwInput(data, type) {
     if (Validator.isEmpty(data.psorduid)) {
         errors.psorduid = "FIELDISREQUIRED";
     }
-    else if (!Validator.isEmpty(data.psorduid) && data.psorduid.length > 25) {
-        errors.psorduid = "INVALIDVALUELENGTH&25";
+    else if (!Validator.isEmpty(data.psorduid) && data.psorduid.length > 50) {
+        errors.psorduid = "INVALIDVALUELENGTH&50";
     }
 
     if (Validator.isEmpty(data.psrvwdsc)) {
