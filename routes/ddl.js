@@ -196,7 +196,7 @@ router.get("/reward", authenticateRoute, async (req, res) => {
       raw: true,
     });
 
-    const usedRewardIds = usedRewards.map((r) => r.psrwduid);
+    const usedRewardIds = usedRewards.map((r) => r.psrwduid); //Array
 
     // 🔹 2. Find merchant-specific reward IDs
     const merchantRewardIds = await psrwddtl.findAll({

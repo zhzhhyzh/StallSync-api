@@ -66,9 +66,7 @@ exports.list = async (req, res) => {
       "psrwddsc",
       "psrwdsts",
       "psrwdtyp",
-
       "psrwdqty",
-
     ],
     order: [["id", "asc"]],
   });
@@ -804,3 +802,126 @@ exports.listRdmp = async (req, res) => {
     );
   else return returnSuccess(200, { total: 0, data: [] }, res);
 };
+
+
+
+exports.listAvailable = async (req, res) => {
+  let userId = "";
+  if (req.user.psusrtyp === "MBR") {
+    userId = req.user.psmbruid;
+  } else {
+    return returnError(req, 403, "UNAUTHORIZED", res);
+  }
+
+  try {
+    // 1. Used rewards (exclude cancelled orders)
+    const usedRewards = await psordpar.findAll({
+      where: {
+        psmbruid: userId,
+        psordsts: { [Op.ne]: "C" },
+        psrwduid: { [Op.ne]: null }
+      },
+      attributes: ["psrwduid"],
+      raw: true,
+    });
+    const usedRewardIds = usedRewards.map((r) => r.psrwduid);
+
+    // 2. All reward-to-merchant mappings
+    const merchantRewardMap = await psrwddtl.findAll({
+      attributes: ["psrwduid", "psmrcuid"],
+      raw: true,
+    });
+
+    // Group rewards by psrwduid => [psmrcuid1, psmrcuid2, ...]
+    const rewardToMerchants = {};
+    for (const row of merchantRewardMap) {
+      if (!rewardToMerchants[row.psrwduid]) {
+        rewardToMerchants[row.psrwduid] = [];
+      }
+      rewardToMerchants[row.psrwduid].push(row.psmrcuid);
+    }
+
+    const applicableRewardIds = Object.keys(rewardToMerchants);
+
+    // 3. Get applicable & unused rewards
+    const { count, rows } = await psrwdpar.findAndCountAll({
+      where: {
+        psrwdsts: "A",
+        [Op.and]: [
+          {
+            [Op.or]: [
+              { psrwduid: { [Op.in]: applicableRewardIds } },
+              { psrwdaam: "Y" },
+            ],
+          },
+          {
+            psrwduid: { [Op.notIn]: usedRewardIds.length ? usedRewardIds : [null] },
+          },
+        ],
+      },
+      attributes: [
+        "psrwduid",
+        "psrwdnme",
+        "psrwddsc",
+        "psrwdfdt",
+        "psrwdtdt",
+        "psrwddva",
+        "psrwdtyp",
+        "psrwdmin",
+        "psrwdcap",
+        "psrwdaam"
+      ],
+      order: [["psrwdfdt", "asc"]],
+      raw: true,
+    });
+
+    const newRows = [];
+
+    for (let obj of rows) {
+      // Reward type description
+      if (obj.psrwdtyp) {
+        const desc = await common.retrieveSpecificGenCodes(req, "DISTYPE", obj.psrwdtyp);
+        obj.psrwdtypdsc = desc?.prgedesc || "";
+      }
+
+      // Merchant mapping
+      if (obj.psrwdaam === "Y") {
+        // Available to all merchants
+        obj.psmrcuids = []; // empty array = global
+        obj.psmrcnames = ["All Merchants"];
+      } else {
+        const merchantIds = rewardToMerchants[obj.psrwduid] || [];
+        obj.psmrcuids = merchantIds;
+
+        // Get merchant names
+        if (merchantIds.length > 0) {
+          const merchants = await psmrcpar.findAll({
+            where: { psmrcuid: { [Op.in]: merchantIds } },
+            attributes: ["psmrcuid", "psmrcnme"],
+            raw: true,
+          });
+
+          obj.psmrcnames = merchants.map((m) => m.psmrcnme);
+        } else {
+          obj.psmrcnames = [];
+        }
+      }
+
+      newRows.push(obj);
+    }
+
+    return returnSuccess(
+      200,
+      {
+        total: count,
+        data: newRows,
+        extra: { file: "psrwdpar", key: ["psrwduid"] },
+      },
+      res
+    );
+  } catch (err) {
+    console.error("Error in /reward/listAvailable:", err);
+    return returnError(req, 500, "INTERNAL_SERVER_ERROR", res);
+  }
+};
+
