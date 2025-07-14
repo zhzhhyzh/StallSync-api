@@ -36,6 +36,6 @@ router.post("/update", authenticateRoute, psrwdpar.update);
 // @access  Private
 router.get("/listRdmp", authenticateRoute, psrwdpar.listRdmp);
 
-
+router.get("/listAvailable", authenticateRoute, psrwdpar.listAvailable);
 
 module.exports = router;
