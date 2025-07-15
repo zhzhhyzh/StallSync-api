@@ -921,7 +921,7 @@ exports.listAvailable = async (req, res) => {
     );
   } catch (err) {
     console.error("Error in /reward/listAvailable:", err);
-    return returnError(req, 500, "INTERNAL_SERVER_ERROR", res);
+    return returnError(req, 500, "UNEXPECTEDERROR", res);
   }
 };
 

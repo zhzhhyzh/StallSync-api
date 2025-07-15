@@ -1,0 +1,34 @@
+[
+  {
+    "Product_ID": "JW000002",
+    "Name": "Pasta",
+    "Image": "c43b69e2-3c5d-4a61-a92c-6abad1e1e575.jpg",
+    "Merchant_ID": "JW",
+    "Rating": "3.9",
+    "Price": "17.99"
+  },
+  {
+    "Product_ID": "JW000004",
+    "Name": "Grill Steak",
+    "Image": "cbd39f56-ea29-4ef8-b4b9-42c8cd9f7eb7.jpg",
+    "Merchant_ID": "JW",
+    "Rating": "3.8",
+    "Price": "25.99"
+  },
+  {
+    "Product_ID": "JW000001",
+    "Name": "Fillet O Fish",
+    "Image": "8c28ea69-6780-4e04-9ca1-fb1d50c99591.jpg",
+    "Merchant_ID": "JW",
+    "Rating": "4.0",
+    "Price": "18.88"
+  },
+  {
+    "Product_ID": "PR000005",
+    "Name": "Penang White Curry",
+    "Image": "acf21608-e884-48f3-93d3-1f32b4854d2d.jpg",
+    "Merchant_ID": "PR",
+    "Rating": "4.3",
+    "Price": "8.99"
+  }
+]

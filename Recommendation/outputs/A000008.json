@@ -1,0 +1,42 @@
+[
+  {
+    "Product_ID": "KR000006",
+    "Name": "Gimbap",
+    "Image": "320b3431-a9d1-4b2b-a23a-1123195350f4.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "3.9",
+    "Price": "5.99"
+  },
+  {
+    "Product_ID": "KR000002",
+    "Name": "JaJang Men",
+    "Image": "0ca619b9-b5a0-45b3-9eb2-7ec98a552483.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "4.0",
+    "Price": "12.99"
+  },
+  {
+    "Product_ID": "KR000003",
+    "Name": "TTeobokki",
+    "Image": "680da8bc-a969-4055-8dfe-002caced0f0a.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "4.0",
+    "Price": "15.99"
+  },
+  {
+    "Product_ID": "MM000007",
+    "Name": "Ayam Kut Teh",
+    "Image": "83816022-d19b-4ca8-9d6d-2e4c92198499.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "4.0",
+    "Price": "15.99"
+  },
+  {
+    "Product_ID": "MM000003",
+    "Name": "Nasi Lemak + Ayam Goreng",
+    "Image": "71a1b79d-f8b7-4853-8ebf-4630dcf4bb14.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "10.90"
+  }
+]

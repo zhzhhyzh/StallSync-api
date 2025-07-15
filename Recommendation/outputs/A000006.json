@@ -1,0 +1,74 @@
+[
+  {
+    "Product_ID": "MM000002",
+    "Name": "Lemon Tea",
+    "Image": "c6fd2e3e-706a-4b3f-988d-1f649903cf58.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "2.90"
+  },
+  {
+    "Product_ID": "MM000004",
+    "Name": "Satay",
+    "Image": "834a1d24-5c67-46f2-b251-5fa0f6bfe01a.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "8.99"
+  },
+  {
+    "Product_ID": "MM000005",
+    "Name": "Cendol",
+    "Image": "ca4db25c-8f37-4abf-a49a-8122d0ab9e69.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "5.99"
+  },
+  {
+    "Product_ID": "MM000006",
+    "Name": "Laksa",
+    "Image": "3f570b43-3600-4db4-8c08-044a1a8aa841.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "6.99"
+  },
+  {
+    "Product_ID": "MM000001",
+    "Name": "Nasi Lemak",
+    "Image": "ed5afcc9-bd30-4ca6-9c74-93f5a4f13db8.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "5.99"
+  },
+  {
+    "Product_ID": "KR000005",
+    "Name": "KimChi ramyeon",
+    "Image": "d0aa2f10-653f-4b17-9615-aa85557c2756.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "4.0",
+    "Price": "11.99"
+  },
+  {
+    "Product_ID": "KR000007",
+    "Name": "Dubu Jorim",
+    "Image": "4e031a40-0757-425a-ab03-bb0ddc3c99ab.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "3.8",
+    "Price": "12.99"
+  },
+  {
+    "Product_ID": "KR000001",
+    "Name": "Bimbimbap",
+    "Image": "cd5d648f-d09a-4a8b-b723-d78e642e5a6f.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "4.0",
+    "Price": "20.90"
+  },
+  {
+    "Product_ID": "KR000006",
+    "Name": "Gimbap",
+    "Image": "320b3431-a9d1-4b2b-a23a-1123195350f4.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "3.9",
+    "Price": "5.99"
+  }
+]

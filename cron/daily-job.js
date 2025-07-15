@@ -5,7 +5,8 @@ const moment = require("moment");
 const { v4: uuidv4 } = require("uuid");
 const fs = require("fs");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
-
+const { spawn } = require("child_process");
+const path2 = require("path");
 const db = require("../models");
 const Op = db.Sequelize.Op;
 const psmbrprf = db.psmbrprf;
@@ -285,6 +286,7 @@ async function recommendationGet() {
           },
         ],
       });
+      
 
       const ratingFilename = "ratings.csv";
       const ratingHeader = [
@@ -455,8 +457,8 @@ async function order_expiry() {
       // Find All Voucher (Member)
       let order = await psordpar.findAll({
         where: {
-            
-          psordsts: {[Op.or]: ["N", "G"]}, // N = New, G = Pending
+
+          psordsts: { [Op.or]: ["N", "G"] }, // N = New, G = Pending
 
         },
         raw: true,
@@ -503,6 +505,102 @@ async function order_expiry() {
   });
 }
 
+async function pretrain_recommendation() {
+  cron.schedule("0 30 * * *", async function () {
+    try {
+      console.log("pretrain_recommendation -- Start");
+      let start = new Date();
+      let today = new Date(start);
+
+      today.setHours(0, 0, 0, 0);
+      const userRows = await psmbrprf.findAll({
+        raw: true,
+        attributes: ['psmbruid']
+      });
+
+      const userIds = userRows.map(u => u.psmbruid);
+      userIds.push("admin"); // Add cold start user
+
+      for (const userId of userIds) {
+        const python = spawn("python", ["app.py", userId], {
+          cwd: path2.resolve(__dirname, "../Recommendation"),
+        });
+
+        let data = "";
+        let error = "";
+
+        python.stdout.on("data", (chunk) => {
+          const output = chunk.toString();
+          console.log(`[PYTHON stdout][${userId}]`, output);
+          data += output;
+        });
+
+        python.stderr.on("data", (chunk) => {
+          const err = chunk.toString();
+          console.error(`[PYTHON stderr][${userId}]`, err);
+          error += err;
+        });
+
+        python.on("close", (code) => {
+          if (code !== 0 || error) {
+            console.error(`[Python Error][${userId}] Exit code ${code}`, error);
+            return;
+          }
+
+          try {
+            const parsed = JSON.parse(data);
+            const outputDir = path2.resolve(__dirname, "../Recommendation/outputs");
+            const filePath = path2.join(outputDir, `${userId}.json`);
+
+            // Ensure output directory exists
+            if (!fs.existsSync(outputDir)) {
+              fs.mkdirSync(outputDir, { recursive: true });
+            }
+
+            fs.writeFileSync(filePath, JSON.stringify(parsed, null, 2), "utf-8");
+            console.log(`END -- Recommendations for ${userId} to ${filePath}`);
+
+          } catch (e) {
+            console.error(`[JSON Parse Error][${userId}]`, e.message);
+            pssysjob.create({
+              psjobcde: "PREXPIRY",
+              psjobsts: "ERR",
+              psjobmsg:
+                err && err.message
+                  ? JSON.stringify(err.message)
+                  : JSON.stringify(err),
+              psjobstd: start,
+              psjobend: new Date(),
+            });
+          }
+        });
+      }
+      pssysjob.create({
+        psjobcde: "PREXPIRY",
+        psjobsts: "CMP",
+        psjobmsg: "",
+        psjobstd: start,
+        psjobend: new Date(),
+      });
+    } catch (err) {
+      console.log("Pretrain recommendation Error ", err);
+      pssysjob.create({
+        psjobcde: "PREXPIRY",
+        psjobsts: "ERR",
+        psjobmsg:
+          err && err.message
+            ? JSON.stringify(err.message)
+            : JSON.stringify(err),
+        psjobstd: start,
+        psjobend: new Date(),
+      });
+    }
+
+
+
+  });
+}
+
 
 module.exports = {
   voucher_expiry: voucher_expiry,
@@ -512,4 +610,5 @@ module.exports = {
   member_expiry: member_expiry,
   transaction_expiry: transaction_expiry,
   order_expiry: order_expiry,
+  pretrain_recommendation: pretrain_recommendation
 };
