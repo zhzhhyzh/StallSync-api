@@ -1,0 +1,42 @@
+[
+  {
+    "Product_ID": "JW000004",
+    "Name": "Grill Steak",
+    "Image": "cbd39f56-ea29-4ef8-b4b9-42c8cd9f7eb7.jpg",
+    "Merchant_ID": "JW",
+    "Rating": "3.8",
+    "Price": "25.99"
+  },
+  {
+    "Product_ID": "PR000003",
+    "Name": "Penang Laksa",
+    "Image": "a7da7602-2227-40e8-9252-933218063333.jpg",
+    "Merchant_ID": "PR",
+    "Rating": "4.4",
+    "Price": "7.99"
+  },
+  {
+    "Product_ID": "PR000005",
+    "Name": "Penang White Curry",
+    "Image": "acf21608-e884-48f3-93d3-1f32b4854d2d.jpg",
+    "Merchant_ID": "PR",
+    "Rating": "4.3",
+    "Price": "8.99"
+  },
+  {
+    "Product_ID": "PR000006",
+    "Name": "Char kuey teow",
+    "Image": "04480172-3bb5-48ad-b681-68526365a660.jpg",
+    "Merchant_ID": "PR",
+    "Rating": "4.2",
+    "Price": "9.99"
+  },
+  {
+    "Product_ID": "JW000003",
+    "Name": "Grilled Chicken",
+    "Image": "da30729e-436f-45b6-9c59-6ebdb4cf18c9.jpg",
+    "Merchant_ID": "JW",
+    "Rating": "4.0",
+    "Price": "17.99"
+  }
+]

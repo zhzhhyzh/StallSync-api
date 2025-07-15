@@ -572,12 +572,12 @@ exports.create = async (req, res) => {
           await t.rollback();
           return returnError(req, 500, "UNEXPECTEDERROR", res);
         }
-        // function getRandomDateInPast12Months() {
-        //     const now = new Date();
-        //     const pastYear = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-        //     const randomTime = pastYear.getTime() + Math.random() * (now.getTime() - pastYear.getTime());
-        //     return new Date(randomTime);
-        // }
+        function getRandomDateInPast12Months() {
+            const now = new Date();
+            const pastYear = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+            const randomTime = pastYear.getTime() + Math.random() * (now.getTime() - pastYear.getTime());
+            return new Date(randomTime);
+        }
         await psordpar
           .create({
             psorduid: ref,
@@ -779,7 +779,7 @@ exports.update_completed = async (req, res) => {
                 // Add 1 year to current expiry date
                 const newExpiry = new Date(member.psmbrexp);
                 newExpiry.setFullYear(newExpiry.getFullYear() + 1);
-                if (member.psmbracs > 500) {
+                if (member.psmbracs > 500 && member.psmbracs  < 999) {
                   memberType = 'S';
                 } else if (member.psmbracs > 1000) {
                   memberType = 'G';

@@ -1,0 +1,66 @@
+[
+  {
+    "Product_ID": "MM000003",
+    "Name": "Nasi Lemak + Ayam Goreng",
+    "Image": "71a1b79d-f8b7-4853-8ebf-4630dcf4bb14.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "10.90"
+  },
+  {
+    "Product_ID": "MM000004",
+    "Name": "Satay",
+    "Image": "834a1d24-5c67-46f2-b251-5fa0f6bfe01a.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "8.99"
+  },
+  {
+    "Product_ID": "MM000001",
+    "Name": "Nasi Lemak",
+    "Image": "ed5afcc9-bd30-4ca6-9c74-93f5a4f13db8.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "5.99"
+  },
+  {
+    "Product_ID": "MM000007",
+    "Name": "Ayam Kut Teh",
+    "Image": "83816022-d19b-4ca8-9d6d-2e4c92198499.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "4.0",
+    "Price": "15.99"
+  },
+  {
+    "Product_ID": "KR000007",
+    "Name": "Dubu Jorim",
+    "Image": "4e031a40-0757-425a-ab03-bb0ddc3c99ab.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "3.8",
+    "Price": "12.99"
+  },
+  {
+    "Product_ID": "KR000001",
+    "Name": "Bimbimbap",
+    "Image": "cd5d648f-d09a-4a8b-b723-d78e642e5a6f.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "4.0",
+    "Price": "20.90"
+  },
+  {
+    "Product_ID": "KR000005",
+    "Name": "KimChi ramyeon",
+    "Image": "d0aa2f10-653f-4b17-9615-aa85557c2756.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "4.0",
+    "Price": "11.99"
+  },
+  {
+    "Product_ID": "KR000003",
+    "Name": "TTeobokki",
+    "Image": "680da8bc-a969-4055-8dfe-002caced0f0a.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "4.0",
+    "Price": "15.99"
+  }
+]

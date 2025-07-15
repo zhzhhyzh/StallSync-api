@@ -1,0 +1,42 @@
+[
+  {
+    "Product_ID": "KR000007",
+    "Name": "Dubu Jorim",
+    "Image": "4e031a40-0757-425a-ab03-bb0ddc3c99ab.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "3.8",
+    "Price": "12.99"
+  },
+  {
+    "Product_ID": "KR000005",
+    "Name": "KimChi ramyeon",
+    "Image": "d0aa2f10-653f-4b17-9615-aa85557c2756.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "4.0",
+    "Price": "11.99"
+  },
+  {
+    "Product_ID": "KR000004",
+    "Name": "KR Fried Chicken",
+    "Image": "4401851f-8600-428f-89a6-d32f9b2b2c30.jpg",
+    "Merchant_ID": "KR",
+    "Rating": "3.8",
+    "Price": "16.99"
+  },
+  {
+    "Product_ID": "MM000005",
+    "Name": "Cendol",
+    "Image": "ca4db25c-8f37-4abf-a49a-8122d0ab9e69.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "5.99"
+  },
+  {
+    "Product_ID": "MM000002",
+    "Name": "Lemon Tea",
+    "Image": "c6fd2e3e-706a-4b3f-988d-1f649903cf58.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "2.90"
+  }
+]

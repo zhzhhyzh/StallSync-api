@@ -602,7 +602,7 @@ exports.update = async (req, res) => {
         if (
           isNaN(new Date(req.body.updatedAt)) ||
           new Date(data.updatedAt).getTime() !==
-            new Date(req.body.updatedAt).getTime()
+          new Date(req.body.updatedAt).getTime()
         )
           return returnError(req, 500, "RECORDOUTOFSYNC", res);
 
@@ -833,169 +833,265 @@ exports.filter = async (req, res) => {
   }
 };
 
-exports.listPersonalized = async (req, res) => {
-  // const userId = req.body.psusrunm;
-  // if (!userId) {
-  //   return res.status(400).json({ message: "Missing user_id (psusrunm)" });
-  // }
+// exports.listPersonalized = async (req, res) => {
+//   // const userId = req.body.psusrunm;
+//   // if (!userId) {
+//   //   return res.status(400).json({ message: "Missing user_id (psusrunm)" });
+//   // }
 
+//   let userId = "";
+//   if (req.user.psusrtyp == "MBR") {
+//     userId = req.user.psmbruid;
+//   } else {
+//     return returnError(req, 500, "RECORDIDISREQUIRED", res);
+//   }
+
+//   const python = spawn("python", ["app.py", userId], {
+//     cwd: path.resolve(__dirname, "../Recommendation"), // <-- adjust this to match your actual folder
+//   });
+//   let data = "";
+//   let error = "";
+//   python.stdout.on("data", (chunk) => {
+//     const output = chunk.toString();
+//     console.log("[PYTHON stdout]", output); // Log every chunk
+//     data += output;
+//   });
+
+//   python.stderr.on("data", (chunk) => {
+//     const err = chunk.toString();
+//     console.error("[PYTHON stderr]", err); // Log Python errors
+//     error += err;
+//   });
+//   python.on("close", async (code) => {
+//     if (code !== 0 || error) {
+//       return res.status(500).json({ message: "Python error", error });
+//     }
+
+//     try {
+//       const parsed = JSON.parse(data);
+
+//       const productId = parsed.map((exist) => exist.Product_ID);
+
+//       let limit = 10;
+//       if (req.query.limit) limit = req.query.limit;
+
+//       let from = 0;
+//       if (!req.query.page) from = 0;
+//       else from = parseInt(req.query.page) * parseInt(limit);
+
+//       const { count, rows } = await psprdpar.findAndCountAll({
+//         limit: parseInt(limit),
+//         offset: from,
+//         raw: true,
+//         where: {
+//           psprduid: {
+//             [Op.in]: productId,
+//           },
+//         },
+//         attributes: [
+//           ["psprduid", "id"],
+//           "psprduid",
+//           "psprdnme",
+//           "psprddsc",
+//           "psmrcuid",
+//           "psprdtyp",
+//           "psprdcat",
+//           "psprdsts",
+//           "psprdimg",
+//           "psprdpri",
+//           "psprdcrd",
+//           "createdAt",
+//         ],
+//         order: [["createdAt", "desc"]],
+//       });
+
+//       let newRows = [];
+//       for (var i = 0; i < rows.length; i++) {
+//         let obj = rows[i];
+
+//         if (!_.isEmpty(obj.psrwdtyp)) {
+//           let description = await common.retrieveSpecificGenCodes(
+//             req,
+//             "DISTYPE",
+//             obj.psrwdtyp
+//           );
+//           obj.psrwdtypdsc =
+//             description.prgedesc && !_.isEmpty(description.prgedesc)
+//               ? description.prgedesc
+//               : "";
+//         }
+//         if (!_.isEmpty(obj.psrwdsts)) {
+//           let description = await common.retrieveSpecificGenCodes(
+//             req,
+//             "RWDSTS",
+//             obj.psrwdsts
+//           );
+//           obj.psrwdstsdsc =
+//             description.prgedesc && !_.isEmpty(description.prgedesc)
+//               ? description.prgedesc
+//               : "";
+//         }
+
+//         if (!_.isEmpty(obj.psrwdism)) {
+//           let description = await common.retrieveSpecificGenCodes(
+//             req,
+//             "YESORNO",
+//             obj.psrwdism
+//           );
+//           obj.psrwdismdsc =
+//             description.prgedesc && !_.isEmpty(description.prgedesc)
+//               ? description.prgedesc
+//               : "";
+//         }
+//         if (!_.isEmpty(obj.psrwdica)) {
+//           let description = await common.retrieveSpecificGenCodes(
+//             req,
+//             "YESORNO",
+//             obj.psrwdica
+//           );
+//           obj.psrwdicadsc =
+//             description.prgedesc && !_.isEmpty(description.prgedesc)
+//               ? description.prgedesc
+//               : "";
+//         }
+//         if (!_.isEmpty(obj.psrwdaam)) {
+//           let description = await common.retrieveSpecificGenCodes(
+//             req,
+//             "YESORNO",
+//             obj.psrwdaam
+//           );
+//           obj.psrwdaamdsc =
+//             description.prgedesc && !_.isEmpty(description.prgedesc)
+//               ? description.prgedesc
+//               : "";
+//         }
+
+//         let result = await psmrcpar.findOne({
+//           where: {
+//             psmrcuid: obj.psmrcuid,
+//           },
+//           raw: true,
+//           attributes: ["psmrcnme"],
+//         });
+
+//         obj.psmrcuiddsc = result ? result.psmrcnme : "";
+
+//         newRows.push(obj);
+//       }
+
+//       if (count > 0)
+//         return returnSuccess(
+//           200,
+//           {
+//             total: count,
+//             data: newRows,
+//             extra: { file: "psprdpar", key: ["psprduid"] },
+//           },
+//           res
+//         );
+//       else return returnSuccess(200, { total: 0, data: [] }, res);
+//     } catch (e) {
+//       console.log(e);
+//       return returnError(req, 500, "UNEXPECTEDERROR", res);
+//     }
+//   });
+// };
+
+exports.listPersonalized = async (req, res) => {
   let userId = "";
   if (req.user.psusrtyp == "MBR") {
     userId = req.user.psmbruid;
   } else {
     return returnError(req, 500, "RECORDIDISREQUIRED", res);
   }
+  let flag = false;
+  const recommendationPath = path.resolve(__dirname, `../Recommendation/outputs/${userId}.json`);
+  const recommendationPathBackup = path.resolve(__dirname, `../Recommendation/outputs/admin.json`);
 
-  const python = spawn("python", ["app.py", userId], {
-    cwd: path.resolve(__dirname, "../Recommendation"), // <-- adjust this to match your actual folder
-  });
-  let data = "";
-  let error = "";
-  python.stdout.on("data", (chunk) => {
-    const output = chunk.toString();
-    console.log("[PYTHON stdout]", output); // Log every chunk
-    data += output;
-  });
+  // Check if file exists
+  if (!fs.existsSync(recommendationPath)) {
+    flag = !flag;
+  }
 
-  python.stderr.on("data", (chunk) => {
-    const err = chunk.toString();
-    console.error("[PYTHON stderr]", err); // Log Python errors
-    error += err;
-  });
-  python.on("close", async (code) => {
-    if (code !== 0 || error) {
-      return res.status(500).json({ message: "Python error", error });
+  try {
+    let data = JSON.parse(fs.readFileSync(recommendationPathBackup, "utf-8"));
+    if (!flag) {
+
+
+      data = JSON.parse(fs.readFileSync(recommendationPath, "utf-8"));
+
     }
 
-    try {
-      const parsed = JSON.parse(data);
+    productId = data.map((item) => item.Product_ID);
 
-      const productId = parsed.map((exist) => exist.Product_ID);
+    let limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    let from = req.query.page ? parseInt(req.query.page) * limit : 0;
 
-      let limit = 10;
-      if (req.query.limit) limit = req.query.limit;
-
-      let from = 0;
-      if (!req.query.page) from = 0;
-      else from = parseInt(req.query.page) * parseInt(limit);
-
-      const { count, rows } = await psprdpar.findAndCountAll({
-        limit: parseInt(limit),
-        offset: from,
-        raw: true,
-        where: {
-          psprduid: {
-            [Op.in]: productId,
-          },
+    const { count, rows } = await psprdpar.findAndCountAll({
+      limit,
+      offset: from,
+      raw: true,
+      where: {
+        psprduid: {
+          [Op.in]: productId,
         },
-        attributes: [
-          ["psprduid", "id"],
-          "psprduid",
-          "psprdnme",
-          "psprddsc",
-          "psmrcuid",
-          "psprdtyp",
-          "psprdcat",
-          "psprdsts",
-          "psprdimg",
-          "psprdpri",
-          "psprdcrd",
-          "createdAt",
-        ],
-        order: [["createdAt", "desc"]],
-      });
+      },
+      attributes: [
+        ["psprduid", "id"],
+        "psprduid",
+        "psprdnme",
+        "psprddsc",
+        "psmrcuid",
+        "psprdtyp",
+        "psprdcat",
+        "psprdsts",
+        "psprdimg",
+        "psprdpri",
+        "psprdcrd",
+        "createdAt",
+      ],
+      order: [["createdAt", "desc"]],
+    });
 
-      let newRows = [];
-      for (var i = 0; i < rows.length; i++) {
-        let obj = rows[i];
-
-        if (!_.isEmpty(obj.psrwdtyp)) {
-          let description = await common.retrieveSpecificGenCodes(
-            req,
-            "DISTYPE",
-            obj.psrwdtyp
-          );
-          obj.psrwdtypdsc =
-            description.prgedesc && !_.isEmpty(description.prgedesc)
-              ? description.prgedesc
-              : "";
+    const newRows = await Promise.all(rows.map(async (obj) => {
+      // enrich reward data
+      for (let field of ['psrwdtyp', 'psrwdsts', 'psrwdism', 'psrwdica', 'psrwdaam']) {
+        if (!_.isEmpty(obj[field])) {
+          const codeMap = {
+            psrwdtyp: 'DISTYPE',
+            psrwdsts: 'RWDSTS',
+            psrwdism: 'YESORNO',
+            psrwdica: 'YESORNO',
+            psrwdaam: 'YESORNO',
+          };
+          let desc = await common.retrieveSpecificGenCodes(req, codeMap[field], obj[field]);
+          obj[`${field}dsc`] = desc?.prgedesc || "";
         }
-        if (!_.isEmpty(obj.psrwdsts)) {
-          let description = await common.retrieveSpecificGenCodes(
-            req,
-            "RWDSTS",
-            obj.psrwdsts
-          );
-          obj.psrwdstsdsc =
-            description.prgedesc && !_.isEmpty(description.prgedesc)
-              ? description.prgedesc
-              : "";
-        }
-
-        if (!_.isEmpty(obj.psrwdism)) {
-          let description = await common.retrieveSpecificGenCodes(
-            req,
-            "YESORNO",
-            obj.psrwdism
-          );
-          obj.psrwdismdsc =
-            description.prgedesc && !_.isEmpty(description.prgedesc)
-              ? description.prgedesc
-              : "";
-        }
-        if (!_.isEmpty(obj.psrwdica)) {
-          let description = await common.retrieveSpecificGenCodes(
-            req,
-            "YESORNO",
-            obj.psrwdica
-          );
-          obj.psrwdicadsc =
-            description.prgedesc && !_.isEmpty(description.prgedesc)
-              ? description.prgedesc
-              : "";
-        }
-        if (!_.isEmpty(obj.psrwdaam)) {
-          let description = await common.retrieveSpecificGenCodes(
-            req,
-            "YESORNO",
-            obj.psrwdaam
-          );
-          obj.psrwdaamdsc =
-            description.prgedesc && !_.isEmpty(description.prgedesc)
-              ? description.prgedesc
-              : "";
-        }
-
-        let result = await psmrcpar.findOne({
-          where: {
-            psmrcuid: obj.psmrcuid,
-          },
-          raw: true,
-          attributes: ["psmrcnme"],
-        });
-
-        obj.psmrcuiddsc = result ? result.psmrcnme : "";
-
-        newRows.push(obj);
       }
 
-      if (count > 0)
-        return returnSuccess(
-          200,
-          {
-            total: count,
-            data: newRows,
-            extra: { file: "psprdpar", key: ["psprduid"] },
-          },
-          res
-        );
-      else return returnSuccess(200, { total: 0, data: [] }, res);
-    } catch (e) {
-      console.log(e);
-      return returnError(req, 500, "UNEXPECTEDERROR", res);
-    }
-  });
+      const result = await psmrcpar.findOne({
+        where: { psmrcuid: obj.psmrcuid },
+        raw: true,
+        attributes: ["psmrcnme"],
+      });
+
+      obj.psmrcuiddsc = result ? result.psmrcnme : "";
+
+      return obj;
+    }));
+
+    return returnSuccess(200, {
+      total: count,
+      data: newRows,
+      extra: { file: "psprdpar", key: ["psprduid"] },
+    }, res);
+
+  } catch (e) {
+    console.error(e);
+    return returnError(req, 500, "UNEXPECTEDERROR", res);
+  }
 };
+
 
 exports.listLatest = async (req, res) => {
   let limit = 10;

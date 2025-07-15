@@ -1,0 +1,42 @@
+[
+  {
+    "Product_ID": "4F000001",
+    "Name": "Package deals",
+    "Image": "f4c27c96-78d5-439e-9b63-6728ae2623d1.jpg",
+    "Merchant_ID": "4F",
+    "Rating": "4.2",
+    "Price": "40.99"
+  },
+  {
+    "Product_ID": "4F000005",
+    "Name": "Tonkatsu Ramen",
+    "Image": "29eefd00-a135-4da9-822a-53839855ebb5.jpg",
+    "Merchant_ID": "4F",
+    "Rating": "4.2",
+    "Price": "15.99"
+  },
+  {
+    "Product_ID": "4F000004",
+    "Name": "Oden",
+    "Image": "43a3c47b-e7c6-4ce3-b0f5-74e87dfa3699.jpg",
+    "Merchant_ID": "4F",
+    "Rating": "3.8",
+    "Price": "20.99"
+  },
+  {
+    "Product_ID": "4F000002",
+    "Name": "Sashimi Set",
+    "Image": "f6288273-7527-4dc9-9a02-97ee50f76b06.jpg",
+    "Merchant_ID": "4F",
+    "Rating": "4.0",
+    "Price": "30.99"
+  },
+  {
+    "Product_ID": "PR000001",
+    "Name": "Chee Cheong Fun",
+    "Image": "f4b08183-11f1-43ab-be08-e0603cff0cde.jpg",
+    "Merchant_ID": "PR",
+    "Rating": "4.3",
+    "Price": "5.99"
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "Product_ID": "MM000005",
+    "Name": "Cendol",
+    "Image": "ca4db25c-8f37-4abf-a49a-8122d0ab9e69.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "5.99"
+  },
+  {
+    "Product_ID": "MM000002",
+    "Name": "Lemon Tea",
+    "Image": "c6fd2e3e-706a-4b3f-988d-1f649903cf58.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "2.90"
+  },
+  {
+    "Product_ID": "MM000006",
+    "Name": "Laksa",
+    "Image": "3f570b43-3600-4db4-8c08-044a1a8aa841.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "6.99"
+  },
+  {
+    "Product_ID": "MM000004",
+    "Name": "Satay",
+    "Image": "834a1d24-5c67-46f2-b251-5fa0f6bfe01a.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "8.99"
+  },
+  {
+    "Product_ID": "MM000003",
+    "Name": "Nasi Lemak + Ayam Goreng",
+    "Image": "71a1b79d-f8b7-4853-8ebf-4630dcf4bb14.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "10.90"
+  },
+  {
+    "Product_ID": "MM000001",
+    "Name": "Nasi Lemak",
+    "Image": "ed5afcc9-bd30-4ca6-9c74-93f5a4f13db8.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "3.9",
+    "Price": "5.99"
+  },
+  {
+    "Product_ID": "MM000007",
+    "Name": "Ayam Kut Teh",
+    "Image": "83816022-d19b-4ca8-9d6d-2e4c92198499.jpg",
+    "Merchant_ID": "MM",
+    "Rating": "4.0",
+    "Price": "15.99"
+  },
+  {
+    "Product_ID": "4F000004",
+    "Name": "Oden",
+    "Image": "43a3c47b-e7c6-4ce3-b0f5-74e87dfa3699.jpg",
+    "Merchant_ID": "4F",
+    "Rating": "3.8",
+    "Price": "20.99"
+  },
+  {
+    "Product_ID": "4F000006",
+    "Name": "Cute Bento",
+    "Image": "27a6b763-fe49-4527-a76e-b5c47af0c0d1.jpg",
+    "Merchant_ID": "4F",
+    "Rating": "3.9",
+    "Price": "10.99"
+  },
+  {
+    "Product_ID": "4F000003",
+    "Name": "Omu rice",
+    "Image": "5f0e886d-7c99-456f-a143-b1380fa2755d.jpg",
+    "Merchant_ID": "4F",
+    "Rating": "4.1",
+    "Price": "13.99"
+  }
+]

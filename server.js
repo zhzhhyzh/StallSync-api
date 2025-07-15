@@ -170,6 +170,7 @@ dailyJob.voucher_activate();
 dailyJob.recommendationGet();
 dailyJob.member_expiry();
 dailyJob.transaction_expiry();
+dailyJob.pretrain_recommendation();
 dailyJob.order_expiry();
 backupJob.backupDB();
 backupJob.cleanFS();
