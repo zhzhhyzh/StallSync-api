@@ -244,12 +244,11 @@ exports.reset = async (req, res) => {
 
     // Check if user exists
     let user = await psusrprf.findOne({
-        where: { psusreml: username },
+        where: { psusreml: { [Op.eq]: [username] } },
         raw: true,
         attributes: { exclude: ['createdAt', 'updatedAt', 'crtuser', 'mntuser'] }
     });
-
-    if (!user) return returnError(req, 400, { psusreml: 'USERNOTFOUND' }, res);
+    if (!user) return returnError(req, 400, { email: 'USERNOTFOUND' }, res);
 
     // Generate a new random hexadecimal password (8 characters)
     const rawPassword = crypto.randomBytes(4).toString('hex');
@@ -495,7 +494,7 @@ exports.list = async (req, res) => {
         option = {
             [Op.or]: [
                 { psusrunm: { [Op.like]: '%' + req.query.search + '%' } },
-                { psusrunm: req.query.search},
+                { psusrunm: req.query.search },
                 { psusrnam: { [Op.like]: '%' + req.query.search + '%' } },
                 { psusrnam: req.query.search }
             ]
@@ -850,35 +849,35 @@ async function validatePassword(password) {
 exports.profile = async (req, res) => {
 
     // if (req.user.psusrtyp === 'ADM') {
-        //CHECK PROFILE
-        psusrprf.findOne({
-            where: {
-                id: req.user.id
-            }, raw: true, attributes: [['id', 'psusrunm'], 'psusrunm', 'psusrtyp', 'psusrnam', 'psusreml', 'psusrsts', 'psusrphn'
-                // , 'psusrals', 'psredind'
-            ]
-        }).then(async profile => {
-            if (profile) {
+    //CHECK PROFILE
+    psusrprf.findOne({
+        where: {
+            id: req.user.id
+        }, raw: true, attributes: [['id', 'psusrunm'], 'psusrunm', 'psusrtyp', 'psusrnam', 'psusreml', 'psusrsts', 'psusrphn'
+            // , 'psusrals', 'psredind'
+        ]
+    }).then(async profile => {
+        if (profile) {
 
-                if (!_.isEmpty(profile.psusrtyp)) {
-                    let usrtyp = await common.retrieveSpecificGenCodes(req, 'USRTYP', profile.psusrtyp);
-                    profile.psusrtypdsc = usrtyp.prgedesc ? usrtyp.prgedesc : '';
-                }
-                if (!_.isEmpty(profile.psusrsts)) {
-                    let usrsts = await common.retrieveSpecificGenCodes(req, 'USRSTS', profile.psusrsts);
-                    profile.psusrstsdsc = usrsts.prgedesc ? usrsts.prgedesc : '';
-                }
-                // if (!_.isEmpty(profile.psredind)) {
-                //     let redinddsc = await common.retrieveSpecificGenCodes(req, 'YESORNO', profile.psredind);
-                //     profile.psredinddsc = redinddsc.prgedesc ? redinddsc.prgedesc : '';
-                // }
+            if (!_.isEmpty(profile.psusrtyp)) {
+                let usrtyp = await common.retrieveSpecificGenCodes(req, 'USRTYP', profile.psusrtyp);
+                profile.psusrtypdsc = usrtyp.prgedesc ? usrtyp.prgedesc : '';
+            }
+            if (!_.isEmpty(profile.psusrsts)) {
+                let usrsts = await common.retrieveSpecificGenCodes(req, 'USRSTS', profile.psusrsts);
+                profile.psusrstsdsc = usrsts.prgedesc ? usrsts.prgedesc : '';
+            }
+            // if (!_.isEmpty(profile.psredind)) {
+            //     let redinddsc = await common.retrieveSpecificGenCodes(req, 'YESORNO', profile.psredind);
+            //     profile.psredinddsc = redinddsc.prgedesc ? redinddsc.prgedesc : '';
+            // }
 
-                return returnSuccess(200, profile, res);
-            } else return returnError(req, 400, "USERNOTFOUND", res);
-        }).catch(err => {
-            console.log(err);
-            return returnError(req, 400, 'UNEXPECTEDERROR', res);
-        });
+            return returnSuccess(200, profile, res);
+        } else return returnError(req, 400, "USERNOTFOUND", res);
+    }).catch(err => {
+        console.log(err);
+        return returnError(req, 400, 'UNEXPECTEDERROR', res);
+    });
     // }
     // else if (req.user.psusrtyp === 'MBR') {
     //     //CHECK PROFILE
