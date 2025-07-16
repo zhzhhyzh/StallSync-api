@@ -31,11 +31,13 @@ exports.list = async (req, res) => {
 
   let userId = "";
   let cartId = "";
+  let mbrPts = 0;
   if (req.user.psusrtyp == "MBR") {
     console.log("JKJKWDJW", cartId);
 
     userId = req.user.psmbruid;
     cartId = req.user.psmbrcar;
+    mbrPts = req.user.psmbrpts;
   } else {
     return returnError(req, 500, "INVALIDAUTHORITY", res);
   }
@@ -83,6 +85,7 @@ exports.list = async (req, res) => {
           data: rows,
           extra: { file: "psmbrcrt", key: ["id"] },
           cartId: cartId,
+          mbrPts: mbrPts,
         },
         res
       );
@@ -93,6 +96,7 @@ exports.list = async (req, res) => {
           total: 0,
           data: [],
           cartId: cartId,
+          mbrPts: mbrPts,
         },
         res
       );
@@ -480,6 +484,17 @@ exports.cartItems = async (req, res) => {
     return returnError(req, 400, "RECORDISREQUIRED", res);
   }
 
+
+  let userId = "";
+  let mbrPts = 0;
+  if (req.user.psusrtyp == "MBR") {
+
+    userId = req.user.psmbruid;
+    mbrPts = req.user.psmbrpts;
+  } else {
+    return returnError(req, 500, "INVALIDAUTHORITY", res);
+  }
+
   try {
     const items = await psmbrcrt.findAll({
       where: {
@@ -500,7 +515,7 @@ exports.cartItems = async (req, res) => {
 
     
 
-    return returnSuccess(200, items, res);
+    return returnSuccess(200, {items, mbrPts: mbrPts}, res);
   } catch (error) {
     console.error("Failed to retrieve cart items with product details:", error);
     return returnError(req, 500, "SERVERERROR", res);
