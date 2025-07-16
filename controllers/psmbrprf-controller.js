@@ -296,8 +296,8 @@ exports.create = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const id = req.body.id ? req.body.id : "";
-  if (!id || id == "") {
+  const id = req.user.psmbruid;
+  if (!id) {
     return returnError(req, 500, "RECORDIDISREQUIRED", res);
   }
 
@@ -367,8 +367,8 @@ exports.update = async (req, res) => {
           // psmbrexp: req.body.psmbrexp,
           psmbrjdt: req.body.psmbrjdt,
           // psmbrcar: req.body.psmbrcar,
-          psusrnme: req.body.psusrnme,
-          psmbrpre: req.body.psmbrpre,
+          //psusrnme: req.body.psusrnme,
+          //psmbrpre: req.body.psmbrpre,
           psmbrphn: req.body.psmbrphn,
           mntuser: req.user.psusrunm,
         },

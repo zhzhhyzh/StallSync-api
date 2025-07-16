@@ -67,10 +67,10 @@ module.exports = function validatePsmbrprfInput(data, type) {
     //     errors.psmbracs = "INVALIDVALUELENGTH&15,2";
     // }
 
-    if (Validator.isEmpty(data.psmbrtyp) && type == "C") {
+    if (Validator.isEmpty(data.psmbrtyp) && type == "N") {
         errors.psmbrtyp = "FIELDISREQUIRED";
     } else {
-        if (data.psmbrtyp.length > 10 && type == 'C') errors.psmbrtyp = "INVALIDVALUELENGTH&10";
+        if (data.psmbrtyp.length > 10) errors.psmbrtyp = "INVALIDVALUELENGTH&10";
     }
 
     // if (Validator.isEmpty(data.psmbrexp)) {
@@ -97,13 +97,13 @@ module.exports = function validatePsmbrprfInput(data, type) {
     //     if (data.psmbrcar.length > 50) errors.psmbrcar = "INVALIDVALUELENGTH&50";
     // }
 
-    if (Validator.isEmpty(data.psusrnme)) {
+    if (Validator.isEmpty(data.psusrnme) && type == "N") {
         errors.psusrnme = "FIELDISREQUIRED";
     } else {
         if (data.psusrnme.length > 255) errors.psusrnme = "INVALIDVALUELENGTH&255";
     }
 
-    if (Validator.isEmpty(data.psmbrpre)) {
+    if (Validator.isEmpty(data.psmbrpre) && type == "N") {
         errors.psmbrpre = "FIELDISREQUIRED";
     } else {
         if (data.psmbrpre.length > 10) errors.psmbrpre = "INVALIDVALUELENGTH&10";
