@@ -29,7 +29,7 @@ const RPTPath = config.reportPath;
 exports.generate = async (req, res) => {
     try {
         let type = req.body.type;
-        let user = req.query.psmrcuid ? req.query.psmrcuid : "";
+        let user = req.user.psmrcuid ? req.user.psmrcuid : "";
 
         if (_.isEmpty(type) || type == "") return returnError(req, 500, "REPORTTYPEISREQUIRED", res);
 
@@ -208,8 +208,7 @@ exports.generate = async (req, res) => {
 }
 
 exports.list = async (req, res) => {
-    let merchantid = req.user.psusrtyp == "MCH" ? req.query.psmrcuid : "";
-
+    let merchantid = req.user.psusrtyp == "MCH" ? req.user.psmrcuid : "";
     let limit = 10;
     if (req.query.limit) limit = req.query.limit;
 
@@ -219,10 +218,12 @@ exports.list = async (req, res) => {
 
     let option = {};
     if (req.query.prrpttyp && !_.isEmpty(req.query.prrpttyp)) option.prrpttyp = req.query.prrpttyp;
-    if (merchantid && !_.isEmpty(req.query.prrpttyp)) {
-        option.prrptmrc = merchantid
+    if (merchantid) {
+        option.prrptmch = { [Op.eq]: [merchantid] }
 
     }
+
+    console.log(option, "JKJk")
     const { count, rows } = await prrpthis.findAndCountAll({
         limit: parseInt(limit),
         offset: from,

@@ -307,7 +307,7 @@ exports.create = async (req, res) => {
     })
     .then(async (trnscd) => {
       if (trnscd)
-        return returnError(req, 400, { psstfpar: "RECORDEXISTS" }, res);
+        return returnError(req, 400, { psstfidn: "RECORDEXISTS" }, res);
       else {
         let ddlErrors = {};
         let err_ind = false;
