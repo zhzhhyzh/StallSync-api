@@ -344,7 +344,7 @@ exports.update = async (req, res) => {
     // Check user existence
     const validateUser = await psusrprf.findOne({
       where: {
-        psusrunm: req.body.psusrnme,
+        psusrunm: req.user.psusrunm,
       },
       raw: true,
       attributes: ["psusrunm", "psusrnam"],
@@ -353,6 +353,8 @@ exports.update = async (req, res) => {
     if (!validateUser) {
       return returnError(req, 400, { psusrnme: "NORECORDFOUND" }, res);
     }
+
+    const t = await connection.sequelize.transaction();
 
     await psmbrprf
       .update(
@@ -372,15 +374,26 @@ exports.update = async (req, res) => {
           psmbrphn: req.body.psmbrphn,
           mntuser: req.user.psusrunm,
         },
-        { where: { psmbruid: id } }
+        { where: { psmbruid: id } }, {transaction: t}
       )
-      .then(() => {
+      .then( async () => {
+
+        await psusrprf.update(
+          {
+          psusrnam: req.body.psmbrnam,
+          psusrphn: req.body.psmbrphn,
+          psusreml: req.body.psmbreml,
+        },
+        { where:{ psusrunm: req.user.psusrunm}}
+        )
+        await t.commit();
         common.writeMntLog("psmbrprf", null, null, id, "C", req.user.psusrunm);
 
         return returnSuccessMessage(req, 200, "UPDATESUCCESSFUL", res);
       })
-      .catch((err) => {
+      .catch(async (err) => {
         console.log("This is the unx error", err);
+        await t.rollback();
         return returnError(req, 500, "UNEXPECTEDERROR", res);
       });
   } catch (err) {

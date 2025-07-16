@@ -514,7 +514,7 @@ exports.cartItems = async (req, res) => {
     });
 
     
-
+    console.log(mbrPts)
     return returnSuccess(200, {items, mbrPts: mbrPts}, res);
   } catch (error) {
     console.error("Failed to retrieve cart items with product details:", error);
