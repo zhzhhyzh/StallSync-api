@@ -1,6 +1,7 @@
 // Import
 const db = require("../models");
 const _ = require("lodash");
+const fs = require("fs");
 
 // Table File
 const pssysann = db.pssysann;
@@ -189,7 +190,7 @@ exports.update = async (req, res) => {
     return returnError(req, 500, "RECORDIDISREQUIRED", res);
 
   //Validation
-  const { errors, isValid } = validateSsysannInput(req.body, 'C');
+  const { errors, isValid } = validatePssysannInput(req.body, 'C');
   if (!isValid)
     return returnError(req, 400, errors, res);
 
@@ -238,8 +239,8 @@ exports.update = async (req, res) => {
 
 
             // // Remove Old Image
-            if (fs.existsSync(genConfig.announcementImagePath + data.psannimg)) {
-              fs.unlinkSync(genConfig.announcementImagePath + data.psannimg);
+            if (fs.existsSync(genConfig.announcementImg + data.psannimg)) {
+              fs.unlinkSync(genConfig.announcementImg + data.psannimg);
             }
 
             //Remove old image from psdocmas
@@ -255,7 +256,7 @@ exports.update = async (req, res) => {
             await common
               .writeImage(
                 genConfig.documentTempPath,
-                genConfig.announcementImagePath,
+                genConfig.announcementImg,
                 req.body.psannimg,
                 // uuidv4(),
                 req.user.psusrunm,
@@ -306,8 +307,8 @@ exports.delete = async (req, res) => {
       }).then(async () => {
         if (anncde.psannimg != "") {
           // Remove Old Image
-          if (fs.existsSync(genConfig.announcementImagePath + anncde.psannimg)) {
-            fs.unlinkSync(genConfig.announcementImagePath + anncde.psannimg);
+          if (fs.existsSync(genConfig.announcementImg + anncde.psannimg)) {
+            fs.unlinkSync(genConfig.announcementImg + anncde.psannimg);
           }
 
           //Remove old image from psdocmas

@@ -14,6 +14,7 @@ const psstfpar = db.psstfpar;
 const psprdpar = db.psprdpar;
 const pstrxpar = db.pstrxpar;
 const psrwddtl = db.psrwddtl;
+const psprdinv = db.psprdinv;
 // Common Function
 const Op = db.Sequelize.Op;
 const returnError = require("../common/error");
@@ -573,10 +574,10 @@ exports.create = async (req, res) => {
           return returnError(req, 500, "UNEXPECTEDERROR", res);
         }
         function getRandomDateInPast12Months() {
-            const now = new Date();
-            const pastYear = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-            const randomTime = pastYear.getTime() + Math.random() * (now.getTime() - pastYear.getTime());
-            return new Date(randomTime);
+          const now = new Date();
+          const pastYear = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+          const randomTime = pastYear.getTime() + Math.random() * (now.getTime() - pastYear.getTime());
+          return new Date(randomTime);
         }
         await psordpar
           .create({
@@ -746,103 +747,139 @@ exports.update_paid = async (req, res) => {
 };
 
 exports.update_completed = async (req, res) => {
-  const id = req.body.id ? req.body.id : "";
-  if (id == "") return returnError(req, 500, "RECORDIDISREQUIRED", res);
+  const id = req.body.id;
+  if (!id) return returnError(req, 500, "RECORDIDISREQUIRED", res);
 
-  await psordpar
-    .findOne({
-      where: {
-        psorduid: id,
-      },
+  try {
+    const data = await psordpar.findOne({
+      where: { psorduid: id },
       raw: true,
-      attributes: {
-        exclude: ["createdAt", "crtuser", "mntuser"],
-      },
-    })
-    .then(async (data) => {
-      if (data) {
-        if (isNaN(new Date(req.body.updatedAt)) || (new Date(data.updatedAt).getTime() !== new Date(req.body.updatedAt).getTime())) return returnError(req, 500, "RECORDOUTOFSYNC", res)
-
-        const t = await connection.sequelize.transaction();
-        try {
-          if (data.psordsts == 'A') {
-            if (data.psmbruid != '' && !_.isEmpty(data.psmbruid)) {
-
-              let member = await psmbrprf.findOne({
-                where: {
-                  psmbruid: data.psmbruid
-                }, raw: true, attributes: ['psmbruid', 'psmbrtyp', 'psmbrexp', 'psmbracs', 'psmbrpts']
-              })
-              let memberType = 'B';
-
-              if (member) {
-                // Add 1 year to current expiry date
-                const newExpiry = new Date(member.psmbrexp);
-                newExpiry.setFullYear(newExpiry.getFullYear() + 1);
-                if (member.psmbracs > 500 && member.psmbracs  < 999) {
-                  memberType = 'S';
-                } else if (member.psmbracs > 1000) {
-                  memberType = 'G';
-
-                }
-
-                let totalPoints = parseInt(data.psordgra) + parseInt(member.psmbrpts)
-
-                // Update the expiry date
-                await psmbrprf.update(
-                  {
-                    psmbrpts: totalPoints,
-                    psmbrexp: newExpiry,
-                    psmbrtyp: memberType
-                  },
-                  {
-                    where: {
-                      psmbruid: data.psmbruid
-                    }
-                  }
-                );
-              }
-            }
-            psordpar
-              .update(
-                {
-                  psordsts: 'D'
-                },
-                {
-                  where: {
-                    id: data.id,
-                  },
-                }
-              )
-              .then(async () => {
-                common.writeMntLog(
-                  "psordpar",
-                  data,
-                  await psordpar.findByPk(data.id, { raw: true }),
-                  data.psorduid,
-                  "C",
-                  req.user.psusrunm
-                );
-                return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
-              });
-          } else {
-            console.log("Pre status must be A - Preparing")
-            await t.rollback();
-            return returnError(req, 500, "UNEXPECTEDERROR", res);
-
-          }
-
-        } catch (err) {
-          console.log(err);
-          await t.rollback();
-          return returnError(req, 500, "UNEXPECTEDERROR", res);
-        }
-      } else return returnError(req, 500, "NORECORDFOUND", res);
-    })
-    .catch((err) => {
-      console.log(err);
-      return returnError(req, 500, "UNEXPECTEDERROR", res);
+      attributes: { exclude: ["createdAt", "crtuser", "mntuser"] },
     });
+
+    if (!data) return returnError(req, 500, "NORECORDFOUND", res);
+
+    // Optimistic locking check
+    const isOutOfSync =
+      isNaN(new Date(req.body.updatedAt)) ||
+      new Date(data.updatedAt).getTime() !== new Date(req.body.updatedAt).getTime();
+
+    if (isOutOfSync) return returnError(req, 500, "RECORDOUTOFSYNC", res);
+
+    if (data.psordsts !== "A") {
+      console.log("Order must be in 'Preparing' state");
+      return returnError(req, 500, "UNEXPECTEDERROR", res);
+    }
+
+    const t = await connection.sequelize.transaction();
+
+    try {
+      // 1. Process Member Updates
+      if (data.psmbruid) {
+        const member = await psmbrprf.findOne({
+          where: { psmbruid: data.psmbruid },
+          raw: true,
+          attributes: ["psmbruid", "psmbrtyp", "psmbrexp", "psmbracs", "psmbrpts"],
+        });
+
+        if (member) {
+          let newExpiry = new Date(member.psmbrexp);
+          newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+
+          let memberType = "B";
+          if (member.psmbracs > 1000) memberType = "G";
+          else if (member.psmbracs > 500) memberType = "S";
+
+          const totalPoints = parseInt(data.psordgra) + parseInt(member.psmbrpts || 0);
+
+          await psmbrprf.update(
+            {
+              psmbrpts: totalPoints,
+              psmbrexp: newExpiry,
+              psmbrtyp: memberType,
+            },
+            {
+              where: { psmbruid: member.psmbruid },
+              transaction: t,
+            }
+          );
+        }
+      }
+
+      // 2. Inventory deduction
+      const items = await psorditm.findAll({
+        where: { psorduid: id },
+        raw: true,
+        attributes: ["psprduid", "psitmqty"],
+      });
+
+      const productIds = items.map((i) => i.psprduid);
+
+      const invProducts = await psprdpar.findAll({
+        where: {
+          psprduid: { [Op.in]: productIds },
+          psprdcid: "Y",
+        },
+        transaction: t,
+      });
+
+      for (const item of items) {
+        const product = invProducts.find((p) => p.psprduid === item.psprduid);
+        if (!product) continue;
+
+        const newStock = product.psprdstk - item.psitmqty;
+        let status = "A";
+        if (newStock === 0) status = "S";
+        else if (newStock <= product.psprdlsr) status = "L";
+
+        await psprdpar.update(
+          { psprdstk: newStock, psprdsts: status },
+          { where: { psprduid: item.psprduid }, transaction: t }
+        );
+        await psprdinv.create(
+          {
+            psstkuid: uuidv4(),
+            psinvsty: "O",
+            psprduid: item.psprduid,
+            psinvqty: item.psitmqty,
+            psinvsdt: new Date(),
+            psinvpri: product.psprdpri,
+            psinvven: data.psmbruid,
+            // crtuser: req.user.psusrunm,
+            // mntuser: req.user.psusrunm,
+          },
+          { transaction: t }
+        );
+      }
+
+      // 3. Finalize Order
+      await psordpar.update(
+        { psordsts: "D" },
+        { where: { id: data.id }, transaction: t }
+      );
+
+      await t.commit();
+
+      // Write audit log after transaction
+      common.writeMntLog(
+        "psordpar",
+        data,
+        await psordpar.findByPk(data.id, { raw: true }),
+        data.psorduid,
+        "C",
+        req.user.psusrunm
+      );
+
+      return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
+    } catch (err) {
+      console.error("Transaction error:", err);
+      await t.rollback();
+      return returnError(req, 500, "UNEXPECTEDERROR", res);
+    }
+  } catch (err) {
+    console.error("Outer error:", err);
+    return returnError(req, 500, "UNEXPECTEDERROR", res);
+  }
 };
 
 
@@ -942,7 +979,7 @@ exports.update_cancelled = async (req, res) => {
                 });
               }
 
-              let dva = data.psorddva ? data.psorddva : 0;
+              let dva = parseFloat(data.psorddva) ? parseFloat(data.psorddva) : 0;
               let member = await psmbrprf.findOne({
                 where: {
                   psmbruid: data.psmbruid

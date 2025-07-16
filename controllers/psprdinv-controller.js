@@ -232,13 +232,12 @@ exports.create = async (req, res) => {
 
 
 
-          psprdinv
+          await psprdinv
             .create({
               psstkuid: uuidv4(),
               psinvsty: req.body.psinvsty,
               psprduid: req.body.psprduid,
               psinvqty: req.body.psinvqty,
-              psinvsty: req.body.psinvsty,
               psinvsdt: req.body.psinvsdt ? req.body.psinvsdt : new Date(),
               psinvpri: req.body.psinvsty == "I" ? req.body.psinvpri : 0,
               psinvven: req.body.psinvsty == "I" ? req.body.psinvven : "",
@@ -259,7 +258,7 @@ exports.create = async (req, res) => {
                   },
                 }
               );
-
+              await t.commit();
               console.log("Update affected rows:", updatedCount);
               common.writeMntLog(
                 "psprdinv",
@@ -399,11 +398,11 @@ exports.update = async (req, res) => {
             )
             return returnSuccessMessage(req, 200, "RECORDUPDATED", res);
           }).catch(async err => {
-              console.log(err);
-              await t.rollback();
-              return returnError(req, 500, "UNEXPECTEDERROR", res)
-            });
-;
+            console.log(err);
+            await t.rollback();
+            return returnError(req, 500, "UNEXPECTEDERROR", res)
+          });
+        ;
       } else return returnError(req, 500, "NORECORDFOUND", res);
     })
     .catch((err) => {
