@@ -296,7 +296,10 @@ exports.create = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const id = req.user.psmbruid;
+  let id = req.user.psmbruid;
+  if (!id) {
+    id = req.body.id;
+  }
   if (!id) {
     return returnError(req, 500, "RECORDIDISREQUIRED", res);
   }
@@ -374,20 +377,20 @@ exports.update = async (req, res) => {
           psmbrphn: req.body.psmbrphn,
           mntuser: req.user.psusrunm,
         },
-        { where: { psmbruid: id } }, {transaction: t}
+        { where: { psmbruid: id } }, { transaction: t }
       )
-      .then( async () => {
+      .then(async () => {
 
         await psusrprf.update(
           {
-          psusrnam: req.body.psmbrnam,
-          psusrphn: req.body.psmbrphn,
-          psusreml: req.body.psmbreml,
-        },
-        { where:{ psusrunm: req.user.psusrunm}}
+            psusrnam: req.body.psmbrnam,
+            psusrphn: req.body.psmbrphn,
+            psusreml: req.body.psmbreml,
+          },
+          { where: { psusrunm: req.user.psusrunm } }
         )
         await t.commit();
-        common.writeMntLog("psmbrprf", null, null, id, "C", req.user.psusrunm);
+        // common.writeMntLog("psmbrprf", null, null, id, "C", req.user.psusrunm);
 
         return returnSuccessMessage(req, 200, "UPDATESUCCESSFUL", res);
       })
@@ -459,7 +462,7 @@ exports.delete = async (req, res) => {
 
 
 exports.findOneMember = async (req, res) => {
-  const id = req.user.psmbruid ? req.user.psmbruid  : "";
+  const id = req.user.psmbruid ? req.user.psmbruid : "";
   if (!id || id == "") {
     return returnError(500, "RECORDIDISREQUIRED", res);
   }
