@@ -296,7 +296,11 @@ exports.create = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const id = req.user.psmbruid;
+  let id = req.user.psmbruid;
+  if (!id) {
+    id = req.body.id;
+  }
+
   if (!id) {
     return returnError(req, 500, "RECORDIDISREQUIRED", res);
   }
@@ -347,7 +351,6 @@ exports.update = async (req, res) => {
         psusrunm: req.body.psusrnme,
       },
       raw: true,
-      attributes: ["psusrunm", "psusrnam"],
     });
 
     if (!validateUser) {
@@ -374,8 +377,12 @@ exports.update = async (req, res) => {
         },
         { where: { psmbruid: id } }
       )
-      .then(() => {
-        common.writeMntLog("psmbrprf", null, null, id, "C", req.user.psusrunm);
+      .then(async () => {
+        // common.writeMntLog("psmbrprf", validateUser, await psmbrprf.findOne({
+        //   where: {
+        //     psmbruid: id
+        //   }, raw: true
+        // }), id, "C", req.user.psusrunm);
 
         return returnSuccessMessage(req, 200, "UPDATESUCCESSFUL", res);
       })
@@ -446,7 +453,7 @@ exports.delete = async (req, res) => {
 
 
 exports.findOneMember = async (req, res) => {
-  const id = req.user.psmbruid ? req.user.psmbruid  : "";
+  const id = req.user.psmbruid ? req.user.psmbruid : "";
   if (!id || id == "") {
     return returnError(500, "RECORDIDISREQUIRED", res);
   }

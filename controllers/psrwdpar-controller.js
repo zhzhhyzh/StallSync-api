@@ -634,7 +634,7 @@ exports.delete = async (req, res) => {
   const id = req.body.id ? req.body.id : "";
   if (id == "") return returnError(req, 500, "RECORDIDISREQUIRED", res);
   const t = await connection.sequelize.transaction();
-
+  console.log("This id?:", id)
   await psrwdpar
     .findOne({
       where: {
@@ -643,18 +643,21 @@ exports.delete = async (req, res) => {
       raw: true,
     })
     .then((trnscd) => {
+
       if (trnscd) {
+
         psrwdpar
           .destroy({
-            where: { id: trnscd.id },
+            where: { psrwduid: trnscd.psrwduid },
           }, { transaction: t })
           .then(async () => {
             await psrwddtl.findAll({
               where: {
                 psrwduid: id
-              }, raw: true, attributes: ["psmrctyp"]
+              }, raw: true, attributes: ["psmrcuid"]
             }).then(async (merchantTypes) => {
-              const existing = merchantTypes.map(exist => exist.psmrctyp);
+              const existing = merchantTypes.map(exist => exist.psmrcuid);
+              console.log("existing here:", existing)
               await psrwddtl.destroy({
                 where: {
                   psrwduid: id

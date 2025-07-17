@@ -94,6 +94,10 @@ exports.generate = async (req, res) => {
             where: option, raw: true, order: [['psordodt', 'asc']], attributes: ["psorduid", "psordgra", "psmbruid", "psmrcuid", "psordsts", "psordodt"]
         });
 
+        if (rows.length <= 100) {
+            return returnError(req, 505, "Need to have at least 100 of transactions", res);
+        }
+
 
         let newRows = [];
         for (var i = 0; i < rows.length; i++) {
