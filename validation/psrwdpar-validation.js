@@ -39,7 +39,7 @@ module.exports = function validatePsrwdparInput(data, type) {
     if (Validator.isEmpty(data.psrwdnme)) {
         errors.psrwdnme = "FIELDISREQUIRED";
     } else {
-        if (data.psrwdnme.length > 255) errors.psrwdnme = "INVALIDVALUELENGTH&255";
+        if (data.psrwdnme.length > 10) errors.psrwdnme = "INVALIDVALUELENGTH&10";
     }
 
     if (Validator.isEmpty(data.psrwddsc)) {
@@ -62,7 +62,7 @@ module.exports = function validatePsrwdparInput(data, type) {
 
         if (!(fromDate instanceof Date) || isNaN(fromDate.getTime())) {
             errors.psrwdfdt = "INVALIDDATAVALUE";
-        } else if (fromDate < today) {
+        } else if (fromDate < today && type == 'A') {
             errors.psrwdfdt = "PASTDATE";
         }
     }

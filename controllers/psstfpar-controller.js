@@ -690,7 +690,11 @@ exports.update = async (req, res) => {
             common.writeMntLog(
               "psstfpar",
               data,
-              await psstfpar.findByPk(data.id, { raw: true }),
+              await psstfpar.findOne({
+                where: {
+                  psstfuid: data.psstfuid
+                }, raw: true
+              }),
               data.psstfuid,
               "C",
               req.user.psusrunm

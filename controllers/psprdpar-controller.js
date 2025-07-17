@@ -265,6 +265,7 @@ exports.create = async (req, res) => {
   let merchantid =
     req.user.psusrtyp == "MCH" ? req.query.psmrcuid : req.body.psmrcuid;
 
+  if (!merchantid) { merchantid = req.body.psmrcuid }
   //Validation
   const { errors, isValid } = validatePsprdparInput(req.body, "A");
   if (!isValid) return returnError(req, 400, errors, res);
@@ -294,190 +295,192 @@ exports.create = async (req, res) => {
   }
 
   // Duplicate Check
-  psprdpar
-    .findOne({
-      where: {
-        psprduid: req.body.psprduid,
-      },
-      raw: true,
-    })
-    .then(async (trnscd) => {
-      if (trnscd)
-        return returnError(req, 400, { psprdpar: "RECORDEXISTS" }, res);
-      else {
-        let ddlErrors = {};
-        let err_ind = false;
+  // await psprdpar
+  //   .findOne({
+  //     where: {
+  //       psprduid: req.body.psprduid,
+  //     },
+  //     raw: true,
+  //   })
+  //   .then(async (trnscd) => {
+  //     if (trnscd)
+  //       return returnError(req, 400, { psprdpar: "RECORDEXISTS" }, res);
+  //     else {
+  let ddlErrors = {};
+  let err_ind = false;
 
-        let prodtype = await common.retrieveSpecificGenCodes(
-          req,
-          "PRODTYP",
-          req.body.psprdtyp
-        );
-        if (!prodtype || !prodtype.prgedesc) {
-          ddlErrors.psprdtyp = "INVALIDDATAVALUE";
-          err_ind = true;
-        }
+  let prodtype = await common.retrieveSpecificGenCodes(
+    req,
+    "PRODTYP",
+    req.body.psprdtyp
+  );
+  if (!prodtype || !prodtype.prgedesc) {
+    ddlErrors.psprdtyp = "INVALIDDATAVALUE";
+    err_ind = true;
+  }
 
-        if (!_.isEmpty(req.body.psprdsts)) {
-          let yesorno = await common.retrieveSpecificGenCodes(
-            req,
-            "PRODSTS",
-            req.body.psprdsts
-          );
-          if (!yesorno || !yesorno.prgedesc) {
-            ddlErrors.psprdsts = "INVALIDDATAVALUE";
-            err_ind = true;
-          }
-        }
+  if (!_.isEmpty(req.body.psprdsts)) {
+    let yesorno = await common.retrieveSpecificGenCodes(
+      req,
+      "PRODSTS",
+      req.body.psprdsts
+    );
+    if (!yesorno || !yesorno.prgedesc) {
+      ddlErrors.psprdsts = "INVALIDDATAVALUE";
+      err_ind = true;
+    }
+  }
 
-        if (!_.isEmpty(req.body.psprdcat)) {
-          let yesorno = await common.retrieveSpecificGenCodes(
-            req,
-            "PRODCAT",
-            req.body.psprdcat
-          );
-          if (!yesorno || !yesorno.prgedesc) {
-            ddlErrors.psprdcat = "INVALIDDATAVALUE";
-            err_ind = true;
-          }
-        }
+  if (!_.isEmpty(req.body.psprdcat)) {
+    let yesorno = await common.retrieveSpecificGenCodes(
+      req,
+      "PRODCAT",
+      req.body.psprdcat
+    );
+    if (!yesorno || !yesorno.prgedesc) {
+      ddlErrors.psprdcat = "INVALIDDATAVALUE";
+      err_ind = true;
+    }
+  }
 
-        if (!_.isEmpty(req.body.psprdfvg)) {
-          let yesorno = await common.retrieveSpecificGenCodes(
-            req,
-            "YESORNO",
-            req.body.psprdfvg
-          );
-          if (!yesorno || !yesorno.prgedesc) {
-            ddlErrors.psprdfvg = "INVALIDDATAVALUE";
-            err_ind = true;
-          }
-        }
+  if (!_.isEmpty(req.body.psprdfvg)) {
+    let yesorno = await common.retrieveSpecificGenCodes(
+      req,
+      "YESORNO",
+      req.body.psprdfvg
+    );
+    if (!yesorno || !yesorno.prgedesc) {
+      ddlErrors.psprdfvg = "INVALIDDATAVALUE";
+      err_ind = true;
+    }
+  }
 
-        if (!_.isEmpty(req.body.psprdhal)) {
-          let yesorno = await common.retrieveSpecificGenCodes(
-            req,
-            "YESORNO",
-            req.body.psprdhal
-          );
-          if (!yesorno || !yesorno.prgedesc) {
-            ddlErrors.psprdhal = "INVALIDDATAVALUE";
-            err_ind = true;
-          }
-        }
+  if (!_.isEmpty(req.body.psprdhal)) {
+    let yesorno = await common.retrieveSpecificGenCodes(
+      req,
+      "YESORNO",
+      req.body.psprdhal
+    );
+    if (!yesorno || !yesorno.prgedesc) {
+      ddlErrors.psprdhal = "INVALIDDATAVALUE";
+      err_ind = true;
+    }
+  }
 
-        if (!_.isEmpty(req.body.psprdcid)) {
-          let yesorno = await common.retrieveSpecificGenCodes(
-            req,
-            "YESORNO",
-            req.body.psprdcid
-          );
-          if (!yesorno || !yesorno.prgedesc) {
-            ddlErrors.psprdcid = "INVALIDDATAVALUE";
-            err_ind = true;
-          }
-        }
+  if (!_.isEmpty(req.body.psprdcid)) {
+    let yesorno = await common.retrieveSpecificGenCodes(
+      req,
+      "YESORNO",
+      req.body.psprdcid
+    );
+    if (!yesorno || !yesorno.prgedesc) {
+      ddlErrors.psprdcid = "INVALIDDATAVALUE";
+      err_ind = true;
+    }
+  }
 
-        if (!_.isEmpty(req.body.psprdtak)) {
-          let yesorno = await common.retrieveSpecificGenCodes(
-            req,
-            "YESORNO",
-            req.body.psprdtak
-          );
-          if (!yesorno || !yesorno.prgedesc) {
-            ddlErrors.psprdtak = "INVALIDDATAVALUE";
-            err_ind = true;
-          }
-        }
+  if (!_.isEmpty(req.body.psprdtak)) {
+    let yesorno = await common.retrieveSpecificGenCodes(
+      req,
+      "YESORNO",
+      req.body.psprdtak
+    );
+    if (!yesorno || !yesorno.prgedesc) {
+      ddlErrors.psprdtak = "INVALIDDATAVALUE";
+      err_ind = true;
+    }
+  }
 
-        if (err_ind) return returnError(req, 400, ddlErrors, res);
-        else {
-          const t = await connection.sequelize.transaction();
+  if (err_ind) return returnError(req, 400, ddlErrors, res);
+  else {
+    const t = await connection.sequelize.transaction();
 
-          // Generate Code
-          let code = await common.getNextRunning(merchantid);
-          let initial = merchantid;
-          let reference = initial;
-          reference += _.padStart(code, 6, "0");
+    // Generate Code
+    let code = await common.getNextRunning(merchantid);
+    let initial = merchantid;
+    let reference = initial;
+    reference += _.padStart(code, 6, "0");
+    console.log("KLKLK")
 
-          psprdpar
-            .create(
-              {
-                psprdnme: req.body.psprdnme,
-                psprduid: reference,
-                psprddsc: req.body.psprddsc,
-                psprdlds: req.body.psprdlds,
-                psprdimg: req.body.psprdimg,
-                psmrcuid: merchantid,
-                psprdtyp: req.body.psprdtyp,
-                psprdcat: req.body.psprdcat,
-                psprdfvg: req.body.psprdfvg ? req.body.psprdfvg : "N",
-                psprdhal: req.body.psprdhal ? req.body.psprdhal : "N",
-                psprdcid: req.body.psprdcid ? req.body.psprdcid : "N",
-                psprdlsr: req.body.psprdlsr,
-                psprdstk: req.body.psprdstk,
-                psprdpri: req.body.psprdpri,
-                psprdtak: req.body.psprdtak ? req.body.psprdtak : "N",
-                psprdtpr: req.body.psprdtak == "Y" ? req.body.psprdtpr : 0,
-                psprdrmk: req.body.psprdrmk,
-                psprdsdt: new Date(),
-                psprdcrd: req.body.psprdcrd ? req.body.psprdcrd : new Date(),
-                psprdlsr: req.body.psprdlsr,
-                psprdstk: req.body.psprdstk,
-                psprdsts: req.body.psprdsts ? req.body.psprdsts : "A",
-                psprdrtc: 0,
-                psprdrtg: 0,
+    await psprdpar
+      .create(
+        {
+          psprdnme: req.body.psprdnme,
+          psprduid: reference,
+          psprddsc: req.body.psprddsc,
+          psprdlds: req.body.psprdlds,
+          psprdimg: req.body.psprdimg,
+          psmrcuid: merchantid,
+          psprdtyp: req.body.psprdtyp,
+          psprdcat: req.body.psprdcat,
+          psprdfvg: req.body.psprdfvg ? req.body.psprdfvg : "N",
+          psprdhal: req.body.psprdhal ? req.body.psprdhal : "N",
+          psprdcid: req.body.psprdcid ? req.body.psprdcid : "N",
+          psprdlsr: req.body.psprdlsr,
+          psprdstk: req.body.psprdstk,
+          psprdpri: req.body.psprdpri,
+          psprdtak: req.body.psprdtak ? req.body.psprdtak : "N",
+          psprdtpr: req.body.psprdtak == "Y" ? req.body.psprdtpr : 0,
+          psprdrmk: req.body.psprdrmk,
+          psprdsdt: new Date(),
+          psprdcrd: req.body.psprdcrd ? req.body.psprdcrd : new Date(),
+          psprdlsr: req.body.psprdlsr,
+          psprdstk: req.body.psprdstk,
+          psprdsts: req.body.psprdsts ? req.body.psprdsts : "A",
+          psprdrtc: 0,
+          psprdrtg: 0,
 
-                crtuser: req.user.psusrunm,
-                mntuser: req.user.psusrunm,
-              },
-              { transaction: t }
+          crtuser: req.user.psusrunm,
+          mntuser: req.user.psusrunm,
+        },
+        { transaction: t }
+      )
+      .then(async (data) => {
+        let created = data.get({ plain: true });
+        console.log("KLKLK")
+
+        if (profilePic) {
+          await common
+            .writeImage(
+              genConfig.documentTempPath,
+              genConfig.productImagePath,
+              created.psprdimg,
+              // uuidv4(),
+              req.user.psusrunm,
+              5
             )
-            .then(async (data) => {
-              let created = data.get({ plain: true });
-
-              if (profilePic) {
-                await common
-                  .writeImage(
-                    genConfig.documentTempPath,
-                    genConfig.productImagePath,
-                    created.psprdimg,
-                    // uuidv4(),
-                    req.user.psusrunm,
-                    5
-                  )
-                  .catch(async (err) => {
-                    console.log(err);
-                    await t.rollback();
-                    return returnError(req, 500, "UNEXPECTEDERROR", res);
-                  });
-              }
-              t.commit();
-              common.writeMntLog(
-                "psprdpar",
-                null,
-                null,
-                created.psprduid,
-                "A",
-                req.user.psusrunm,
-                "",
-                created.psprduid
-              );
-
-              return returnSuccessMessage(req, 200, "RECORDCREATED", res);
-            })
-            .catch((err) => {
+            .catch(async (err) => {
               console.log(err);
-              t.rollback();
+              await t.rollback();
               return returnError(req, 500, "UNEXPECTEDERROR", res);
             });
         }
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      return returnError(req, 500, "UNEXPECTEDERROR", res);
-    });
+        t.commit();
+        common.writeMntLog(
+          "psprdpar",
+          null,
+          null,
+          created.psprduid,
+          "A",
+          req.user.psusrunm,
+          "",
+          created.psprduid
+        );
+
+        return returnSuccessMessage(req, 200, "RECORDCREATED", res);
+      })
+      .catch((err) => {
+        console.log(err);
+        t.rollback();
+        return returnError(req, 500, "UNEXPECTEDERROR", res);
+      });
+  }
+  // }
+  // })
+  // .catch((err) => {
+  //   console.log(err);
+  //   return returnError(req, 500, "UNEXPECTEDERROR", res);
+  // });
 };
 
 exports.update = async (req, res) => {
@@ -695,7 +698,11 @@ exports.update = async (req, res) => {
             common.writeMntLog(
               "psprdpar",
               data,
-              await psprdpar.findByPk(data.id, { raw: true }),
+              await psprdpar.findOne({
+                where: {
+                  psprduid: data.psprduid
+                }, raw: true
+              }),
               data.psprduid,
               "C",
               req.user.psusrunm

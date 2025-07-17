@@ -35,11 +35,12 @@ router.get("/list", authenticateRoute, pstrxpar.list);
 router.post("/createOffline", async (req, res) => {
   const { psorduid, pstrxamt } = req.body;
   console.log("psorduid", psorduid);
+  console.log("pstrxamt", pstrxamt);
   if (!psorduid) {
     return returnError(req, 500, "RECORDIDISREQUIRED", res);
   }
 
-  if (!pstrxamt) {
+  if (!pstrxamt || pstrxamt < 0) {
     return returnError(req, 500, "RECORDIDISREQUIRED", res);
   }
 

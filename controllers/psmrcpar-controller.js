@@ -338,11 +338,11 @@ exports.create = async (req, res) => {
                   4,
 
                 )
-              // .catch(async (err) => {
-              //   console.log(err);
-              //   await t.rollback();
-              //   return returnError(req, 500, "UNEXPECTEDERROR", res);
-              // });
+                .catch(async (err) => {
+                  console.log(err);
+                  await t.rollback();
+                  return returnError(req, 500, "UNEXPECTEDERROR", res);
+                });
 
               if (storeFront) {
                 await common
@@ -355,11 +355,11 @@ exports.create = async (req, res) => {
                     3,
 
                   )
-                // .catch(async (err) => {
-                //   console.log(err);
-                //   await t.rollback();
-                //   return returnError(req, 500, "UNEXPECTEDERROR", res);
-                // });
+                  .catch(async (err) => {
+                    console.log(err);
+                    await t.rollback();
+                    return returnError(req, 500, "UNEXPECTEDERROR", res);
+                  });
 
               }
               if (profilePic) {
@@ -373,11 +373,11 @@ exports.create = async (req, res) => {
                     3,
 
                   )
-                // .catch(async (err) => {
-                //   console.log(err);
-                //   await t.rollback();
-                //   return returnError(req, 500, "UNEXPECTEDERROR", res);
-                // });
+                  .catch(async (err) => {
+                    console.log(err);
+                    await t.rollback();
+                    return returnError(req, 500, "UNEXPECTEDERROR", res);
+                  });
 
               }
               t.commit();
@@ -665,16 +665,20 @@ exports.update = async (req, res) => {
 
 
             await t.commit();
-            common.writeMntLog(
+            await common.writeMntLog(
               "psmrcpar",
               data,
-              await psmrcpar.findByPk(data.id, { raw: true }),
+              await psmrcpar.findOne({
+                where: {
+                  psmrcuid: data.psmrcuid
+                }, raw: true
+              }),
               data.psmrcuid,
               "C",
               req.user.psusrunm
             );
             for (let i = 0; i < toCreate.length; i++) {
-              common.writeMntLog(
+              await common.writeMntLog(
                 "psmrclbl",
                 null,
                 null,
