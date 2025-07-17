@@ -437,7 +437,6 @@ exports.create = async (req, res) => {
       )
       .then(async (data) => {
         let created = data.get({ plain: true });
-        console.log("KLKLK")
 
         if (profilePic) {
           await common
@@ -741,7 +740,7 @@ exports.delete = async (req, res) => {
           )
           .then(async () => {
             try {
-              if (fs.existsSync(genConfig.productImagePath + trnscd.psprdimg)) {
+              if (fs.existsSync(genConfig.productImagePath + trnscd.psprdimg) && trnscd.psprdimg) {
                 fs.unlinkSync(genConfig.productImagePath + trnscd.psprdimg);
               }
             } catch (err) {

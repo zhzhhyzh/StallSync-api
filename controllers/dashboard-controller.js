@@ -84,7 +84,7 @@ const buildOption = async (req) => {
     //   const userAnnIds = userAnnouncements.map(a => a.psannuid);
 
     const systemAnnouncements = await pssysann.findAll({
-        // where: { psannast: 'Y' },
+        where: { psannsts: 'Y' },
         attributes: ['psannuid'],
         raw: true
     });

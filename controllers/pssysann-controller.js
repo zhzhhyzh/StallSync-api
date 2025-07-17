@@ -40,6 +40,9 @@ exports.list = async (req, res) => {
     };
   }
 
+  if(req.query.status){
+    option.psannsts = req.query.status 
+  }
 
   const { count, rows } = await pssysann.findAndCountAll({
     limit: parseInt(limit),

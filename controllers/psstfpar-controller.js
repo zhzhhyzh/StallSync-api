@@ -296,6 +296,26 @@ exports.create = async (req, res) => {
       return returnError(req, 400, "INVALIDDATAVALUE", res);
     }
   }
+
+
+
+  if (req.body.psstfehp && !isValidNumericString(req.body.psstfehp)) {
+    return returnError(req, 400, { psstfehp: "Emergency Phone No. only allow number" }, res)
+  }
+
+  if (req.body.psstfchp && !isValidNumericString(req.body.psstfchp)) {
+    return returnError(req, 400, { psstfchp: "Current Phone No. only allow number" }, res)
+  }
+
+  if (req.body.psstfacc && !isValidNumericString(req.body.psstfacc)) {
+    return returnError(req, 400, { psstfacc: "Bank Account No. only allow number" }, res)
+  }
+
+
+
+
+
+
   // Duplicate Check
   psstfpar
     .findOne({
@@ -525,6 +545,18 @@ exports.update = async (req, res) => {
     }
   }
 
+  if (req.body.psstfehp && !isValidNumericString(req.body.psstfehp)) {
+    return returnError(req, 400, { psstfehp: "Emergency Phone No. only allow number" }, res)
+  }
+
+  if (req.body.psstfchp && !isValidNumericString(req.body.psstfchp)) {
+    return returnError(req, 400, { psstfchp: "Current Phone No. only allow number" }, res)
+  }
+
+  if (req.body.psstfacc && !isValidNumericString(req.body.psstfacc)) {
+    return returnError(req, 400, { psstfacc: "Bank Account No. only allow number" }, res)
+  }
+
   await psstfpar
     .findOne({
       where: {
@@ -739,7 +771,7 @@ exports.delete = async (req, res) => {
             if (imamgeExist) {
               try {
                 // Remove Image
-                if (fs.existsSync(genConfig.staffImagePath + trnscd.psstfprp)) {
+                if (fs.existsSync(genConfig.staffImagePath + trnscd.psstfprp) && trnscd.psstfprp) {
                   fs.unlinkSync(genConfig.staffImagePath + trnscd.psstfprp);
                 }
               } catch (err) {
@@ -773,3 +805,9 @@ exports.delete = async (req, res) => {
       return returnError(req, 500, "UNEXPECTEDERROR", res);
     });
 };
+ function isValidNumericString(input) {
+    const maxLength = 25;
+    const numericRegex = /^[0-9]*$/;
+
+    return input.length <= maxLength && numericRegex.test(input);
+  }

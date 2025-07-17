@@ -235,6 +235,13 @@ exports.create = async (req, res) => {
 
   }
 
+  // if (req.body.psmrcssm && !isValidNumericString(req.body.psmrcssm)) {
+  //   return returnError(req, 400, { psmrcssm: "SSM No. only allow number" }, res)
+  // }
+
+  if (req.body.psmrcacc && !isValidNumericString(req.body.psmrcacc)) {
+    return returnError(req, 400, { psmrcacc: "Bank Account No. only allow number" }, res)
+  }
   // Duplicate Check
   psmrcpar
     .findOne({
@@ -438,7 +445,13 @@ exports.update = async (req, res) => {
     }
 
   }
+  // if (req.body.psmrcssm && !isValidNumericString(req.body.psmrcssm)) {
+  //     return returnError(req, 400, { psmrcssm: "SSM No. only allow number" }, res)
+  //   }
 
+  if (req.body.psmrcacc && !isValidNumericString(req.body.psmrcacc)) {
+    return returnError(req, 400, { psmrcacc: "Bank Account No. only allow number" }, res)
+  }
 
   await psmrcpar
     .findOne({
@@ -727,7 +740,7 @@ exports.delete = async (req, res) => {
         psmrcpar
           .destroy({
             where: { psmrcuid: id },
-          })
+          }, { transaction: t })
           .then(async () => {
             await psmrclbl.findAll({
               where: {
@@ -747,10 +760,10 @@ exports.delete = async (req, res) => {
                 if (fs.existsSync(genConfig.ssmImagePath + trnscd.psmrcssc)) {
                   fs.unlinkSync(genConfig.ssmImagePath + trnscd.psmrcssc);
                 }
-                if (fs.existsSync(genConfig.merchantImagePath + trnscd.psmrcsfi)) {
+                if (fs.existsSync(genConfig.merchantImagePath + trnscd.psmrcsfi) && trnscd.psmrcsfi) {
                   fs.unlinkSync(genConfig.merchantImagePath + trnscd.psmrcsfi);
                 }
-                if (fs.existsSync(genConfig.merchantImagePath + trnscd.psmrcppi)) {
+                if (fs.existsSync(genConfig.merchantImagePath + trnscd.psmrcppi && trnscd.psmrcppi)) {
                   fs.unlinkSync(genConfig.merchantImagePath + trnscd.psmrcppi);
                 }
               } catch (err) {
@@ -802,3 +815,10 @@ exports.delete = async (req, res) => {
       return returnError(req, 500, "UNEXPECTEDERROR", res);
     });
 };
+
+function isValidNumericString(input) {
+  const maxLength = 25;
+  const numericRegex = /^[0-9]*$/;
+
+  return input.length <= maxLength && numericRegex.test(input);
+}
