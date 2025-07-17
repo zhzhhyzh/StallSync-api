@@ -227,7 +227,7 @@ router.get("/reward", authenticateRoute, async (req, res) => {
           },
         ],
       },
-      attributes: ["psrwduid", "psrwdnme", "psrwddsc", "psrwdtyp"],
+      attributes: ["psrwduid", "psrwdnme", "psrwdtyp", "psrwdcap", "psrwddva", "psrwdmin", ],
       order: [["psrwduid", "asc"]],
       raw: true,
     });

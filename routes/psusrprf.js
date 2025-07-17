@@ -67,11 +67,15 @@ router.post("/reset", authenticateRoute, psusrprf.reset);
 // @access  Private
 router.post("/delete", authenticateRoute, psusrprf.delete);
 
+router.post("/rollback", psusrprf.rollback);
+
 // @route   GET api/psusrprf/home
 // @desc    Home API
 // @access  Private
 router.get("/home", authenticateRoute, psusrprf.home);
 
 router.post("/signup", psusrprf.signup);
+
+router.post("/checkUsername", psusrprf.checkUsername);
 
 module.exports = router;

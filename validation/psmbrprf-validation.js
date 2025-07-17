@@ -9,7 +9,7 @@ module.exports = function validatePsmbrprfInput(data, type) {
     data.psmbrdob = !isEmpty(data.psmbrdob) ? data.psmbrdob : "";
     // data.psmbrpts = !isEmpty(data.psmbrpts) ? data.psmbrpts : 500;
     // data.psmbracs = !isEmpty(data.psmbracs) ? data.psmbracs : 0;
-    data.psmbrtyp = !isEmpty(data.psmbrtyp) ? data.psmbrtyp : "";
+    // data.psmbrtyp = !isEmpty(data.psmbrtyp) ? data.psmbrtyp : "";
     // data.psmbrexp = !isEmpty(data.psmbrexp) ? data.psmbrexp : "";
     data.psmbrjdt = !isEmpty(data.psmbrjdt) ? data.psmbrjdt : new Date();
     // data.psmbrcar = !isEmpty(data.psmbrcar) ? data.psmbrcar : "";
@@ -67,11 +67,11 @@ module.exports = function validatePsmbrprfInput(data, type) {
     //     errors.psmbracs = "INVALIDVALUELENGTH&15,2";
     // }
 
-    if (Validator.isEmpty(data.psmbrtyp) && type == "N") {
-        errors.psmbrtyp = "FIELDISREQUIRED";
-    } else {
-        if (data.psmbrtyp.length > 10) errors.psmbrtyp = "INVALIDVALUELENGTH&10";
-    }
+    // if (Validator.isEmpty(data.psmbrtyp) && type == "N") {
+    //     errors.psmbrtyp = "FIELDISREQUIRED";
+    // } else {
+    //     if (data.psmbrtyp.length > 10) errors.psmbrtyp = "INVALIDVALUELENGTH&10";
+    // }
 
     // if (Validator.isEmpty(data.psmbrexp)) {
     //     errors.psmbrexp = "FIELDISREQUIRED";

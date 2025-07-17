@@ -296,11 +296,7 @@ exports.create = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  let id = req.user.psmbruid;
-  if (!id) {
-    id = req.body.id;
-  }
-
+  const id = req.user.psmbruid;
   if (!id) {
     return returnError(req, 500, "RECORDIDISREQUIRED", res);
   }
@@ -348,14 +344,17 @@ exports.update = async (req, res) => {
     // Check user existence
     const validateUser = await psusrprf.findOne({
       where: {
-        psusrunm: req.body.psusrnme,
+        psusrunm: req.user.psusrunm,
       },
       raw: true,
+      attributes: ["psusrunm", "psusrnam"],
     });
 
     if (!validateUser) {
       return returnError(req, 400, { psusrnme: "NORECORDFOUND" }, res);
     }
+
+    const t = await connection.sequelize.transaction();
 
     await psmbrprf
       .update(
@@ -375,19 +374,26 @@ exports.update = async (req, res) => {
           psmbrphn: req.body.psmbrphn,
           mntuser: req.user.psusrunm,
         },
-        { where: { psmbruid: id } }
+        { where: { psmbruid: id } }, {transaction: t}
       )
-      .then(async () => {
-        // common.writeMntLog("psmbrprf", validateUser, await psmbrprf.findOne({
-        //   where: {
-        //     psmbruid: id
-        //   }, raw: true
-        // }), id, "C", req.user.psusrunm);
+      .then( async () => {
+
+        await psusrprf.update(
+          {
+          psusrnam: req.body.psmbrnam,
+          psusrphn: req.body.psmbrphn,
+          psusreml: req.body.psmbreml,
+        },
+        { where:{ psusrunm: req.user.psusrunm}}
+        )
+        await t.commit();
+        common.writeMntLog("psmbrprf", null, null, id, "C", req.user.psusrunm);
 
         return returnSuccessMessage(req, 200, "UPDATESUCCESSFUL", res);
       })
-      .catch((err) => {
+      .catch(async (err) => {
         console.log("This is the unx error", err);
+        await t.rollback();
         return returnError(req, 500, "UNEXPECTEDERROR", res);
       });
   } catch (err) {
@@ -453,7 +459,7 @@ exports.delete = async (req, res) => {
 
 
 exports.findOneMember = async (req, res) => {
-  const id = req.user.psmbruid ? req.user.psmbruid : "";
+  const id = req.user.psmbruid ? req.user.psmbruid  : "";
   if (!id || id == "") {
     return returnError(500, "RECORDIDISREQUIRED", res);
   }
