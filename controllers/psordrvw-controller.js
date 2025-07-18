@@ -371,7 +371,7 @@ exports.update = async (req, res) => {
             }, { transaction: t }
         ).then(async data => {
             if (image) {
-                if (fs.existsSync(genConfig.reviewImgPath + exist.psrvwimg)) {
+                if (fs.existsSync(genConfig.reviewImgPath + exist.psrvwimg) && exist.psrvwimg) {
                     fs.unlinkSync(genConfig.reviewImgPath + exist.psrvwimg);
                 }
 
@@ -393,7 +393,7 @@ exports.update = async (req, res) => {
             }
 
             if (video) {
-                if (fs.existsSync(genConfig.reviewVidPath + exist.psrvwvid)) {
+                if (fs.existsSync(genConfig.reviewVidPath + exist.psrvwvid) && exist.psrvwvid) {
                     fs.unlinkSync(genConfig.reviewVidPath + exist.psrvwvid);
                 }
 
@@ -456,7 +456,7 @@ exports.delete = async (req, res) => {
 
                         try {
 
-                            if (fs.existsSync(genConfig.reviewImgPath + trnscd.psrvwimg)) {
+                            if (fs.existsSync(genConfig.reviewImgPath + trnscd.psrvwimg) && trnscd.psrvwimg) {
                                 fs.unlinkSync(genConfig.reviewImgPath + trnscd.psrvwimg);
                             }
                         } catch (err) {
@@ -467,7 +467,7 @@ exports.delete = async (req, res) => {
 
                         try {
 
-                            if (fs.existsSync(genConfig.reviewVidPath + trnscd.psrvwvid)) {
+                            if (fs.existsSync(genConfig.reviewVidPath + trnscd.psrvwvid) && trnscd.psrvwvid) {
                                 fs.unlinkSync(genConfig.reviewVidPath + trnscd.psrvwvid);
                             }
                         } catch (err) {

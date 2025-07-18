@@ -634,7 +634,7 @@ exports.update = async (req, res) => {
                 });
             }
             if (sfiChange) {
-              if (fs.existsSync(genConfig.merchantImagePath + data.psmrcsfi)) {
+              if (fs.existsSync(genConfig.merchantImagePath + data.psmrcsfi) && data.psmrcsfi) {
                 fs.unlinkSync(genConfig.merchantImagePath + data.psmrcsfi);
               }
 
@@ -655,7 +655,7 @@ exports.update = async (req, res) => {
                 });
             }
             if (ppiChange) {
-              if (fs.existsSync(genConfig.merchantImagePath + data.psmrcppi)) {
+              if (fs.existsSync(genConfig.merchantImagePath + data.psmrcppi) && data.psmrcppi) {
                 fs.unlinkSync(genConfig.merchantImagePath + data.psmrcppi);
               }
 

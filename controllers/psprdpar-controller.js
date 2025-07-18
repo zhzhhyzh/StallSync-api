@@ -647,7 +647,7 @@ exports.update = async (req, res) => {
           )
           .then(async () => {
             if (ppiChange) {
-              if (fs.existsSync(genConfig.productImagePath + data.psprdimg)) {
+              if (fs.existsSync(genConfig.productImagePath + data.psprdimg) && data.psprdimg) {
                 fs.unlinkSync(genConfig.productImagePath + data.psprdimg);
               }
 
