@@ -16,6 +16,11 @@ router.get("/detail", authenticateRoute, pssysann.findOne);
 // @access  Private
 router.get("/list", authenticateRoute, pssysann.list);
 
+// @route   GET api/pssysann/list
+// @desc    List OTP Parameter
+// @access  Private
+router.get("/list2", authenticateRoute, pssysann.list);
+
 // @route   POST api/pssysann/create
 // @desc    Create OTP Parameter
 // @access  Private
