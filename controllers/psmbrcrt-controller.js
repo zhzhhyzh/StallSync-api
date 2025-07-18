@@ -508,7 +508,7 @@ exports.cartItems = async (req, res) => {
           attributes: ["psprdnme", "psprdimg"],
         },
       ],
-      attributes: ["psitmcno", "psitmqty", "psitmunt", "psitmrmk","psitmsbt"],
+      attributes: ["psitmcno", "psitmqty", "psitmunt", "psitmrmk","psitmsbt", "psprduid","id","psmbrcar"],
       raw: true,
       nest: true,
     });
@@ -518,6 +518,6 @@ exports.cartItems = async (req, res) => {
     return returnSuccess(200, {items, mbrPts: mbrPts}, res);
   } catch (error) {
     console.error("Failed to retrieve cart items with product details:", error);
-    return returnError(req, 500, "SERVERERROR", res);
+    return returnError(req, 500, "UNEXPECTEDERROR", res);
   }
 };
