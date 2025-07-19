@@ -16,6 +16,11 @@ router.get("/detail", authenticateRoute, psordrvw.findOne);
 // @access  Private
 router.get("/list", authenticateRoute, psordrvw.list);
 
+// @route   GET api/psordrvw/list
+// @desc    List Order review Parameter
+// @access  Private
+router.get("/list_m", authenticateRoute, psordrvw.listMerchantReview);
+
 // @route   POST api/psordrvw/create
 // @desc    Create Order review Parameter
 // @access  Private

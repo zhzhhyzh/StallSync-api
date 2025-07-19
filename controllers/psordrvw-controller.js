@@ -502,3 +502,73 @@ exports.delete = async (req, res) => {
             return returnError(req, 500, "UNEXPECTEDERROR", res);
         });
 };
+
+
+
+exports.listMerchantReview = async (req, res) => {
+    let mchId = "";
+    if (req.query.id) {
+        mchId = req.query.id;
+    } else {
+        return returnError(req, 500, "RECORDISREQUIRED", res);
+    }
+
+
+    let limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    let from = req.query.page ? parseInt(req.query.page) * limit : 0;
+
+
+
+    try {
+        const orderIdList = await psordpar.findAll({
+            where: { psmrcuid: mchId },
+            raw: true,
+            attributes: ['psorduid'],
+        });
+
+        const exist = orderIdList.map(r => r.psorduid);
+        if (exist.length === 0) return returnSuccess(200, { total: 0, data: [] }, res);
+
+        const { count, rows } = await psordrvw.findAndCountAll({
+            where: { psorduid: { [Op.in]: exist } },
+            attributes: [
+                ["psorduid", "id"],
+                "psorduid",
+                "psrvwdsc",
+                "psrvwrtg",
+                "createdAt"
+            ],
+            order: [["createdAt", "desc"]],
+            offset: from,
+            limit: limit,
+            raw: true
+        });
+
+        let newRows = [];
+        for (var i = 0; i < rows.length; i++) {
+            let obj = rows[i];
+
+            obj.createdAt = await common.formatDateTime(obj.createdAt);
+
+            newRows.push(obj);
+        }
+
+        if (count > 0)
+            return returnSuccess(
+                200,
+                {
+                    total: count,
+                    data: newRows,
+                    extra: { file: "psordrvw", key: ["psorduid"] },
+                },
+                res
+            );
+        else return returnSuccess(200, { total: 0, data: [] }, res);
+
+
+    } catch (error) {
+        console.log("Error ", error)
+        return returnError(req, 500, "UNEXPECTEDERROR", res);
+    }
+
+};
