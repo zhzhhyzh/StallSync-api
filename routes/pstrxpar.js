@@ -54,13 +54,13 @@ router.post("/createOffline", async (req, res) => {
     psorduid,
     pstrxdat: new Date(),
     pstrxamt: pstrxamt,
-    pstrxsts: "N",
+    pstrxsts: pstrxamt == 0 ? "C": "N",
     pstrxmtd: "C",
   });
 
   await psordpar.update(
     {
-      psordsts: "G",
+      psordsts: pstrxamt == 0 ? "P" : "G",
     },
     {
       where: { psorduid },
