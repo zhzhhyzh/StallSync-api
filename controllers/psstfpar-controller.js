@@ -518,14 +518,16 @@ exports.update = async (req, res) => {
   //Validation
   const { errors, isValid } = validatePsstfparInput(req.body, "C");
   if (!isValid) return returnError(req, 400, errors, res);
+  if (req.body.psmrcuid) {
 
-  const merchant = await psmrcpar.findOne({
-    where: {
-      psmrcuid: req.body.psmrcuid,
-    }, raw: true
-  })
-  if (!merchant) {
-    return returnError(req, 500, "INVALIDDATAVALUE", res);
+    const merchant = await psmrcpar.findOne({
+      where: {
+        psmrcuid: req.body.psmrcuid,
+      }, raw: true
+    })
+    if (!merchant) {
+      return returnError(req, 400,{ psmrcuid: "INVALIDDATAVALUE"}, res);
+    }
   }
 
   //Check format number
@@ -805,9 +807,9 @@ exports.delete = async (req, res) => {
       return returnError(req, 500, "UNEXPECTEDERROR", res);
     });
 };
- function isValidNumericString(input) {
-    const maxLength = 25;
-    const numericRegex = /^[0-9]*$/;
+function isValidNumericString(input) {
+  const maxLength = 25;
+  const numericRegex = /^[0-9]*$/;
 
-    return input.length <= maxLength && numericRegex.test(input);
-  }
+  return input.length <= maxLength && numericRegex.test(input);
+}
