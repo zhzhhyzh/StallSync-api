@@ -1098,7 +1098,7 @@ exports.listPersonalized = async (req, res) => {
   }
 };
 
-
+//Lates created top 10
 exports.listLatest = async (req, res) => {
   let limit = 10;
   if (req.query.limit) limit = req.query.limit;
@@ -1215,6 +1215,8 @@ exports.listLatest = async (req, res) => {
   else return returnSuccess(200, { total: 0, data: [] }, res);
 };
 
+
+//List trending is near 3 months, total quantity ordered count
 exports.listTrending = async (req, res) => {
   let limit = 10;
   if (req.query.limit) limit = req.query.limit;
