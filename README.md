@@ -59,12 +59,17 @@ The backend uses a specific configuration defined in the `.env` file. You must e
 2.  **Environment Variables:** Verify your local `.env` file contains the required settings:
     ```
     DB_HOST=localhost
-    DB_USER=root
+    DB_USER=postgres
     DB_PASSWORD=123456
     DB_NAME=stallSync
     DB_PORT=3306
+    NODE_ENV=local
     PORT=5040
-    # ... (other secrets omitted for brevity)
+    ACCESS_TOKEN_SECRET=
+    REFRESH_TOKEN_SECRET=
+    BREVO_API_KEY=
+    API_KEY=
+    STRIPE_SECRET_KEY=
     ```
 
 3.  **Run Migrations:** Execute the script to create the necessary tables defined by the entities:
