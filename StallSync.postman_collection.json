@@ -1,0 +1,2603 @@
+{
+	"info": {
+		"_postman_id": "b719caca-7a74-4a46-9430-4f4e1f44dbdd",
+		"name": "StallSync",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45658930",
+		"_collection_link": "https://zheheng-9342008.postman.co/workspace/Zheheng's-Workspace~ccde38f8-a4be-4fa0-82ee-7eb6e7c7c366/collection/45658930-b719caca-7a74-4a46-9430-4f4e1f44dbdd?action=share&source=collection_link&creator=45658930"
+	},
+	"item": [
+		{
+			"name": "User Profile",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"pm.collectionVariables.set(\"BEARER_TOKEN\", jsonData.message.token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"lwk\",\r\n    \"password\": \"123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psusrprf/login",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psusrprf",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psusrprf/list",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psusrprf",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psusrprf/detail?id=yzh",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psusrprf",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "yzh"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"psusrunm\":\"k\",\r\n    \"psusrnam\":\"Yeoh Zhe Heng\",\r\n    \"psusreml\":\"yeohzh-wp22@gmail.com\",\r\n    \"psusrrol\":\"MBR\",\r\n    \"psusrtyp\":\"MBR\",\r\n    \"psusrphn\":\"0134567890\",\r\n    \"psusrpwd\":\"123456\",\r\n    \"psusrpre\":\"MY\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psusrprf/create",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psusrprf",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\":\"yzh\",\r\n    \"psusrnam\":\"Henry Yeoh Zhe Heng\",\r\n    \"psusreml\":\"yeohzh-wp22@gmail.com\",\r\n    \"psusrrol\":\"ADM\",\r\n    \"psusrphn\":\"01126936768\",\r\n    \"psusrpwd\":\"123456\",\r\n    \"psusrsts\":\"A\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psusrprf/update",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psusrprf",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\":\"yzh\"   \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psusrprf/delete",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psusrprf",
+								"delete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "home",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"psusrunm\":\"yzh\",\r\n    \"psusrnam\":\"Yeoh Zhe Heng\",\r\n    \"psusreml\":\"yeohzh-wp22@gmail.com\",\r\n    \"psusrrol\":\"ADM\",\r\n    \"psusrphn\":\"01126936768\",\r\n    \"psusrpwd\":\"123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psusrprf/home",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psusrprf",
+								"home"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "General Type & Code",
+			"item": [
+				{
+					"name": "List GenCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/prgencde/list?prgtycde=YESORNO",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"prgencde",
+								"list"
+							],
+							"query": [
+								{
+									"key": "prgtycde",
+									"value": "YESORNO"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List GenType",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/prgentyp/list",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"prgentyp",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail GenType",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"YESORNO\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/prgentyp/detail?id=YESORNO",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"prgentyp",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "YESORNO"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail GenCde",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"YESORNO\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/prgencde/detail?prgtycde=YESORNO&prgecode=Y",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"prgencde",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "prgtycde",
+									"value": "YESORNO"
+								},
+								{
+									"key": "prgecode",
+									"value": "Y"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create GenType",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"prgtycde\": \"FUNACT\",\r\n    \"prgtydsc\": \"Function Action\",\r\n    \"prgtylds\":\"\",\r\n    \"prgtylen\":\"1\",\r\n    \"prgtyman\":\"M\",\r\n    \"prgtycat\":\"T\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/prgentyp/create",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"prgentyp",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete GenType",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"prgtycde\": \"YESOORNO\",\r\n    \"prgtydsc\": \"Yes or No\",\r\n    \"prgtylds\":\"\",\r\n    \"prgtylen\":\"1\",\r\n    \"prgtyman\":\"M\",\r\n    \"prgtycat\":\"T\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/prgentyp/delete",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"prgentyp",
+								"delete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Gentype",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"prgtycde\": \"FUNACT\",\r\n    \"prgtydsc\": \"Function Action\",\r\n    \"prgtylds\":\"\",\r\n    \"prgtylen\":\"10\",\r\n    \"prgtyman\":\"M\",\r\n    \"prgtycat\":\"T\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/prgentyp/update",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"prgentyp",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create GenCde",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"prgecode\":\"T\",\r\n    \"prgtycde\":\"YESORNO\",\r\n    \"prgedesc\":\"Test\"\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/prgencde/create",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"prgencde",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete GenCde",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"prgecode\":\"T\",\r\n    \"prgtycde\":\"YESORNO\",\r\n    \"prgedesc\":\"No\"\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/prgencde/Delete",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"prgencde",
+								"Delete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update GenCde",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"prgecode\":\"N\",\r\n    \"prgtycde\":\"YESORNO\",\r\n    \"prgedesc\":\"No\"\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/prgencde/update",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"prgencde",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail GenCode",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/prgencde/list",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"prgencde",
+								"list"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "MaintenanceLog",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/mntlog/list?file=prgentyp&key=YESORNO",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"mntlog",
+								"list"
+							],
+							"query": [
+								{
+									"key": "file",
+									"value": "prgentyp"
+								},
+								{
+									"key": "key",
+									"value": "YESORNO"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/mntlog/detail?id=1",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"mntlog",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Document",
+			"item": [
+				{
+					"name": "Upload Document",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "document",
+									"type": "file",
+									"src": "/C:/Users/henry/OneDrive/图片/Shift-SDC419C#5&369121b3&0&UID256#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}-1.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{domain}}/api/document/upload",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"document",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"filename\":\"29e5689b-8f12-4600-b956-e52024387f4c.jpg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/document/download?filename=29e5689b-8f12-4600-b956-e52024387f4c.jpg",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"document",
+								"download"
+							],
+							"query": [
+								{
+									"key": "filename",
+									"value": "29e5689b-8f12-4600-b956-e52024387f4c.jpg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/document/detail?document=29e5689b-8f12-4600-b956-e52024387f4c.jpg",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"document",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "document",
+									"value": "29e5689b-8f12-4600-b956-e52024387f4c.jpg"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Access",
+			"item": [
+				{
+					"name": "List Access",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"psusrrole\":\"ADM\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/prfunacs/list?prusrrole=ADM",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"prfunacs",
+								"list"
+							],
+							"query": [
+								{
+									"key": "prusrrole",
+									"value": "ADM"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Staff",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psstfpar/list",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psstfpar",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psstfpar/detail?id=A000001",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psstfpar",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "A000001"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"psstfnme\": \"Yeoh\",\r\n    \"psmrcuid\": \"\",\r\n    \"psstftyp\": \"A\",\r\n    \"psstfidt\": \"IC\",\r\n    \"psstfidn\": \"090909-08-0989\",\r\n    \"psstfprp\": \"29e5689b-8f12-4600-b956-e52024387f4c.jpg\",\r\n    \"psstfjdt\": \"\",\r\n    \"psstfsts\": \"\",\r\n    \"psstfad1\": \"Jalan Dataran,\",\r\n    \"psstfad2\": \"Bandar Cheras\",\r\n    \"psstfpos\": \"45000\",\r\n    \"psstfcit\": \"Cheras\",\r\n    \"psstfsta\": \"WP KL\",\r\n    \"psstfsam\": \"Y\",\r\n    \"psstfchp\": \"182563811\",\r\n    \"psstfeml\": \"henryyzh0309@gmail.com\",\r\n    \r\n    \"psstfbnk\": \"HLBB\",\r\n    \"psstfacc\": \"21550213700\",\r\n    \"psstfbnm\": \"Yeoh Zhe Heng\",\r\n    \"psstfepr\": \"MY\",\r\n    \"psstfehp\": \"1126936768\",\r\n    \"psusrunm\": \"yzh\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psstfpar/create",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psstfpar",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"A000001\",\r\n    \"psstfnme\": \"Yeoh Zhe Heng Andy\",\r\n    \"psmrcuid\": \"\",\r\n    \"psstftyp\": \"A\",\r\n    \"psstfidt\": \"IC\",\r\n    \"psstfidn\": \"090909-08-0989\",\r\n    \"psstfprp\": \"29e5689b-8f12-4600-b956-e52024387f4c.jpg\",\r\n    \"psstfjdt\": \"2025-06-01T02:11:33.000Z\",\r\n    \"psstfsts\": \"\",\r\n    \"psstfad1\": \"Jalan Dataran,\",\r\n    \"psstfad2\": \"Bandar Cheras\",\r\n    \"psstfpos\": \"45000\",\r\n    \"psstfcit\": \"Cheras\",\r\n    \"psstfsta\": \"WP KL\",\r\n    \"psstfsam\": \"Y\",\r\n    \"psstfchp\": \"182563811\",\r\n    \"psstfeml\": \"henryyzh0309@gmail.com\",\r\n    \"psstfnat\":\"MM\",\r\n   \r\n    \"psstfbnk\": \"HLBB\",\r\n    \"psstfacc\": \"21550213700\",\r\n    \"psstfbnm\": \"Yeoh Zhe Heng\",\r\n    \"psstfepr\": \"MY\",\r\n    \"psstfehp\": \"1126936768\",\r\n    \"psusrunm\": \"yzh\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psstfpar/update",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psstfpar",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\":\"A000001\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psstfpar/delete",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psstfpar",
+								"delete"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Member",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psmbrprf/list",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrprf",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psmbrprf/detail?id=A000001",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrprf",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "A000001"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"psmbrnam\":\"Wong PuJin\",\r\n   \"psmbreml\":\"pujin123@gmail.com\",\r\n   \"psmbrdob\": \"2003-06-29T11:00:21.000Z\",\r\n   \"psmbrjdt\": \"2024-09-27T11:00:21.000Z\",\r\n   \"psusrnme\": \"pujin\",\r\n   \"psmbrpre\":\"MY\",\r\n   \"psmbrphn\":\"189430511\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psmbrprf/create",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrprf",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"A000001\",\r\n    \"psmbrnam\": \"Yeoh\",\r\n    \"psmbreml\": \"Yeoh@gmail.com\",\r\n    \"psmbrdob\": \"2002-09-18T11:00:21.000Z\",\r\n    \"psmbrjdt\": \"2016-09-18T11:00:21.000Z\",\r\n    \"psusrnme\": \"admin\",\r\n    \"psmbrtyp\": \"B\",\r\n    // \"psmbrpts\": 500,\r\n    // \"psmbracs\": 0,\r\n    \"psmbrpre\": \"MY\",\r\n    \"psmbrphn\": \"176566666\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psmbrprf/update",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrprf",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\":\"A000004\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psmbrprf/delete",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrprf",
+								"delete"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Product",
+			"item": [
+				{
+					"name": "List used by Admin",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psprdpar/list",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psprdpar",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Latest",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psprdpar/listLatest",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psprdpar",
+								"listLatest"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Trending",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psprdpar/listLatest",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psprdpar",
+								"listLatest"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Personalized",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "psusrunm",
+									"value": "A000011",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{domain}}/api/psprdpar/listPersonalized",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psprdpar",
+								"listPersonalized"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psstfpar/detail?id=A000001",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psstfpar",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "A000001"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Filter",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"psmbrnam\":\"Yeoh\",\r\n   \"psmbreml\":\"henryyzh0309@gmail.com\",\r\n   \"psmbrdob\": \"2002-09-18T11:00:21.000Z\",\r\n   \"psmbrjdt\": \"2016-09-18T11:00:21.000Z\",\r\n   \"psusrnme\": \"admin\",\r\n   \"psmbrpre\":\"MY\",\r\n   \"psmbrphn\":\"176566666\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psmbrprf/create",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrprf",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"psmbrnam\":\"Yeoh\",\r\n   \"psmbreml\":\"henryyzh0309@gmail.com\",\r\n   \"psmbrdob\": \"2002-09-18T11:00:21.000Z\",\r\n   \"psmbrjdt\": \"2016-09-18T11:00:21.000Z\",\r\n   \"psusrnme\": \"admin\",\r\n   \"psmbrpre\":\"MY\",\r\n   \"psmbrphn\":\"176566666\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psmbrprf/create",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrprf",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\":\"A000001\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psstfpar/delete",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psstfpar",
+								"delete"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Order",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psordpar/list",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psordpar",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psordpar/detail?id=7d1a513d-a5c4-4226-beb7-8",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psordpar",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "7d1a513d-a5c4-4226-beb7-8"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"psordpap\":\"Y\",\r\n    \"psrwduid\":\"\",\r\n    \"psordrap\":\"N\",\r\n    \"psmrcuid\":\"JW\"\r\n   \r\n    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psordpar/create",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psordpar",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"updatedAt\": \"2025-07-03T13:09:28.000Z\",\r\n    \"id\": \"7d1a513d-a5c4-4226-beb7-8\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psordpar/update_paid",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psordpar",
+								"update_paid"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Review",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psordrvw/list",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psordrvw",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psstfpar/detail?id=A000001",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psstfpar",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "A000001"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"psmbrnam\":\"Yeoh\",\r\n   \"psmbreml\":\"henryyzh0309@gmail.com\",\r\n   \"psmbrdob\": \"2002-09-18T11:00:21.000Z\",\r\n   \"psmbrjdt\": \"2016-09-18T11:00:21.000Z\",\r\n   \"psusrnme\": \"admin\",\r\n   \"psmbrpre\":\"MY\",\r\n   \"psmbrphn\":\"176566666\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psordrvw/create",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psordrvw",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"psmbrnam\":\"Yeoh\",\r\n   \"psmbreml\":\"henryyzh0309@gmail.com\",\r\n   \"psmbrdob\": \"2002-09-18T11:00:21.000Z\",\r\n   \"psmbrjdt\": \"2016-09-18T11:00:21.000Z\",\r\n   \"psusrnme\": \"admin\",\r\n   \"psmbrpre\":\"MY\",\r\n   \"psmbrphn\":\"176566666\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psmbrprf/create",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrprf",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\":\"A000001\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psstfpar/delete",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psstfpar",
+								"delete"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transaction",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/pstrxpar/list",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"pstrxpar",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/pstrxpar/detail?id=A000001",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"pstrxpar",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "A000001"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Online Stripe",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"psorduid\": \"0b7822f4-5c98-4f97-aacb-8e7fded383b4\",\r\n    \"pstrxamt\": 95.90,\r\n    \"returnUrl\": \"http://localhost:3000\"\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/pstrxpar/createOnline",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"pstrxpar",
+								"createOnline"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Offline Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"psorduid\": \"0b7822f4-5c98-4f97-aacb-8\",\r\n    \"pstrxamt\": 95.90\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/pstrxpar/createOffline",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"pstrxpar",
+								"createOffline"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Member Cart",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psmbrcrt/list?psmrcuid=MM",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrcrt",
+								"list"
+							],
+							"query": [
+								{
+									"key": "psmrcuid",
+									"value": "MM"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ListMerchant",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psmbrcrt/list?psmrcuid=MM",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrcrt",
+								"list"
+							],
+							"query": [
+								{
+									"key": "psmrcuid",
+									"value": "MM"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cartItems",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"psmbrcar\": \"7457dc3d-8453-447f-8358-227648e69d51\",\r\n    \"psmrcuid\":\"MM\",\r\n    \"psprduid\":\"MM000002\",\r\n    \"psitmqty\":\"1\",\r\n    \"psitmrmk\":\"Testing 3\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psmbrcrt/create",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrcrt",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"psmbrcar\": \"7457dc3d-8453-447f-8358-227648e69d51\",\r\n    \"psitmcno\":\"4\",\r\n    \"psmrcuid\":\"MM\",\r\n    \"psprduid\":\"MM000002\",\r\n    \"psitmqty\":\"2\",\r\n    \"psitmrmk\":\"No Ice\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psmbrcrt/update",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrcrt",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\":\"7\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/psmbrcrt/delete",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrcrt",
+								"delete"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Merchant",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psmbrcrt/list?psmrcuid=MM",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psmbrcrt",
+								"list"
+							],
+							"query": [
+								{
+									"key": "psmrcuid",
+									"value": "MM"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psstfpar/detail?id=A000001",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psstfpar",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "A000001"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ddl",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psordrvw/list",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psordrvw",
+								"list"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reward",
+			"item": [
+				{
+					"name": "ListAvailable",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "api-key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "authorization",
+								"value": "{{BEARER_TOKEN}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain}}/api/psordrvw/list",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"psordrvw",
+								"list"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Forecast",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "api-key",
+						"value": "{{API_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "authorization",
+						"value": "{{BEARER_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"prrptnme\":\"OrderAndSalesReport-250519-250619-1.csv\",\r\n    \"forecast_type\":\"O\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{domain}}/api/report/forecast",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"api",
+						"report",
+						"forecast"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "View Forecast",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "api-key",
+						"value": "{{API_KEY}}",
+						"type": "text"
+					},
+					{
+						"key": "authorization",
+						"value": "{{BEARER_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"prrptnme\": \"OrderAndSalesReport-250519-250619-1.csv\",\r\n    \"prrptfcs\": \"Y\",\r\n    \"prrptfco\": \"Y\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{domain}}/api/report/findForecast",
+					"host": [
+						"{{domain}}"
+					],
+					"path": [
+						"api",
+						"report",
+						"findForecast"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "domain",
+			"value": "http://localhost:5040",
+			"type": "default"
+		},
+		{
+			"key": "API_KEY",
+			"value": "c871651f-bdf3-4795-b826-cc3cfb80075a",
+			"type": "default"
+		},
+		{
+			"key": "BEARER_TOKEN",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
